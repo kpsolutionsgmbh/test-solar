@@ -1,0 +1,337 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import { Reference } from '@/types/database';
+import { PlusCircle, Pencil, Trash2, Star, GripVertical, Upload, Image, Video, Play } from 'lucide-react';
+import { uploadFile } from '@/lib/upload';
+
+type MediaType = 'none' | 'image' | 'video';
+
+function getVideoThumbnail(url: string): string | null {
+  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/);
+  if (ytMatch) return `https://img.youtube.com/vi/${ytMatch[1]}/maxresdefault.jpg`;
+  const loomMatch = url.match(/loom\.com\/share\/([a-zA-Z0-9]+)/);
+  if (loomMatch) return `https://cdn.loom.com/sessions/thumbnails/${loomMatch[1]}-with-play.gif`;
+  return null;
+}
+
+export default function ReferencesPage() {
+  const supabase = createClient();
+  const { toast } = useToast();
+  const [references, setReferences] = useState<Reference[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingRef, setEditingRef] = useState<Reference | null>(null);
+
+  // Form
+  const [clientName, setClientName] = useState('');
+  const [clientCompany, setClientCompany] = useState('');
+  const [quote, setQuote] = useState('');
+  const [resultSummary, setResultSummary] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [mediaType, setMediaType] = useState<MediaType>('none');
+
+  const fetchRefs = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data } = await supabase
+      .from('references')
+      .select('*')
+      .eq('admin_id', user.id)
+      .order('sort_order');
+    setReferences((data as Reference[]) || []);
+    setLoading(false);
+  };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchRefs(); }, []);
+
+  const resetForm = () => {
+    setClientName('');
+    setClientCompany('');
+    setQuote('');
+    setResultSummary('');
+    setVideoUrl('');
+    setImageUrl('');
+    setMediaType('none');
+    setEditingRef(null);
+  };
+
+  const openEdit = (ref: Reference) => {
+    setEditingRef(ref);
+    setClientName(ref.client_name);
+    setClientCompany(ref.client_company);
+    setQuote(ref.quote || '');
+    setResultSummary(ref.result_summary || '');
+    setVideoUrl(ref.video_url || '');
+    setImageUrl(ref.image_url || '');
+    setMediaType(ref.video_url ? 'video' : ref.image_url ? 'image' : 'none');
+    setDialogOpen(true);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const url = await uploadFile(file, 'references');
+    if (!url) {
+      toast({ title: 'Fehler', description: 'Upload fehlgeschlagen.', variant: 'destructive' });
+      return;
+    }
+
+    setImageUrl(url);
+    toast({ title: 'Bild hochgeladen' });
+  };
+
+  const handleSave = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const payload = {
+      client_name: clientName,
+      client_company: clientCompany,
+      quote: quote || null,
+      result_summary: resultSummary || null,
+      video_url: mediaType === 'video' ? (videoUrl || null) : null,
+      image_url: mediaType === 'image' ? (imageUrl || null) : null,
+    };
+
+    if (editingRef) {
+      await supabase.from('references').update(payload).eq('id', editingRef.id);
+      toast({ title: 'Referenz aktualisiert' });
+    } else {
+      await supabase.from('references').insert({
+        ...payload,
+        admin_id: user.id,
+        sort_order: references.length,
+      });
+      toast({ title: 'Referenz erstellt' });
+    }
+    resetForm();
+    setDialogOpen(false);
+    fetchRefs();
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Referenz löschen?')) return;
+    await supabase.from('references').delete().eq('id', id);
+    toast({ title: 'Referenz gelöscht' });
+    fetchRefs();
+  };
+
+  const toggleActive = async (ref: Reference) => {
+    await supabase.from('references').update({ is_active: !ref.is_active }).eq('id', ref.id);
+    fetchRefs();
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-semibold text-[#1a1a1a]">Referenzen</h1>
+          <p className="text-sm text-[#6b7280] mt-1">
+            Verwalten Sie Ihre Kundenreferenzen und Testimonials
+          </p>
+        </div>
+        <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
+          <DialogTrigger asChild>
+            <Button>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Neue Referenz
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>
+                {editingRef ? 'Referenz bearbeiten' : 'Neue Referenz'}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Kundenname *</Label>
+                  <Input value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Max Mustermann" />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Firma *</Label>
+                  <Input value={clientCompany} onChange={(e) => setClientCompany(e.target.value)} placeholder="Musterfirma GmbH" />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Zitat / Testimonial</Label>
+                <Textarea value={quote} onChange={(e) => setQuote(e.target.value)} placeholder="Die Zusammenarbeit war..." rows={3} />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Ergebnis-Zusammenfassung</Label>
+                <Input value={resultSummary} onChange={(e) => setResultSummary(e.target.value)} placeholder="z.B. 40% Ersparnis" />
+              </div>
+              <div className="space-y-2">
+                <Label>Medientyp</Label>
+                <div className="flex gap-2">
+                  {([['none', 'Keins'], ['image', 'Bild'], ['video', 'Video']] as const).map(([val, label]) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setMediaType(val as MediaType)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                        mediaType === val
+                          ? 'border-[#11485e] bg-[#11485e]/5 text-[#11485e]'
+                          : 'border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]'
+                      }`}
+                    >
+                      {val === 'image' && <Image className="h-3.5 w-3.5 inline mr-1.5" />}
+                      {val === 'video' && <Video className="h-3.5 w-3.5 inline mr-1.5" />}
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {mediaType === 'image' && (
+                <div className="space-y-1.5">
+                  <Label className="flex items-center gap-1.5">
+                    <Image className="h-3.5 w-3.5" />
+                    Bild
+                  </Label>
+                  <div className="flex items-center gap-3">
+                    {imageUrl && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={imageUrl} alt="" className="h-12 w-12 rounded object-cover" />
+                    )}
+                    <label className="cursor-pointer">
+                      <Button variant="outline" size="sm" asChild>
+                        <span>
+                          <Upload className="h-3.5 w-3.5 mr-1" />
+                          {imageUrl ? 'Bild ändern' : 'Bild hochladen'}
+                        </span>
+                      </Button>
+                      <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                    </label>
+                    {imageUrl && (
+                      <Button variant="ghost" size="sm" onClick={() => setImageUrl('')} className="text-destructive text-xs">
+                        Entfernen
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+              {mediaType === 'video' && (
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label className="flex items-center gap-1.5">
+                      <Video className="h-3.5 w-3.5" />
+                      Video-URL (YouTube / Loom)
+                    </Label>
+                    <Input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://youtube.com/watch?v=... oder https://loom.com/share/..." />
+                  </div>
+                  {videoUrl && getVideoThumbnail(videoUrl) && (
+                    <div className="relative rounded-lg overflow-hidden border border-[#e5e7eb]">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={getVideoThumbnail(videoUrl)!} alt="Thumbnail" className="w-full h-32 object-cover" />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <div className="h-10 w-10 rounded-full bg-white/90 flex items-center justify-center">
+                          <Play className="h-5 w-5 text-[#1a1a1a] ml-0.5" />
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-[#9ca3af] px-2 py-1">Automatisches Thumbnail</p>
+                    </div>
+                  )}
+                </div>
+              )}
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>
+                  Abbrechen
+                </Button>
+                <Button onClick={handleSave} disabled={!clientName || !clientCompany}>
+                  {editingRef ? 'Aktualisieren' : 'Erstellen'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {loading ? (
+        <div className="space-y-3">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}><CardContent className="py-6"><div className="h-4 bg-muted rounded w-1/3" /></CardContent></Card>
+          ))}
+        </div>
+      ) : references.length === 0 ? (
+        <Card className="border-dashed border-2">
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <Star className="h-12 w-12 text-[#d1d5db] mb-4" />
+            <p className="text-[#6b7280] mb-1 font-medium">Noch keine Referenzen vorhanden</p>
+            <p className="text-sm text-[#9ca3af] mb-4">Fügen Sie Kundenreferenzen hinzu</p>
+            <Button onClick={() => setDialogOpen(true)}>
+              <PlusCircle className="h-4 w-4 mr-2" />
+              Erste Referenz erstellen
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-2">
+          {references.map((ref) => (
+            <Card key={ref.id} className={`transition-opacity ${!ref.is_active ? 'opacity-50' : ''}`}>
+              <CardContent className="flex items-center justify-between py-4 px-5">
+                <div className="flex items-center gap-4 min-w-0">
+                  <GripVertical className="h-4 w-4 text-[#d1d5db] cursor-grab shrink-0" />
+                  {ref.image_url ? (
+                    <img src={ref.image_url} alt="" className="h-10 w-10 rounded object-cover shrink-0" />
+                  ) : (
+                    <div className="h-10 w-10 rounded bg-[#11485e]/8 flex items-center justify-center text-[#11485e] font-semibold text-sm shrink-0">
+                      {ref.client_company.charAt(0)}
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-medium text-[#1a1a1a]">{ref.client_company}</h3>
+                      {ref.result_summary && (
+                        <Badge variant="outline" className="text-[10px]">{ref.result_summary}</Badge>
+                      )}
+                      {ref.video_url && (
+                        <Video className="h-3.5 w-3.5 text-[#6b7280]" />
+                      )}
+                    </div>
+                    <p className="text-sm text-[#6b7280] truncate">
+                      {ref.client_name}
+                      {ref.quote && ` - "${ref.quote.substring(0, 60)}..."`}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <Switch
+                    checked={ref.is_active}
+                    onCheckedChange={() => toggleActive(ref)}
+                  />
+                  <Button variant="ghost" size="sm" onClick={() => openEdit(ref)}>
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => handleDelete(ref.id)} className="text-destructive">
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

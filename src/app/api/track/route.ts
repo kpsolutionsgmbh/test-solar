@@ -1,0 +1,44 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createServiceRoleClient } from '@/lib/supabase/server';
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { dealroom_id, event_type, event_data, session_id } = body;
+
+    if (!dealroom_id || !event_type || !session_id) {
+      return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+    }
+
+    // Anonymize IP (remove last octet)
+    const forwarded = request.headers.get('x-forwarded-for');
+    const ip = forwarded?.split(',')[0]?.trim() || 'unknown';
+    const anonymizedIp = ip.split('.').slice(0, 3).join('.') + '.0';
+
+    const userAgent = request.headers.get('user-agent') || null;
+
+    const supabase = createServiceRoleClient();
+
+    await supabase.from('tracking_events').insert({
+      dealroom_id,
+      event_type,
+      event_data: event_data || null,
+      visitor_ip: anonymizedIp,
+      user_agent: userAgent,
+      session_id,
+    });
+
+    // Auto-sign: when a PandaDoc signature event is received, update dealroom status to 'signed'
+    if (event_type === 'pandadoc_sign') {
+      await supabase
+        .from('dealrooms')
+        .update({ status: 'signed' })
+        .eq('id', dealroom_id)
+        .eq('status', 'published');
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch {
+    return NextResponse.json({ error: 'Internal error' }, { status: 500 });
+  }
+}
