@@ -62,7 +62,7 @@ export function DashboardSidebar({ userName, companyName }: SidebarProps) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all mt-1 mb-2',
+                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors duration-75 mt-1 mb-2',
                   isActive
                     ? 'bg-white text-[#11485e] font-semibold shadow-sm'
                     : 'bg-white/10 text-white hover:bg-white/20 font-medium'
@@ -79,7 +79,7 @@ export function DashboardSidebar({ userName, companyName }: SidebarProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all',
+                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors duration-75',
                 isActive
                   ? 'bg-white/15 text-white font-medium'
                   : 'text-white/65 hover:bg-white/8 hover:text-white'

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -158,6 +159,14 @@ export default function EditDealroomPage() {
           : prev.published_at,
       } : null);
       toast({ title: 'Gespeichert', description: 'Änderungen wurden gespeichert.' });
+      // Revalidate the public dealroom page cache
+      if (dealroom?.slug) {
+        fetch('/api/revalidate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ slug: dealroom.slug }),
+        }).catch(() => {});
+      }
     }
   };
 
@@ -236,10 +245,10 @@ export default function EditDealroomPage() {
             </Button>
           )}
           <Button variant="outline" size="sm" asChild>
-            <a href={`/dashboard/dealrooms/${dealroom.id}/activity`}>
+            <Link href={`/dashboard/dealrooms/${dealroom.id}/activity`}>
               <Activity className="h-3.5 w-3.5 mr-1.5" />
               Aktivitäten
-            </a>
+            </Link>
           </Button>
         </div>
       </div>

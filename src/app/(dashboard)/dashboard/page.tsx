@@ -15,17 +15,18 @@ export default async function DashboardPage() {
 
   const { data: dealrooms } = await supabase
     .from('dealrooms')
-    .select('*')
+    .select('id, slug, client_name, client_company, client_position, status, language, updated_at, published_at')
     .eq('admin_id', user.id)
     .order('updated_at', { ascending: false });
 
-  const { data: trackingCounts } = await supabase
-    .from('tracking_events')
-    .select('dealroom_id')
-    .in(
-      'dealroom_id',
-      (dealrooms || []).map((d: Dealroom) => d.id)
-    );
+  const allDealrooms = (dealrooms || []) as Dealroom[];
+  const dealroomIds = allDealrooms.map(d => d.id);
+  const { data: trackingCounts } = dealroomIds.length > 0
+    ? await supabase
+        .from('tracking_events')
+        .select('dealroom_id')
+        .in('dealroom_id', dealroomIds)
+    : { data: [] };
 
   const viewCounts: Record<string, number> = {};
   (trackingCounts || []).forEach((t: { dealroom_id: string }) => {
@@ -33,8 +34,8 @@ export default async function DashboardPage() {
   });
 
   const totalViews = Object.values(viewCounts).reduce((a, b) => a + b, 0);
-  const publishedCount = (dealrooms || []).filter((d: Dealroom) => d.status === 'published').length;
-  const draftCount = (dealrooms || []).filter((d: Dealroom) => d.status === 'draft').length;
+  const publishedCount = allDealrooms.filter(d => d.status === 'published').length;
+  const draftCount = allDealrooms.filter(d => d.status === 'draft').length;
 
   return (
     <div>
@@ -62,7 +63,7 @@ export default async function DashboardPage() {
               <div>
                 <p className="text-xs font-medium text-[#6b7280] uppercase tracking-wide">Gesamt</p>
                 <p className="text-3xl font-bold text-[#11485e] mt-1">
-                  {(dealrooms || []).length}
+                  {allDealrooms.length}
                 </p>
               </div>
               <div className="h-10 w-10 rounded-xl bg-[#11485e]/10 flex items-center justify-center">
@@ -114,7 +115,7 @@ export default async function DashboardPage() {
 
       {/* Dealroom List */}
       <h2 className="text-lg font-semibold text-[#1a1a1a] mb-4">Alle Dealrooms</h2>
-      <DealroomList dealrooms={(dealrooms || []) as Dealroom[]} viewCounts={viewCounts} />
+      <DealroomList dealrooms={allDealrooms} viewCounts={viewCounts} />
     </div>
   );
 }

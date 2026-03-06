@@ -1,5 +1,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dealroom, TrackingEvent } from '@/types/database';
 import { Eye, MousePointerClick, Video, FileSignature, TrendingUp, BarChart3, Users } from 'lucide-react';
@@ -19,18 +20,20 @@ export default async function AnalyticsPage() {
 
   const { data: dealrooms } = await supabase
     .from('dealrooms')
-    .select('*')
+    .select('id, slug, client_name, client_company, status')
     .eq('admin_id', user.id)
     .order('updated_at', { ascending: false });
 
   const allDealrooms = (dealrooms || []) as Dealroom[];
   const dealroomIds = allDealrooms.map(d => d.id);
 
-  const { data: events } = await supabase
-    .from('tracking_events')
-    .select('*')
-    .in('dealroom_id', dealroomIds.length > 0 ? dealroomIds : ['none'])
-    .order('created_at', { ascending: false });
+  const { data: events } = dealroomIds.length > 0
+    ? await supabase
+        .from('tracking_events')
+        .select('dealroom_id, event_type, session_id, created_at')
+        .in('dealroom_id', dealroomIds)
+        .order('created_at', { ascending: false })
+    : { data: [] };
 
   const allEvents = (events || []) as TrackingEvent[];
 
@@ -152,10 +155,10 @@ export default async function AnalyticsPage() {
                     return (
                       <tr key={dr.id} className="border-b last:border-0 hover:bg-[#fafafa]">
                         <td className="py-3">
-                          <a href={`/dashboard/dealrooms/${dr.id}`} className="hover:text-[#11485e] transition-colors">
+                          <Link href={`/dashboard/dealrooms/${dr.id}`} className="hover:text-[#11485e] transition-colors">
                             <p className="font-medium text-[#1a1a1a]">{dr.client_company}</p>
                             <p className="text-xs text-[#6b7280]">{dr.client_name}</p>
-                          </a>
+                          </Link>
                         </td>
                         <td className="py-3 text-center">
                           <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium ${statusColors[dr.status]}`}>

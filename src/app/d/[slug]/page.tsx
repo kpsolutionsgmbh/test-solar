@@ -4,7 +4,7 @@ import { Dealroom, DealroomContent, Reference, TeamMember } from '@/types/databa
 import { t } from '@/lib/i18n';
 import { DealroomClient } from '@/components/dealroom/dealroom-client';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 interface Props {
   params: { slug: string };
@@ -21,7 +21,6 @@ export default async function DealroomPage({ params }: Props) {
     .single();
 
   if (!dealroom) {
-    // Check if dealroom exists but is inactive
     const { data: inactiveDr } = await supabase
       .from('dealrooms')
       .select('status')
@@ -49,31 +48,27 @@ export default async function DealroomPage({ params }: Props) {
   const dr = dealroom as Dealroom;
   const content = (dr.custom_content || dr.generated_content) as DealroomContent | null;
 
-  // Fetch admin info for the broker name/avatar
-  const { data: admin } = await supabase
-    .from('admin_users')
-    .select('name, avatar_url, company_name, company_logo_url, brand_color')
-    .eq('id', dr.admin_id)
-    .single();
-
-  // Fetch assigned team member
-  let assignedMember: TeamMember | null = null;
-  if (dr.assigned_member_id) {
-    const { data: member } = await supabase
-      .from('team_members')
-      .select('*')
-      .eq('id', dr.assigned_member_id)
-      .single();
-    assignedMember = member as TeamMember | null;
-  }
-
-  // Fetch active references
-  const { data: refs } = await supabase
-    .from('references')
-    .select('*')
-    .eq('admin_id', dr.admin_id)
-    .eq('is_active', true)
-    .order('sort_order');
+  // Fetch admin, team member, and references in parallel
+  const [{ data: admin }, { data: member }, { data: refs }] = await Promise.all([
+    supabase
+      .from('admin_users')
+      .select('name, avatar_url, company_name, company_logo_url, brand_color')
+      .eq('id', dr.admin_id)
+      .single(),
+    dr.assigned_member_id
+      ? supabase
+          .from('team_members')
+          .select('*')
+          .eq('id', dr.assigned_member_id)
+          .single()
+      : Promise.resolve({ data: null }),
+    supabase
+      .from('references')
+      .select('id, client_name, client_company, quote, result_summary, image_url, video_url, logo_url, sort_order')
+      .eq('admin_id', dr.admin_id)
+      .eq('is_active', true)
+      .order('sort_order'),
+  ]);
 
   const translations = t(dr.language);
 
@@ -82,7 +77,7 @@ export default async function DealroomPage({ params }: Props) {
       dealroom={dr}
       content={content}
       admin={admin}
-      assignedMember={assignedMember}
+      assignedMember={member as TeamMember | null}
       references={(refs as Reference[]) || []}
       translations={translations}
     />
