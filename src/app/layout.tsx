@@ -1,12 +1,14 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Poppins } from 'next/font/google';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 
-const inter = Inter({
+const poppins = Poppins({
   subsets: ['latin', 'latin-ext'],
+  weight: ['400', '600'],
   display: 'swap',
   preload: true,
+  variable: '--font-poppins',
 });
 
 export const metadata: Metadata = {
@@ -21,8 +23,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="de" className={inter.className}>
-      <body className="antialiased">
+    <html lang="de" className={poppins.variable}>
+      <body className="antialiased font-sans">
         {children}
         <Toaster />
       </body>

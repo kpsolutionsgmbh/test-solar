@@ -222,10 +222,10 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                   <p className="text-sm uppercase tracking-wider font-medium mb-3" style={{ color: brandColor }}>
                     {tr.hero.preparedFor}
                   </p>
-                  <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold text-[#1a1a1a] mb-4 leading-tight">
+                  <h1 className="text-[28px] sm:text-[36px] font-semibold text-[#1a1a1a] mb-4 leading-tight">
                     {content.hero_title}
                   </h1>
-                  <p className="text-lg text-[#6b7280] max-w-2xl mx-auto">
+                  <p className="text-[16px] text-[#6b7280] max-w-2xl mx-auto leading-relaxed">
                     {content.hero_subtitle}
                   </p>
                   <div className="flex flex-wrap items-center justify-center gap-3 mt-4 text-sm text-[#6b7280]">

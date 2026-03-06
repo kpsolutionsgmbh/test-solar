@@ -1,7 +1,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { PlusCircle, FileX, Send, BarChart3, TrendingUp } from 'lucide-react';
+import { Plus, FileX, Send, BarChart3, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dealroom } from '@/types/database';
@@ -49,7 +49,7 @@ export default async function DashboardPage() {
         </div>
         <Button asChild size="lg" className="shadow-sm">
           <Link href="/dashboard/new">
-            <PlusCircle className="h-4 w-4 mr-2" />
+            <Plus className="h-4 w-4 mr-2" />
             Neuer Dealroom
           </Link>
         </Button>

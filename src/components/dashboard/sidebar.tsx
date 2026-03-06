@@ -5,21 +5,18 @@ import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import {
   LayoutDashboard,
-  PlusCircle,
-  Star,
+  Plus,
+  Award,
   Settings,
   LogOut,
   BarChart3,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 
-const navItems = [
+const mainNavItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/new', label: 'Neuer Dealroom', icon: PlusCircle, accent: true },
+  { href: '/dashboard/new', label: 'Neuer Dealroom', icon: Plus },
+  { href: '/dashboard/references', label: 'Referenzen', icon: Award },
   { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
-  { href: '/dashboard/references', label: 'Referenzen', icon: Star },
-  { href: '/dashboard/settings', label: 'Einstellungen', icon: Settings },
 ];
 
 interface SidebarProps {
@@ -38,82 +35,96 @@ export function DashboardSidebar({ userName, companyName }: SidebarProps) {
     router.refresh();
   };
 
+  const isActive = (href: string) =>
+    href === '/dashboard'
+      ? pathname === '/dashboard'
+      : pathname.startsWith(href);
+
   return (
-    <aside className="w-64 bg-gradient-to-b from-[#0d3a4d] to-[#11485e] flex flex-col h-full shrink-0 text-white">
-      {/* Logo / Brand */}
-      <div className="p-6 pb-4">
+    <aside className="w-[240px] h-screen border-r border-[#e5e7eb] bg-white flex flex-col shrink-0">
+      {/* Logo */}
+      <div className="h-14 flex items-center px-4 border-b border-[#e5e7eb]">
         <Link href="/dashboard" className="block">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/logo-white.svg" alt="Gündesli & Kollegen" className="h-10 object-contain" />
+          <img src="/images/logo-blue.svg" alt="Gündesli & Kollegen" className="h-7 object-contain" />
         </Link>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 px-3 space-y-0.5">
-        {navItems.map((item) => {
-          const isActive =
-            item.href === '/dashboard'
-              ? pathname === '/dashboard'
-              : pathname.startsWith(item.href);
+      {/* Navigation */}
+      <nav className="flex-1 py-3 px-2 space-y-0.5">
+        {mainNavItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            prefetch={true}
+            className={`
+              group flex items-center gap-3
+              px-3 py-[7px]
+              rounded-md
+              text-[13px]
+              font-semibold
+              transition-colors duration-75
+              ${isActive(item.href)
+                ? 'bg-[#e7eef1] text-[#11485e]'
+                : 'text-[#6b7280] hover:bg-[#fafafa] hover:text-[#1a1a1a]'
+              }
+            `}
+          >
+            <item.icon
+              size={16}
+              strokeWidth={1.75}
+              className={isActive(item.href) ? 'text-[#11485e]' : 'text-[#6b7280] group-hover:text-[#1a1a1a]'}
+            />
+            {item.label}
+          </Link>
+        ))}
 
-          if (item.accent) {
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors duration-75 mt-1 mb-2',
-                  isActive
-                    ? 'bg-white text-[#11485e] font-semibold shadow-sm'
-                    : 'bg-white/10 text-white hover:bg-white/20 font-medium'
-                )}
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Link>
-            );
-          }
+        {/* Separator */}
+        <div className="h-px bg-[#e5e7eb] my-3 mx-2" />
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors duration-75',
-                isActive
-                  ? 'bg-white/15 text-white font-medium'
-                  : 'text-white/65 hover:bg-white/8 hover:text-white'
-              )}
-            >
-              <item.icon className="h-4 w-4" />
-              {item.label}
-            </Link>
-          );
-        })}
+        <Link
+          href="/dashboard/settings"
+          prefetch={true}
+          className={`
+            group flex items-center gap-3
+            px-3 py-[7px]
+            rounded-md
+            text-[13px]
+            font-semibold
+            transition-colors duration-75
+            ${isActive('/dashboard/settings')
+              ? 'bg-[#e7eef1] text-[#11485e]'
+              : 'text-[#6b7280] hover:bg-[#fafafa] hover:text-[#1a1a1a]'
+            }
+          `}
+        >
+          <Settings
+            size={16}
+            strokeWidth={1.75}
+            className={isActive('/dashboard/settings') ? 'text-[#11485e]' : 'text-[#6b7280] group-hover:text-[#1a1a1a]'}
+          />
+          Einstellungen
+        </Link>
       </nav>
 
       {/* User section */}
-      <div className="p-3 mt-auto">
-        <div className="rounded-lg bg-white/8 p-3 mb-2">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-full bg-white/20 flex items-center justify-center text-white text-sm font-semibold shrink-0">
-              {userName.charAt(0).toUpperCase()}
-            </div>
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-white truncate">{userName}</p>
-              <p className="text-[11px] text-white/45 truncate">{companyName}</p>
-            </div>
+      <div className="p-3 border-t border-[#e5e7eb]">
+        <div className="flex items-center gap-3 px-2 py-2">
+          <div className="h-8 w-8 rounded-full bg-[#e7eef1] flex items-center justify-center text-[#11485e] text-[13px] font-semibold shrink-0">
+            {userName.charAt(0).toUpperCase()}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[13px] font-semibold text-[#1a1a1a] truncate">{userName}</p>
+            <p className="text-[11px] text-[#6b7280] truncate">{companyName}</p>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start text-white/50 hover:text-white hover:bg-white/8"
+        <button
           onClick={handleLogout}
+          className="flex items-center gap-3 w-full px-3 py-[7px] rounded-md text-[13px] font-semibold text-[#6b7280] hover:bg-[#fafafa] hover:text-[#1a1a1a] transition-colors duration-75 mt-1"
         >
-          <LogOut className="h-4 w-4 mr-2" />
+          <LogOut size={16} strokeWidth={1.75} />
           Abmelden
-        </Button>
+        </button>
       </div>
     </aside>
   );

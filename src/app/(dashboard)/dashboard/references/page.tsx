@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Reference } from '@/types/database';
-import { PlusCircle, Pencil, Trash2, Star, GripVertical, Upload, Image, Video, Play } from 'lucide-react';
+import { Plus, Pencil, Trash2, Star, GripVertical, Upload, Image, Video, Play } from 'lucide-react';
 import { uploadFile } from '@/lib/upload';
 
 type MediaType = 'none' | 'image' | 'video';
@@ -153,7 +153,7 @@ export default function ReferencesPage() {
         <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
           <DialogTrigger asChild>
             <Button>
-              <PlusCircle className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4 mr-2" />
               Neue Referenz
             </Button>
           </DialogTrigger>
@@ -280,7 +280,7 @@ export default function ReferencesPage() {
             <p className="text-[#6b7280] mb-1 font-medium">Noch keine Referenzen vorhanden</p>
             <p className="text-sm text-[#9ca3af] mb-4">Fügen Sie Kundenreferenzen hinzu</p>
             <Button onClick={() => setDialogOpen(true)}>
-              <PlusCircle className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4 mr-2" />
               Erste Referenz erstellen
             </Button>
           </CardContent>

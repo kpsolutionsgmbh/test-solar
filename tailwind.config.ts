@@ -10,7 +10,7 @@ const config: Config = {
   theme: {
   	extend: {
   		fontFamily: {
-  			sans: ['Poppins', 'Arial', 'Helvetica', 'sans-serif'],
+  			sans: ['var(--font-poppins)', 'Poppins', 'Arial', 'Helvetica', 'sans-serif'],
   		},
   		colors: {
   			background: 'hsl(var(--background))',
@@ -58,7 +58,10 @@ const config: Config = {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
+  		},
+  		transitionTimingFunction: {
+  			'out-expo': 'cubic-bezier(0.16, 1, 0.3, 1)',
+  		},
   	}
   },
   plugins: [require("tailwindcss-animate")],

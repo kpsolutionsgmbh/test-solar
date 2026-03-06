@@ -4,8 +4,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Dealroom } from '@/types/database';
 import {
   Eye,
@@ -14,14 +12,15 @@ import {
   FileX,
   PlusCircle,
   Search,
+  Building2,
 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string; dotColor: string }> = {
-  draft: { label: 'Entwurf', color: 'bg-amber-100 text-amber-700', dotColor: 'bg-amber-400' },
-  published: { label: 'Live', color: 'bg-emerald-100 text-emerald-700', dotColor: 'bg-emerald-400' },
-  signed: { label: 'Signiert', color: 'bg-blue-100 text-blue-700', dotColor: 'bg-blue-400' },
-  inactive: { label: 'Inaktiv', color: 'bg-orange-100 text-orange-700', dotColor: 'bg-orange-400' },
-  archived: { label: 'Archiviert', color: 'bg-gray-100 text-gray-500', dotColor: 'bg-gray-400' },
+  draft: { label: 'Entwurf', color: 'bg-[#fafafa] text-[#6b7280] border-[#e5e7eb]', dotColor: 'bg-[#6b7280]' },
+  published: { label: 'Live', color: 'bg-emerald-50 text-emerald-700 border-emerald-200', dotColor: 'bg-emerald-500' },
+  signed: { label: 'Signiert', color: 'bg-[#e7eef1] text-[#11485e] border-[#cfdde3]', dotColor: 'bg-[#11485e]' },
+  inactive: { label: 'Inaktiv', color: 'bg-amber-50 text-amber-700 border-amber-200', dotColor: 'bg-amber-500' },
+  archived: { label: 'Archiviert', color: 'bg-[#fafafa] text-[#6b7280] border-[#e5e7eb]', dotColor: 'bg-[#6b7280]' },
 };
 
 const statusFilterOptions = [
@@ -70,21 +69,23 @@ export function DealroomList({ dealrooms, viewCounts }: Props) {
 
   if (dealrooms.length === 0) {
     return (
-      <Card className="border-dashed border-2">
-        <CardContent className="flex flex-col items-center justify-center py-20">
-          <div className="h-16 w-16 rounded-2xl bg-[#11485e]/8 flex items-center justify-center mb-5">
-            <FileX className="h-8 w-8 text-[#11485e]/50" />
-          </div>
-          <p className="text-[#6b7280] mb-1 font-medium">Noch keine Dealrooms vorhanden</p>
-          <p className="text-sm text-[#9ca3af] mb-6">Erstellen Sie Ihren ersten personalisierten Dealroom</p>
-          <Button asChild>
-            <Link href="/dashboard/new">
-              <PlusCircle className="h-4 w-4 mr-2" />
-              Ersten Dealroom erstellen
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-[#e5e7eb] rounded-xl">
+        <div className="h-12 w-12 rounded-xl bg-[#fafafa] flex items-center justify-center mb-4">
+          <FileX size={20} className="text-[#6b7280]" />
+        </div>
+        <h3 className="text-[15px] font-semibold text-[#1a1a1a] mb-1">
+          Noch keine Dealrooms
+        </h3>
+        <p className="text-[13px] text-[#6b7280] max-w-[300px] mb-5">
+          Erstellen Sie Ihren ersten personalisierten Dealroom
+        </p>
+        <Button asChild size="sm">
+          <Link href="/dashboard/new">
+            <PlusCircle size={14} className="mr-1.5" />
+            Ersten Dealroom erstellen
+          </Link>
+        </Button>
+      </div>
     );
   }
 
@@ -106,17 +107,17 @@ export function DealroomList({ dealrooms, viewCounts }: Props) {
             <button
               key={opt.value}
               onClick={() => setStatusFilter(opt.value)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-md text-[11px] font-semibold transition-colors duration-75 ${
                 statusFilter === opt.value
                   ? 'bg-[#11485e] text-white'
-                  : 'text-[#6b7280] hover:bg-[#f0f0f0]'
+                  : 'text-[#6b7280] hover:bg-[#fafafa] hover:text-[#1a1a1a]'
               }`}
             >
               {opt.label}
             </button>
           ))}
         </div>
-        <span className="text-xs text-[#9ca3af] ml-auto shrink-0">
+        <span className="text-[11px] text-[#9ca3af] ml-auto shrink-0">
           {filtered.length} von {dealrooms.length}
         </span>
       </div>
@@ -125,52 +126,56 @@ export function DealroomList({ dealrooms, viewCounts }: Props) {
       {filtered.length === 0 ? (
         <div className="text-center py-12 text-[#6b7280]">
           <Search className="h-8 w-8 mx-auto mb-3 text-[#d1d5db]" />
-          <p className="font-medium">Keine Dealrooms gefunden</p>
-          <p className="text-sm text-[#9ca3af] mt-1">Passen Sie Ihre Suche oder Filter an</p>
+          <p className="text-[15px] font-semibold text-[#1a1a1a]">Keine Dealrooms gefunden</p>
+          <p className="text-[13px] text-[#6b7280] mt-1">Passen Sie Ihre Suche oder Filter an</p>
         </div>
       ) : (
         <div className="space-y-3">
-          {filtered.map((dealroom) => {
+          {filtered.map((dealroom, i) => {
             const config = statusConfig[dealroom.status] || statusConfig.draft;
             const views = viewCounts[dealroom.id] || 0;
             return (
               <Link
                 key={dealroom.id}
                 href={`/dashboard/dealrooms/${dealroom.id}`}
+                className="block"
+                style={{ animationDelay: i < 10 ? `${i * 50}ms` : '0ms', animationFillMode: 'both' }}
               >
-                <Card className="hover:shadow-md transition-all cursor-pointer group border-[#e5e7eb]/80 hover:border-[#11485e]/20">
-                  <CardContent className="flex items-center justify-between py-4 px-5">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2.5">
-                        <h3 className="font-semibold text-[#1a1a1a] truncate">
-                          {dealroom.client_company}
-                        </h3>
-                        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium ${config.color}`}>
-                          <span className={`h-1.5 w-1.5 rounded-full ${config.dotColor}`} />
-                          {config.label}
-                        </span>
-                        {dealroom.language === 'en' && (
-                          <Badge variant="outline" className="text-[10px] px-1.5 py-0">EN</Badge>
-                        )}
+                <div className="group border border-[#e5e7eb] rounded-xl bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-150 hover:border-[#cfdde3] hover:shadow-md">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="h-9 w-9 rounded-lg bg-[#fafafa] flex items-center justify-center shrink-0">
+                        <Building2 size={16} className="text-[#6b7280]" />
                       </div>
-                      <p className="text-sm text-[#6b7280] mt-0.5">
-                        {dealroom.client_name}
-                        {dealroom.client_position && ` – ${dealroom.client_position}`}
-                      </p>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2.5">
+                          <h3 className="text-[14px] font-semibold text-[#1a1a1a] truncate group-hover:text-[#11485e] transition-colors duration-75">
+                            {dealroom.client_company}
+                          </h3>
+                          <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold border shrink-0 ${config.color}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${config.dotColor}`} />
+                            {config.label}
+                          </span>
+                        </div>
+                        <p className="text-[12px] text-[#6b7280] mt-0.5 truncate">
+                          {dealroom.client_name}
+                          {dealroom.client_position && ` – ${dealroom.client_position}`}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-5 text-sm text-[#6b7280] shrink-0 ml-4">
+                    <div className="flex items-center gap-5 text-[13px] text-[#6b7280] shrink-0 ml-4">
                       <div className="flex items-center gap-1.5" title="Interaktionen">
-                        <Eye className="h-3.5 w-3.5" />
+                        <Eye size={14} strokeWidth={1.75} />
                         <span className="tabular-nums">{views}</span>
                       </div>
                       <div className="flex items-center gap-1.5" title="Zuletzt aktualisiert">
-                        <Clock className="h-3.5 w-3.5" />
-                        <span className="text-xs">{formatRelativeTime(dealroom.updated_at)}</span>
+                        <Clock size={14} strokeWidth={1.75} />
+                        <span className="text-[11px]">{formatRelativeTime(dealroom.updated_at)}</span>
                       </div>
-                      <ArrowUpRight className="h-4 w-4 text-[#d1d5db] group-hover:text-[#11485e] transition-colors" />
+                      <ArrowUpRight size={16} strokeWidth={1.75} className="text-[#d1d5db] group-hover:text-[#11485e] transition-colors duration-75" />
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </Link>
             );
           })}

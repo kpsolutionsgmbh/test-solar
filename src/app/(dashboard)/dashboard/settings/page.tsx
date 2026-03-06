@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { AdminUser, TeamMember } from '@/types/database';
-import { Save, Loader2, Upload, PlusCircle, Pencil, Trash2, Users, User2 } from 'lucide-react';
+import { Save, Loader2, Upload, Plus, Pencil, Trash2, Users, User2 } from 'lucide-react';
 import { uploadFile } from '@/lib/upload';
 import { ImageCropper } from '@/components/ui/image-cropper';
 
@@ -298,7 +298,7 @@ export default function SettingsPage() {
               <Dialog open={memberDialogOpen} onOpenChange={(open) => { setMemberDialogOpen(open); if (!open) resetMemberForm(); }}>
                 <DialogTrigger asChild>
                   <Button size="sm">
-                    <PlusCircle className="h-3.5 w-3.5 mr-1.5" />
+                    <Plus className="h-3.5 w-3.5 mr-1.5" />
                     Hinzufügen
                   </Button>
                 </DialogTrigger>
