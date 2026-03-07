@@ -54,6 +54,9 @@ import {
   StickyNote,
   FileStack,
   Mail,
+  FileUp,
+  File,
+  X,
 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string; dotColor: string }> = {
@@ -102,6 +105,10 @@ export default function EditDealroomPage() {
   const [newNote, setNewNote] = useState('');
   const [adminName, setAdminName] = useState('');
 
+  // Documents
+  const [documents, setDocuments] = useState<Array<{id: string; name: string; file_url: string; file_type: string; file_size: number}>>([]);
+  const [uploadingDoc, setUploadingDoc] = useState(false);
+
   // Modals
   const [templateModalOpen, setTemplateModalOpen] = useState(false);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
@@ -111,11 +118,13 @@ export default function EditDealroomPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const [{ data }, { data: members }, { data: adminUser }] = await Promise.all([
+      const [{ data }, { data: members }, { data: adminUser }, { data: docs }] = await Promise.all([
         supabase.from('dealrooms').select('*').eq('id', params.id).single(),
         supabase.from('team_members').select('*').eq('admin_id', user.id).eq('is_active', true).order('name'),
         supabase.from('admin_users').select('name').eq('id', user.id).single(),
+        supabase.from('dealroom_documents').select('*').eq('dealroom_id', params.id).order('sort_order'),
       ]);
+      if (docs) setDocuments(docs);
       if (adminUser?.name) setAdminName(adminUser.name);
 
       if (data) {
@@ -606,6 +615,69 @@ export default function EditDealroomPage() {
               <div className="space-y-1">
                 <Label className="text-xs">PandaDoc Embed-URL</Label>
                 <Input value={pandadocUrl} onChange={(e) => setPandadocUrl(e.target.value)} className="h-9" placeholder="https://..." />
+              </div>
+
+              {/* Documents */}
+              <div className="space-y-2 border-t border-[#e5e7eb] pt-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs flex items-center gap-1">
+                    <FileUp className="h-3 w-3" />
+                    Dokumente
+                  </Label>
+                  <label className="text-xs text-[#11485e] font-medium cursor-pointer hover:underline flex items-center gap-1">
+                    <Upload className="h-3 w-3" />
+                    {uploadingDoc ? 'Lädt...' : 'Hochladen'}
+                    <input
+                      type="file"
+                      multiple
+                      className="hidden"
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg"
+                      disabled={uploadingDoc}
+                      onChange={async (e) => {
+                        if (!e.target.files?.length) return;
+                        setUploadingDoc(true);
+                        const files = Array.from(e.target.files);
+                        for (const file of files) {
+                          const fileUrl = await uploadFile(file, 'documents');
+                          if (fileUrl) {
+                            const { data: doc } = await supabase.from('dealroom_documents').insert({
+                              dealroom_id: params.id,
+                              name: file.name,
+                              file_url: fileUrl,
+                              file_type: file.type || 'application/octet-stream',
+                              file_size: file.size,
+                              sort_order: documents.length,
+                            }).select().single();
+                            if (doc) setDocuments(prev => [...prev, doc]);
+                          }
+                        }
+                        setUploadingDoc(false);
+                        e.target.value = '';
+                        toast({ title: `${files.length} Dokument${files.length !== 1 ? 'e' : ''} hochgeladen` });
+                      }}
+                    />
+                  </label>
+                </div>
+                {documents.length > 0 && (
+                  <div className="space-y-1">
+                    {documents.map((doc) => (
+                      <div key={doc.id} className="flex items-center gap-2 bg-[#fafafa] rounded-lg px-2.5 py-1.5 group">
+                        <File className="h-3.5 w-3.5 text-[#6b7280] shrink-0" />
+                        <span className="text-xs text-[#1a1a1a] truncate flex-1">{doc.name}</span>
+                        <span className="text-[10px] text-[#9ca3af] shrink-0">{(doc.file_size / 1024).toFixed(0)} KB</span>
+                        <button
+                          onClick={async () => {
+                            await supabase.from('dealroom_documents').delete().eq('id', doc.id);
+                            setDocuments(prev => prev.filter(d => d.id !== doc.id));
+                          }}
+                          className="text-[#9ca3af] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

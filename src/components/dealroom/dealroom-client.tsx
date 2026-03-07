@@ -20,6 +20,7 @@ import {
   Play,
   Cookie,
   FileText,
+  Download,
   Lightbulb,
   ChevronDown,
   PenLine,
@@ -249,18 +250,27 @@ function KpiValue({ value, suffix = '' }: { value: number; suffix?: string }) {
 
 // ==================== Main Component ====================
 
+interface DealroomDocument {
+  id: string;
+  name: string;
+  file_url: string;
+  file_type: string;
+  file_size: number | null;
+}
+
 interface Props {
   dealroom: Dealroom;
   content: DealroomContent | null;
   admin: { name: string; avatar_url: string | null; company_name: string; company_logo_url: string | null; brand_color: string } | null;
   assignedMember: TeamMember | null;
   references: Reference[];
+  documents: DealroomDocument[];
   translations: Translations;
 }
 
 type TabKey = 'overview' | 'offer' | 'references';
 
-export function DealroomClient({ dealroom, content, admin, assignedMember, references, translations: tr }: Props) {
+export function DealroomClient({ dealroom, content, admin, assignedMember, references, documents, translations: tr }: Props) {
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
   const [showCookieBanner, setShowCookieBanner] = useState(true);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -1065,7 +1075,38 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
               </div>
             )}
 
-            {/* 2. Awards + Social Proof */}
+            {/* 2. Documents */}
+            {documents.length > 0 && (
+              <div className="fade-in-up mt-8">
+                <h3 className="text-[16px] font-semibold text-[#1a1a1a] mb-4 text-center">Anhänge</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {documents.map((doc) => (
+                    <button
+                      key={doc.id}
+                      onClick={() => {
+                        trackEvent(dealroom.id, 'document_download', { document_id: doc.id, document_name: doc.name });
+                        window.open(doc.file_url, '_blank');
+                      }}
+                      className="group flex flex-col items-center p-5 border border-[#e5e7eb] rounded-xl bg-white hover:border-[#cfdde3] hover:shadow-sm transition-all active:scale-[0.98] text-center w-full"
+                    >
+                      <div className="h-14 w-14 rounded-xl bg-red-50 flex items-center justify-center mb-3 group-hover:bg-red-100 transition-colors">
+                        <FileText size={24} className="text-red-500" />
+                      </div>
+                      <p className="text-sm font-semibold text-[#1a1a1a] truncate w-full">
+                        {doc.name.replace(/\.[^/.]+$/, '')}
+                      </p>
+                      <p className="text-xs text-[#6b7280] mt-1 flex items-center gap-1">
+                        {doc.file_type?.includes('pdf') ? 'PDF' : doc.file_type?.split('/').pop()?.toUpperCase() || 'Datei'}
+                        {doc.file_size ? ` · ${(doc.file_size / 1024 / 1024).toFixed(1)} MB` : ''}
+                        <Download size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 3. Awards + Social Proof */}
             <div className="fade-in-up mt-8 mb-4">
               <div className="flex items-center justify-center gap-5 sm:gap-7 flex-wrap">
                 {/* eslint-disable @next/next/no-img-element */}

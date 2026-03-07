@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       console.log('Would send to:', recipientEmail, 'Subject:', subject);
     } else {
       const { error: sendError } = await resend.emails.send({
-        from: 'Gündesli & Kollegen <noreply@guendesliundkollegen.de>',
+        from: 'Gündesli & Kollegen <onboarding@resend.dev>',
         to: recipientEmail,
         subject,
         html: htmlBody,
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
 
       if (sendError) {
         console.error('Resend error:', sendError);
-        return NextResponse.json({ error: 'Email sending failed' }, { status: 500 });
+        return NextResponse.json({ error: `E-Mail konnte nicht gesendet werden: ${sendError.message}` }, { status: 500 });
       }
     }
 

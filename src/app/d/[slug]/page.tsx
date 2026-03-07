@@ -56,8 +56,8 @@ export default async function DealroomPage({ params }: Props) {
   const dr = dealroom as Dealroom;
   const content = (dr.custom_content || dr.generated_content) as DealroomContent | null;
 
-  // Fetch admin, team member, and references in parallel
-  const [{ data: admin }, { data: member }, { data: refs }] = await Promise.all([
+  // Fetch admin, team member, references, and documents in parallel
+  const [{ data: admin }, { data: member }, { data: refs }, { data: docs }] = await Promise.all([
     supabase
       .from('admin_users')
       .select('name, avatar_url, company_name, company_logo_url, brand_color')
@@ -76,6 +76,11 @@ export default async function DealroomPage({ params }: Props) {
       .eq('admin_id', dr.admin_id)
       .eq('is_active', true)
       .order('sort_order'),
+    supabase
+      .from('dealroom_documents')
+      .select('id, name, file_url, file_type, file_size')
+      .eq('dealroom_id', dr.id)
+      .order('sort_order'),
   ]);
 
   const translations = t(dr.language);
@@ -87,6 +92,7 @@ export default async function DealroomPage({ params }: Props) {
       admin={admin}
       assignedMember={member as TeamMember | null}
       references={(refs as Reference[]) || []}
+      documents={docs || []}
       translations={translations}
     />
   );

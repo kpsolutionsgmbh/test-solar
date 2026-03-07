@@ -148,7 +148,9 @@ export type TrackingEventType =
   | 'pandadoc_sign'
   | 'scroll_depth'
   | 'cta_click'
-  | 'session_end';
+  | 'session_end'
+  | 'document_download'
+  | 'email_sent';
 
 export interface Reference {
   id: string;
