@@ -112,7 +112,9 @@ export default function EditDealroomPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
-  const handleSave = async () => {
+  const handleSave = async (statusOverride?: Dealroom['status']) => {
+    const saveStatus = statusOverride || status;
+    if (statusOverride) setStatus(statusOverride);
     setSaving(true);
     const { error } = await supabase
       .from('dealrooms')
@@ -125,11 +127,11 @@ export default function EditDealroomPage() {
         client_logo_url: clientLogoUrl || null,
         video_url: videoUrl || null,
         pandadoc_embed_url: pandadocUrl || null,
-        status,
+        status: saveStatus,
         language,
         assigned_member_id: assignedMemberId && assignedMemberId !== 'none' ? assignedMemberId : null,
         custom_content: content,
-        published_at: status === 'published' && dealroom?.status !== 'published'
+        published_at: saveStatus === 'published' && dealroom?.status !== 'published'
           ? new Date().toISOString()
           : dealroom?.published_at,
       })
@@ -150,11 +152,11 @@ export default function EditDealroomPage() {
         client_logo_url: clientLogoUrl || null,
         video_url: videoUrl || null,
         pandadoc_embed_url: pandadocUrl || null,
-        status,
+        status: saveStatus,
         language,
         assigned_member_id: assignedMemberId && assignedMemberId !== 'none' ? assignedMemberId : null,
         custom_content: content,
-        published_at: status === 'published' && prev.status !== 'published'
+        published_at: saveStatus === 'published' && prev.status !== 'published'
           ? new Date().toISOString()
           : prev.published_at,
       } : null);
@@ -676,10 +678,7 @@ export default function EditDealroomPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={async () => {
-                setStatus('published');
-                setTimeout(handleSave, 100);
-              }}
+              onClick={() => handleSave('published')}
             >
               Veröffentlichen
             </Button>
@@ -694,7 +693,7 @@ export default function EditDealroomPage() {
               Archivieren
             </Button>
           )}
-          <Button onClick={handleSave} disabled={saving} size="sm">
+          <Button onClick={() => handleSave()} disabled={saving} size="sm">
             {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
             Speichern
           </Button>

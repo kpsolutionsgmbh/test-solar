@@ -220,8 +220,19 @@ Generate the content in English. Respond ONLY with the JSON object.`;
     throw new Error('No text response from Claude');
   }
 
-  const parsed = JSON.parse(textBlock.text) as DealroomContent;
-  return parsed;
+  // Strip markdown code blocks if Claude wraps the JSON
+  let jsonText = textBlock.text.trim();
+  if (jsonText.startsWith('```')) {
+    jsonText = jsonText.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '');
+  }
+
+  try {
+    const parsed = JSON.parse(jsonText) as DealroomContent;
+    return parsed;
+  } catch {
+    console.error('Failed to parse Claude response:', jsonText.substring(0, 200));
+    throw new Error('Invalid JSON from Claude');
+  }
 }
 
 export async function transcribeAudio(audioBase64: string): Promise<string> {

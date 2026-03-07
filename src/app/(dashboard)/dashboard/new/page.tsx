@@ -133,12 +133,13 @@ export default function NewDealroomPage() {
           language,
         }),
       });
-      if (!res.ok) throw new Error('Generation failed');
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Generation failed');
       setGeneratedContent(data.content);
       goNext();
-    } catch {
-      toast({ title: 'Fehler', description: 'Content-Generierung fehlgeschlagen. Bitte versuchen Sie es erneut.', variant: 'destructive' });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Unbekannter Fehler';
+      toast({ title: 'Fehler', description: `Content-Generierung fehlgeschlagen: ${msg}`, variant: 'destructive' });
     } finally {
       setLoading(false);
     }

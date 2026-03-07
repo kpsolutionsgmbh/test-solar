@@ -26,8 +26,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ content });
   } catch (error) {
     console.error('AI generation error:', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Content generation failed' },
+      { error: `Content generation failed: ${message}` },
       { status: 500 }
     );
   }
