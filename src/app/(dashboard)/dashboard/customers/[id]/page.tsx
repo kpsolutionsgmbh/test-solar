@@ -199,7 +199,13 @@ export default function CustomerDetailPage() {
                 </div>
                 <div className="space-y-1.5">
                   <Label>Position</Label>
-                  <Input value={position} onChange={(e) => setPosition(e.target.value)} />
+                  <Select value={position || 'Geschäftsführer'} onValueChange={setPosition}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Geschäftsführer">Geschäftsführer</SelectItem>
+                      <SelectItem value="Angestellter">Angestellter</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">

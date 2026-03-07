@@ -1,5 +1,6 @@
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
+import { Metadata } from 'next';
 import { Dealroom, DealroomContent, Reference, TeamMember } from '@/types/database';
 import { t } from '@/lib/i18n';
 import { DealroomClient } from '@/components/dealroom/dealroom-client';
@@ -8,6 +9,26 @@ export const revalidate = 60;
 
 interface Props {
   params: { slug: string };
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const supabase = createServiceRoleClient();
+  const { data: dealroom } = await supabase
+    .from('dealrooms')
+    .select('generated_content, custom_content, client_company')
+    .eq('slug', params.slug)
+    .single();
+
+  const content = dealroom?.custom_content || dealroom?.generated_content;
+  const title = content?.hero_title || `Angebot für ${dealroom?.client_company || 'Sie'}`;
+
+  return {
+    title: `${title} | Gündesli & Kollegen`,
+    icons: {
+      icon: '/favicon.ico',
+      apple: '/apple-touch-icon.png',
+    },
+  };
 }
 
 export default async function DealroomPage({ params }: Props) {

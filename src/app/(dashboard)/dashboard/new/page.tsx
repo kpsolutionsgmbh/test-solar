@@ -421,12 +421,13 @@ export default function NewDealroomPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="clientPosition">Position</Label>
-                    <Input
-                      id="clientPosition"
-                      value={clientPosition}
-                      onChange={(e) => setClientPosition(e.target.value)}
-                      placeholder="Geschäftsführer"
-                    />
+                    <Select value={clientPosition || 'Geschäftsführer'} onValueChange={setClientPosition}>
+                      <SelectTrigger id="clientPosition"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Geschäftsführer">Geschäftsführer</SelectItem>
+                        <SelectItem value="Angestellter">Angestellter</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="clientEmail">E-Mail</Label>

@@ -28,6 +28,7 @@ import {
   ChevronDown,
   PenLine,
   Rocket,
+  ShieldCheck,
 } from 'lucide-react';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -644,21 +645,27 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                       <h2 className="text-[22px] sm:text-[28px] font-bold text-[#1a1a1a]">{tr.references.title}</h2>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-3xl mx-auto">
-                      {references.slice(0, 2).map((ref) => (
+                      {references.slice(0, 4).map((ref) => (
                         <div key={ref.id} className="bg-white rounded-2xl p-5 sm:p-6 border border-[#e5e7eb] shadow-sm">
-                          <div className="flex items-center gap-3 mb-4">
-                            {ref.logo_url ? (
+                          <div className="flex items-center gap-3 mb-3">
+                            {ref.logo_url && (
                               // eslint-disable-next-line @next/next/no-img-element
                               <img src={ref.logo_url} alt={ref.client_company} className="h-10 object-contain" />
-                            ) : (
-                              <div className="h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold text-sm" style={{ backgroundColor: brandColor }}>
-                                {ref.client_company.charAt(0)}
-                              </div>
                             )}
                             <div>
                               <p className="font-semibold text-[#1a1a1a] text-sm">{ref.client_company}</p>
                               <p className="text-xs text-[#6b7280]">{ref.client_name}</p>
                             </div>
+                          </div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="flex">
+                              {[...Array(5)].map((_, i) => (
+                                <Star key={i} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
+                              ))}
+                            </div>
+                            <span className="text-[10px] font-medium text-emerald-600 flex items-center gap-0.5">
+                              <ShieldCheck className="h-3 w-3" /> Verifiziert
+                            </span>
                           </div>
                           {ref.quote && (
                             <p className="text-[#6b7280] italic text-sm leading-relaxed">
@@ -673,7 +680,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                         </div>
                       ))}
                     </div>
-                    {references.length > 2 && (
+                    {references.length > 4 && (
                       <div className="text-center mt-6">
                         <button
                           onClick={() => switchTab('references')}
@@ -1012,9 +1019,6 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                           <img src={ref.image_url} alt={ref.client_company} className="w-full h-full object-cover min-h-[240px] sm:min-h-[280px]" />
                         ) : (
                           <div className="flex flex-col items-center justify-center p-8 text-center">
-                            <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-full flex items-center justify-center text-white text-2xl sm:text-3xl font-bold mb-3" style={{ backgroundColor: brandColor }}>
-                              {ref.client_company.charAt(0)}
-                            </div>
                             <p className="text-base sm:text-lg font-semibold text-[#1a1a1a]">{ref.client_company}</p>
                           </div>
                         )}
@@ -1022,19 +1026,25 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
 
                       {/* Right: Details */}
                       <div className="p-5 sm:p-6 lg:p-8 flex flex-col justify-center">
-                        <div className="flex items-center gap-3 mb-4">
-                          {ref.logo_url ? (
+                        <div className="flex items-center gap-3 mb-3">
+                          {ref.logo_url && (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={ref.logo_url} alt={ref.client_company} className="h-10 object-contain" />
-                          ) : (
-                            <div className="h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold text-sm" style={{ backgroundColor: brandColor }}>
-                              {ref.client_company.charAt(0)}
-                            </div>
                           )}
                           <div>
                             <p className="font-bold text-[#1a1a1a]">{ref.client_company}</p>
                             <p className="text-sm text-[#6b7280]">{ref.client_name}</p>
                           </div>
+                        </div>
+                        <div className="flex items-center gap-2 mb-4">
+                          <div className="flex">
+                            {[...Array(5)].map((_, i) => (
+                              <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
+                            ))}
+                          </div>
+                          <span className="text-xs font-medium text-emerald-600 flex items-center gap-0.5">
+                            <ShieldCheck className="h-3.5 w-3.5" /> Verifiziert
+                          </span>
                         </div>
 
                         {ref.quote && (

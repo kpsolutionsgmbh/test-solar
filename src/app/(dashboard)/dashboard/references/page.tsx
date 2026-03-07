@@ -21,6 +21,23 @@ import { useToast } from '@/hooks/use-toast';
 import { Reference } from '@/types/database';
 import { Plus, Pencil, Trash2, Star, GripVertical, Upload, Image, Video, Play } from 'lucide-react';
 import { uploadFile } from '@/lib/upload';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 type MediaType = 'none' | 'image' | 'video';
 
@@ -30,6 +47,86 @@ function getVideoThumbnail(url: string): string | null {
   const loomMatch = url.match(/loom\.com\/share\/([a-zA-Z0-9]+)/);
   if (loomMatch) return `https://cdn.loom.com/sessions/thumbnails/${loomMatch[1]}-with-play.gif`;
   return null;
+}
+
+function SortableReferenceItem({
+  reference,
+  onEdit,
+  onDelete,
+  onToggleActive,
+}: {
+  reference: Reference;
+  onEdit: (ref: Reference) => void;
+  onDelete: (id: string) => void;
+  onToggleActive: (ref: Reference) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: reference.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : undefined,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      <Card className={`transition-opacity ${!reference.is_active ? 'opacity-50' : ''} ${isDragging ? 'shadow-lg ring-2 ring-[#11485e]/20' : ''}`}>
+        <CardContent className="flex items-center justify-between py-4 px-5">
+          <div className="flex items-center gap-4 min-w-0">
+            <button
+              {...attributes}
+              {...listeners}
+              className="cursor-grab active:cursor-grabbing text-[#d1d5db] hover:text-[#11485e] shrink-0 touch-none"
+            >
+              <GripVertical className="h-4 w-4" />
+            </button>
+            {reference.image_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={reference.image_url} alt="" className="h-10 w-10 rounded object-cover shrink-0" />
+            ) : (
+              <div className="h-10 w-10 rounded bg-[#11485e]/8 flex items-center justify-center text-[#11485e] font-semibold text-sm shrink-0">
+                {reference.client_company.charAt(0)}
+              </div>
+            )}
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h3 className="font-medium text-[#1a1a1a]">{reference.client_company}</h3>
+                {reference.result_summary && (
+                  <Badge variant="outline" className="text-[10px]">{reference.result_summary}</Badge>
+                )}
+                {reference.video_url && (
+                  <Video className="h-3.5 w-3.5 text-[#6b7280]" />
+                )}
+              </div>
+              <p className="text-sm text-[#6b7280] truncate">
+                {reference.client_name}
+                {reference.quote && ` - "${reference.quote.substring(0, 60)}..."`}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Switch
+              checked={reference.is_active}
+              onCheckedChange={() => onToggleActive(reference)}
+            />
+            <Button variant="ghost" size="sm" onClick={() => onEdit(reference)}>
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => onDelete(reference.id)} className="text-destructive">
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
 
 export default function ReferencesPage() {
@@ -49,6 +146,12 @@ export default function ReferencesPage() {
   const [videoUrl, setVideoUrl] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [mediaType, setMediaType] = useState<MediaType>('none');
+
+  // DnD sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   const fetchRefs = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -140,6 +243,23 @@ export default function ReferencesPage() {
   const toggleActive = async (ref: Reference) => {
     await supabase.from('references').update({ is_active: !ref.is_active }).eq('id', ref.id);
     fetchRefs();
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = references.findIndex((r) => r.id === active.id);
+    const newIndex = references.findIndex((r) => r.id === over.id);
+    const newOrder = arrayMove(references, oldIndex, newIndex);
+    setReferences(newOrder);
+
+    // Batch update sort_order in Supabase
+    await Promise.all(
+      newOrder.map((ref, index) =>
+        supabase.from('references').update({ sort_order: index }).eq('id', ref.id)
+      )
+    );
   };
 
   return (
@@ -294,51 +414,28 @@ export default function ReferencesPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-2">
-          {references.map((ref) => (
-            <Card key={ref.id} className={`transition-opacity ${!ref.is_active ? 'opacity-50' : ''}`}>
-              <CardContent className="flex items-center justify-between py-4 px-5">
-                <div className="flex items-center gap-4 min-w-0">
-                  <GripVertical className="h-4 w-4 text-[#d1d5db] cursor-grab shrink-0" />
-                  {ref.image_url ? (
-                    <img src={ref.image_url} alt="" className="h-10 w-10 rounded object-cover shrink-0" />
-                  ) : (
-                    <div className="h-10 w-10 rounded bg-[#11485e]/8 flex items-center justify-center text-[#11485e] font-semibold text-sm shrink-0">
-                      {ref.client_company.charAt(0)}
-                    </div>
-                  )}
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-medium text-[#1a1a1a]">{ref.client_company}</h3>
-                      {ref.result_summary && (
-                        <Badge variant="outline" className="text-[10px]">{ref.result_summary}</Badge>
-                      )}
-                      {ref.video_url && (
-                        <Video className="h-3.5 w-3.5 text-[#6b7280]" />
-                      )}
-                    </div>
-                    <p className="text-sm text-[#6b7280] truncate">
-                      {ref.client_name}
-                      {ref.quote && ` - "${ref.quote.substring(0, 60)}..."`}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Switch
-                    checked={ref.is_active}
-                    onCheckedChange={() => toggleActive(ref)}
-                  />
-                  <Button variant="ghost" size="sm" onClick={() => openEdit(ref)}>
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button variant="ghost" size="sm" onClick={() => setDeleteConfirmId(ref.id)} className="text-destructive">
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={references.map((r) => r.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="space-y-2">
+              {references.map((ref) => (
+                <SortableReferenceItem
+                  key={ref.id}
+                  reference={ref}
+                  onEdit={openEdit}
+                  onDelete={(id) => setDeleteConfirmId(id)}
+                  onToggleActive={toggleActive}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
       <ConfirmDialog
         open={!!deleteConfirmId}
