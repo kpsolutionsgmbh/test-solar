@@ -210,10 +210,15 @@ Generate the content in English. Respond ONLY with the JSON object.`;
 
   const message = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 3000,
+    max_tokens: 8000,
     system: `${systemPrompt}\n\n${JSON_SCHEMA}`,
     messages: [{ role: 'user', content: userPrompt }],
   });
+
+  if (message.stop_reason === 'max_tokens') {
+    console.error('Claude response truncated (max_tokens reached)');
+    throw new Error('Response truncated – content too long');
+  }
 
   const textBlock = message.content.find((b) => b.type === 'text');
   if (!textBlock || textBlock.type !== 'text') {
@@ -230,7 +235,7 @@ Generate the content in English. Respond ONLY with the JSON object.`;
     const parsed = JSON.parse(jsonText) as DealroomContent;
     return parsed;
   } catch {
-    console.error('Failed to parse Claude response:', jsonText.substring(0, 200));
+    console.error('Failed to parse Claude response:', jsonText.substring(0, 500));
     throw new Error('Invalid JSON from Claude');
   }
 }
