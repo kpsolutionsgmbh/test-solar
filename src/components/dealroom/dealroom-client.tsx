@@ -901,6 +901,18 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
               </div>
             )}
 
+            {/* 2. Awards + Social Proof */}
+            <div className="fade-in-up mt-8">
+              <div className="flex items-center justify-center gap-6 sm:gap-8 flex-wrap">
+                {/* eslint-disable @next/next/no-img-element */}
+                <img src="/images/awards/disq-rating.jpg" alt="DISQ Preisträger – Versicherungsprodukt des Jahres" className="h-20 sm:h-24 object-contain" />
+                <img src="/images/awards/focus-money.webp" alt="Focus Money – Fairster KFZ-Service Versicherer" className="h-20 sm:h-24 object-contain" />
+                <img src="/images/awards/stiftung-warentest.webp" alt="Stiftung Warentest – Sehr Gut" className="h-20 sm:h-24 object-contain" />
+                {/* eslint-enable @next/next/no-img-element */}
+              </div>
+              <SocialProof />
+            </div>
+
             {/* 3. Contact card with avatar */}
             {contact && (
               <div className="fade-in-up mt-10">
