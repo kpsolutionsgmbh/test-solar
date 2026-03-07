@@ -79,6 +79,11 @@ export interface DealroomContent {
     description: string;
     customer_action?: string;
   }>;
+  concrete_benefits?: Array<{
+    value: string;
+    label: string;
+    detail?: string;
+  }>;
   guarantee_title?: string;
   guarantee_text: string;
   cta_text: string;

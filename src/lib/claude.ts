@@ -51,6 +51,8 @@ COPYWRITING-REGELN:
 
 10. KÜRZE über ALLES: Jeder Text der kürzer sein kann, MUSS kürzer sein. Keine Füllwörter, keine Wiederholungen.
 
+11. KONKRETE ZAHLEN (concrete_benefits): Generiere 3 greifbare Zahlen/KPIs die dem Kunden zeigen was er konkret bekommt. Große Zahlen oben (z.B. "€47.000", "32%", "€0"), kurzes Label, optionales Detail. Wenn keine exakten Zahlen möglich sind, nutze qualitative Benefits mit konkreten Zeitangaben ("In 30 Min.", "Ab Tag 1", "0 Eigenaufwand").
+
 Konversions-Psychologie: Problem erkennen → Schmerz verstärken → Lösung aufzeigen → Beweis liefern → Handlung auslösen.
 
 Du MUSST exakt dieses JSON-Schema als Antwort liefern (ohne Markdown-Code-Blocks, nur reines JSON):`;
@@ -87,6 +89,8 @@ COPYWRITING RULES:
 9. SPECIFIC over VAGUE: "in 30 minutes" not "quickly", "no hidden costs" not "affordable".
 
 10. BREVITY above all: Every text that can be shorter MUST be shorter.
+
+11. CONCRETE BENEFITS (concrete_benefits): Generate 3 tangible numbers/KPIs showing the client what they concretely get. Large numbers on top (e.g. "€47,000", "32%", "€0"), short label, optional detail. If exact numbers aren't possible, use qualitative benefits with concrete timeframes ("In 30 min", "From day 1", "0 effort").
 
 Conversion psychology: Identify problem → Amplify pain → Present solution → Provide proof → Drive action.
 
@@ -130,6 +134,23 @@ const JSON_SCHEMA = `{
       "effort": "30 Min. Aufwand für Sie",
       "description": "WE-language: What we do for you",
       "customer_action": "The only thing you do: [minimal action]"
+    }
+  ],
+  "concrete_benefits": [
+    {
+      "value": "€47.000",
+      "label": "Concrete benefit label (short)",
+      "detail": "Brief explanation with context"
+    },
+    {
+      "value": "32%",
+      "label": "Second benefit label",
+      "detail": "Brief context"
+    },
+    {
+      "value": "€0",
+      "label": "Third benefit (e.g. cost of consultation)",
+      "detail": "Unverbindlich und ohne Verpflichtung"
     }
   ],
   "guarantee_title": "Unser Versprechen an Sie",
