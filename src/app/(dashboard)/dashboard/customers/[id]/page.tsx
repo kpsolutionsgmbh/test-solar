@@ -20,8 +20,9 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useDebouncedCallback } from '@/hooks/use-debounce';
-import { Customer, Dealroom } from '@/types/database';
-import { ArrowLeft, Phone, Mail, MapPin, Plus, Loader2, Check, Eye } from 'lucide-react';
+import { Customer, Dealroom, TeamMember } from '@/types/database';
+import { ArrowLeft, Phone, Mail, MapPin, Plus, Loader2, Check, Eye, Users, Upload, ImageIcon } from 'lucide-react';
+import { uploadFile } from '@/lib/upload';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 const statusLabels: Record<string, { label: string; color: string }> = {
@@ -40,6 +41,7 @@ export default function CustomerDetailPage() {
 
   const [customer, setCustomer] = useState<Customer | null>(null);
   const [dealrooms, setDealrooms] = useState<Dealroom[]>([]);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -55,11 +57,15 @@ export default function CustomerDetailPage() {
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
   const [notes, setNotes] = useState('');
+  const [logoUrl, setLogoUrl] = useState('');
+  const [assignedMemberId, setAssignedMemberId] = useState('');
 
   const fetchData = useCallback(async () => {
-    const [{ data: c }, { data: d }] = await Promise.all([
+    const { data: { user } } = await supabase.auth.getUser();
+    const [{ data: c }, { data: d }, { data: members }] = await Promise.all([
       supabase.from('customers').select('*').eq('id', params.id).single(),
       supabase.from('dealrooms').select('*').eq('customer_id', params.id).order('created_at', { ascending: false }),
+      supabase.from('team_members').select('*').eq('admin_id', user?.id || '').eq('is_active', true).order('name'),
     ]);
 
     if (c) {
@@ -74,7 +80,10 @@ export default function CustomerDetailPage() {
       setPhone(cust.phone || '');
       setAddress(cust.address || '');
       setNotes(cust.notes || '');
+      setLogoUrl(cust.logo_url || '');
+      setAssignedMemberId(cust.assigned_member_id || '');
     }
+    setTeamMembers((members as TeamMember[]) || []);
     setDealrooms((d as Dealroom[]) || []);
     setLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -95,6 +104,8 @@ export default function CustomerDetailPage() {
         email: email || null,
         phone: phone || null,
         address: address || null,
+        logo_url: logoUrl || null,
+        assigned_member_id: assignedMemberId && assignedMemberId !== 'none' ? assignedMemberId : null,
         updated_at: new Date().toISOString(),
       })
       .eq('id', params.id);
@@ -104,7 +115,7 @@ export default function CustomerDetailPage() {
     } else {
       setSaveStatus('saved');
       setEditing(false);
-      setCustomer(prev => prev ? { ...prev, salutation, first_name: firstName, last_name: lastName, company, position: position || null, email: email || null, phone: phone || null, address: address || null } : null);
+      setCustomer(prev => prev ? { ...prev, salutation, first_name: firstName, last_name: lastName, company, position: position || null, email: email || null, phone: phone || null, address: address || null, logo_url: logoUrl || null, assigned_member_id: assignedMemberId && assignedMemberId !== 'none' ? assignedMemberId : null } : null);
     }
   };
 
@@ -205,6 +216,66 @@ export default function CustomerDetailPage() {
                 <Label>Adresse</Label>
                 <Input value={address} onChange={(e) => setAddress(e.target.value)} />
               </div>
+
+              <div className="space-y-1.5">
+                <Label className="flex items-center gap-1.5">
+                  <ImageIcon className="h-3.5 w-3.5" />
+                  Kundenlogo
+                </Label>
+                <div className="flex items-center gap-3">
+                  {logoUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={logoUrl} alt="Logo" className="h-10 object-contain rounded" />
+                  )}
+                  <label className="cursor-pointer">
+                    <Button variant="outline" size="sm" asChild>
+                      <span>
+                        <Upload className="h-3.5 w-3.5 mr-1" />
+                        {logoUrl ? 'Ändern' : 'Logo hochladen'}
+                      </span>
+                    </Button>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const url = await uploadFile(file, 'logos');
+                        if (url) setLogoUrl(url);
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+                  {logoUrl && (
+                    <Button variant="ghost" size="sm" onClick={() => setLogoUrl('')} className="text-xs text-red-500">
+                      Entfernen
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {teamMembers.length > 0 && (
+                <div className="space-y-1.5">
+                  <Label className="flex items-center gap-1.5">
+                    <Users className="h-3.5 w-3.5" />
+                    Zuständiger Ansprechpartner
+                  </Label>
+                  <Select value={assignedMemberId || 'none'} onValueChange={setAssignedMemberId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Ansprechpartner wählen..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Kein Ansprechpartner</SelectItem>
+                      {teamMembers.map((m) => (
+                        <SelectItem key={m.id} value={m.id}>
+                          {m.name}{m.position ? ` – ${m.position}` : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
               <div className="flex gap-2 pt-2">
                 <Button onClick={handleSave} disabled={saveStatus === 'saving'}>
                   {saveStatus === 'saving' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Check className="h-4 w-4 mr-2" />}
@@ -246,6 +317,14 @@ export default function CustomerDetailPage() {
                         <MapPin className="h-3.5 w-3.5" /> {customer.address}
                       </span>
                     )}
+                    {customer.assigned_member_id && (() => {
+                      const member = teamMembers.find(m => m.id === customer.assigned_member_id);
+                      return member ? (
+                        <span className="flex items-center gap-1">
+                          <Users className="h-3.5 w-3.5" /> {member.name}
+                        </span>
+                      ) : null;
+                    })()}
                   </div>
                 </div>
               </div>

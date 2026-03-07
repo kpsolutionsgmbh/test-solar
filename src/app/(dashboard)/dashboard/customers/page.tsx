@@ -21,10 +21,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Customer } from '@/types/database';
-import { Plus, Search, Building2, ArrowRight } from 'lucide-react';
+import { Customer, TeamMember } from '@/types/database';
+import { Plus, Search, Building2, ArrowRight, Upload, ImageIcon, Users } from 'lucide-react';
 import Link from 'next/link';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { uploadFile } from '@/lib/upload';
 
 export default function CustomersPage() {
   const supabase = createClient();
@@ -38,6 +40,7 @@ export default function CustomersPage() {
 
   // Stats per customer
   const [dealroomCounts, setDealroomCounts] = useState<Record<string, { total: number; signed: number }>>({});
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
 
   // Form
   const [salutation, setSalutation] = useState<'Herr' | 'Frau'>('Herr');
@@ -48,25 +51,22 @@ export default function CustomersPage() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
+  const [logoUrl, setLogoUrl] = useState('');
+  const [assignedMemberId, setAssignedMemberId] = useState('');
+  const [formNotes, setFormNotes] = useState('');
 
   const fetchCustomers = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { data } = await supabase
-      .from('customers')
-      .select('*')
-      .eq('admin_id', user.id)
-      .order('company');
+    const [{ data }, { data: dealrooms }, { data: members }] = await Promise.all([
+      supabase.from('customers').select('*').eq('admin_id', user.id).order('company'),
+      supabase.from('dealrooms').select('customer_id, status').eq('admin_id', user.id).not('customer_id', 'is', null),
+      supabase.from('team_members').select('*').eq('admin_id', user.id).eq('is_active', true).order('name'),
+    ]);
 
     setCustomers((data as Customer[]) || []);
-
-    // Fetch dealroom counts
-    const { data: dealrooms } = await supabase
-      .from('dealrooms')
-      .select('customer_id, status')
-      .eq('admin_id', user.id)
-      .not('customer_id', 'is', null);
+    setTeamMembers((members as TeamMember[]) || []);
 
     const counts: Record<string, { total: number; signed: number }> = {};
     dealrooms?.forEach((d: { customer_id: string; status: string }) => {
@@ -89,6 +89,9 @@ export default function CustomersPage() {
     setEmail('');
     setPhone('');
     setAddress('');
+    setLogoUrl('');
+    setAssignedMemberId('');
+    setFormNotes('');
   };
 
   const handleSave = async () => {
@@ -105,6 +108,9 @@ export default function CustomersPage() {
       email: email || null,
       phone: phone || null,
       address: address || null,
+      logo_url: logoUrl || null,
+      assigned_member_id: assignedMemberId && assignedMemberId !== 'none' ? assignedMemberId : null,
+      notes: formNotes || null,
     });
 
     if (error) {
@@ -264,6 +270,76 @@ export default function CustomersPage() {
               <Label>Adresse</Label>
               <Input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Straße, PLZ Ort" />
             </div>
+
+            <div className="space-y-1.5">
+              <Label className="flex items-center gap-1.5">
+                <ImageIcon className="h-3.5 w-3.5" />
+                Kundenlogo (optional)
+              </Label>
+              <div className="flex items-center gap-3">
+                {logoUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={logoUrl} alt="Logo" className="h-10 object-contain rounded" />
+                )}
+                <label className="cursor-pointer">
+                  <Button variant="outline" size="sm" asChild>
+                    <span>
+                      <Upload className="h-3.5 w-3.5 mr-1" />
+                      {logoUrl ? 'Ändern' : 'Logo hochladen'}
+                    </span>
+                  </Button>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const url = await uploadFile(file, 'logos');
+                      if (url) setLogoUrl(url);
+                    }}
+                    className="hidden"
+                  />
+                </label>
+                {logoUrl && (
+                  <Button variant="ghost" size="sm" onClick={() => setLogoUrl('')} className="text-xs text-red-500">
+                    Entfernen
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {teamMembers.length > 0 && (
+              <div className="space-y-1.5">
+                <Label className="flex items-center gap-1.5">
+                  <Users className="h-3.5 w-3.5" />
+                  Zuständiger Ansprechpartner
+                </Label>
+                <Select value={assignedMemberId} onValueChange={setAssignedMemberId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Ansprechpartner wählen..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Kein Ansprechpartner</SelectItem>
+                    {teamMembers.map((m) => (
+                      <SelectItem key={m.id} value={m.id}>
+                        {m.name}{m.position ? ` – ${m.position}` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <Label>Notizen (optional)</Label>
+              <Textarea
+                value={formNotes}
+                onChange={(e) => setFormNotes(e.target.value)}
+                placeholder="Interne Notizen zu diesem Kunden..."
+                rows={3}
+              />
+            </div>
+
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>
                 Abbrechen

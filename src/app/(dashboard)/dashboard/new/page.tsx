@@ -68,6 +68,9 @@ export default function NewDealroomPage() {
   const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
 
   // Form state
+  const [clientSalutation, setClientSalutation] = useState<'Herr' | 'Frau'>('Herr');
+  const [clientFirstName, setClientFirstName] = useState('');
+  const [clientLastName, setClientLastName] = useState('');
   const [clientName, setClientName] = useState('');
   const [clientCompany, setClientCompany] = useState('');
   const [clientPosition, setClientPosition] = useState('');
@@ -100,6 +103,9 @@ export default function NewDealroomPage() {
         if (found) {
           setCustomerSource('existing');
           setSelectedCustomerId(found.id);
+          setClientSalutation(found.salutation);
+          setClientFirstName(found.first_name);
+          setClientLastName(found.last_name);
           setClientName(`${found.first_name} ${found.last_name}`);
           setClientCompany(found.company);
           setClientPosition(found.position || '');
@@ -107,6 +113,9 @@ export default function NewDealroomPage() {
           setClientPhone(found.phone || '');
           setClientAddress(found.address || '');
           setClientLogoUrl(found.logo_url || '');
+          if (found.assigned_member_id) {
+            setAssignedMemberId(found.assigned_member_id);
+          }
         }
       }
     };
@@ -126,6 +135,9 @@ export default function NewDealroomPage() {
     setSelectedCustomerId(customerId);
     const cust = customers.find(c => c.id === customerId);
     if (cust) {
+      setClientSalutation(cust.salutation);
+      setClientFirstName(cust.first_name);
+      setClientLastName(cust.last_name);
       setClientName(`${cust.first_name} ${cust.last_name}`);
       setClientCompany(cust.company);
       setClientPosition(cust.position || '');
@@ -133,6 +145,10 @@ export default function NewDealroomPage() {
       setClientPhone(cust.phone || '');
       setClientAddress(cust.address || '');
       setClientLogoUrl(cust.logo_url || '');
+      // Inherit assigned member from customer (can be overridden)
+      if (cust.assigned_member_id) {
+        setAssignedMemberId(cust.assigned_member_id);
+      }
     }
   };
 
@@ -187,6 +203,37 @@ export default function NewDealroomPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
+      let customerId: string | null = null;
+
+      if (customerSource === 'existing' && selectedCustomerId) {
+        customerId = selectedCustomerId;
+      } else if (customerSource === 'new' && clientFirstName && clientLastName) {
+        // Auto-save new customer to customers table
+        const { data: newCustomer, error: custError } = await supabase
+          .from('customers')
+          .insert({
+            admin_id: user.id,
+            salutation: clientSalutation,
+            first_name: clientFirstName,
+            last_name: clientLastName,
+            company: clientCompany,
+            position: clientPosition || null,
+            email: clientEmail || null,
+            phone: clientPhone || null,
+            address: clientAddress || null,
+            logo_url: clientLogoUrl || null,
+            assigned_member_id: assignedMemberId && assignedMemberId !== 'none' ? assignedMemberId : null,
+          })
+          .select()
+          .single();
+
+        if (custError) {
+          console.error('Customer creation error:', custError);
+        } else if (newCustomer) {
+          customerId = newCustomer.id;
+        }
+      }
+
       const slug = nanoid(16);
       const { error } = await supabase.from('dealrooms').insert({
         admin_id: user.id,
@@ -199,7 +246,7 @@ export default function NewDealroomPage() {
         client_phone: clientPhone || null,
         client_address: clientAddress || null,
         client_logo_url: clientLogoUrl || null,
-        customer_id: customerSource === 'existing' && selectedCustomerId ? selectedCustomerId : null,
+        customer_id: customerId,
         video_url: videoUrl || null,
         pandadoc_embed_url: pandadocUrl || null,
         ai_input_text: inputText || null,
@@ -294,9 +341,10 @@ export default function NewDealroomPage() {
                         setCustomerSource(val);
                         if (val === 'new') {
                           setSelectedCustomerId('');
+                          setClientSalutation('Herr'); setClientFirstName(''); setClientLastName('');
                           setClientName(''); setClientCompany(''); setClientPosition('');
                           setClientEmail(''); setClientPhone(''); setClientAddress('');
-                          setClientLogoUrl('');
+                          setClientLogoUrl(''); setAssignedMemberId('');
                         }
                       }}
                       className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
@@ -325,63 +373,150 @@ export default function NewDealroomPage() {
                 )}
               </div>
             )}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="clientName">Name *</Label>
-                <Input
-                  id="clientName"
-                  value={clientName}
-                  onChange={(e) => setClientName(e.target.value)}
-                  placeholder="Max Mustermann"
-                />
+            {customerSource === 'new' ? (
+              <>
+                <div className="grid grid-cols-[100px_1fr_1fr] gap-4">
+                  <div className="space-y-2">
+                    <Label>Anrede</Label>
+                    <Select value={clientSalutation} onValueChange={(v) => setClientSalutation(v as 'Herr' | 'Frau')}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Herr">Herr</SelectItem>
+                        <SelectItem value="Frau">Frau</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Vorname *</Label>
+                    <Input
+                      value={clientFirstName}
+                      onChange={(e) => {
+                        setClientFirstName(e.target.value);
+                        setClientName(`${e.target.value} ${clientLastName}`.trim());
+                      }}
+                      placeholder="Max"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Nachname *</Label>
+                    <Input
+                      value={clientLastName}
+                      onChange={(e) => {
+                        setClientLastName(e.target.value);
+                        setClientName(`${clientFirstName} ${e.target.value}`.trim());
+                      }}
+                      placeholder="Mustermann"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="clientCompany">Firma *</Label>
+                    <Input
+                      id="clientCompany"
+                      value={clientCompany}
+                      onChange={(e) => setClientCompany(e.target.value)}
+                      placeholder="Musterfirma GmbH"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="clientPosition">Position</Label>
+                    <Input
+                      id="clientPosition"
+                      value={clientPosition}
+                      onChange={(e) => setClientPosition(e.target.value)}
+                      placeholder="Geschäftsführer"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="clientEmail">E-Mail</Label>
+                    <Input
+                      id="clientEmail"
+                      type="email"
+                      value={clientEmail}
+                      onChange={(e) => setClientEmail(e.target.value)}
+                      placeholder="max@musterfirma.de"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="clientPhone">Telefon</Label>
+                    <Input
+                      id="clientPhone"
+                      value={clientPhone}
+                      onChange={(e) => setClientPhone(e.target.value)}
+                      placeholder="+49 ..."
+                    />
+                  </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="clientAddress">Adresse</Label>
+                    <Input
+                      id="clientAddress"
+                      value={clientAddress}
+                      onChange={(e) => setClientAddress(e.target.value)}
+                      placeholder="Straße, PLZ Ort"
+                    />
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="clientName">Name *</Label>
+                  <Input
+                    id="clientName"
+                    value={clientName}
+                    onChange={(e) => setClientName(e.target.value)}
+                    placeholder="Max Mustermann"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="clientCompany">Firma *</Label>
+                  <Input
+                    id="clientCompany"
+                    value={clientCompany}
+                    onChange={(e) => setClientCompany(e.target.value)}
+                    placeholder="Musterfirma GmbH"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="clientPosition">Position</Label>
+                  <Input
+                    id="clientPosition"
+                    value={clientPosition}
+                    onChange={(e) => setClientPosition(e.target.value)}
+                    placeholder="Geschäftsführer"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="clientEmail">E-Mail</Label>
+                  <Input
+                    id="clientEmail"
+                    type="email"
+                    value={clientEmail}
+                    onChange={(e) => setClientEmail(e.target.value)}
+                    placeholder="max@musterfirma.de"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="clientPhone">Telefon</Label>
+                  <Input
+                    id="clientPhone"
+                    value={clientPhone}
+                    onChange={(e) => setClientPhone(e.target.value)}
+                    placeholder="+49 ..."
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="clientAddress">Adresse</Label>
+                  <Input
+                    id="clientAddress"
+                    value={clientAddress}
+                    onChange={(e) => setClientAddress(e.target.value)}
+                    placeholder="Straße, PLZ Ort"
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="clientCompany">Firma *</Label>
-                <Input
-                  id="clientCompany"
-                  value={clientCompany}
-                  onChange={(e) => setClientCompany(e.target.value)}
-                  placeholder="Musterfirma GmbH"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="clientPosition">Position</Label>
-                <Input
-                  id="clientPosition"
-                  value={clientPosition}
-                  onChange={(e) => setClientPosition(e.target.value)}
-                  placeholder="Geschäftsführer"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="clientEmail">E-Mail</Label>
-                <Input
-                  id="clientEmail"
-                  type="email"
-                  value={clientEmail}
-                  onChange={(e) => setClientEmail(e.target.value)}
-                  placeholder="max@musterfirma.de"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="clientPhone">Telefon</Label>
-                <Input
-                  id="clientPhone"
-                  value={clientPhone}
-                  onChange={(e) => setClientPhone(e.target.value)}
-                  placeholder="+49 ..."
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="clientAddress">Adresse</Label>
-                <Input
-                  id="clientAddress"
-                  value={clientAddress}
-                  onChange={(e) => setClientAddress(e.target.value)}
-                  placeholder="Straße, PLZ Ort"
-                />
-              </div>
-            </div>
+            )}
 
             <div className="space-y-2 pt-2">
               <Label className="flex items-center gap-1.5">
@@ -445,7 +580,11 @@ export default function NewDealroomPage() {
             <div className="flex justify-end pt-4">
               <Button
                 onClick={goNext}
-                disabled={!clientName || !clientCompany}
+                disabled={
+                  customerSource === 'new'
+                    ? !clientFirstName || !clientLastName || !clientCompany
+                    : !clientName || !clientCompany
+                }
               >
                 Weiter
                 <ArrowRight className="h-4 w-4 ml-2" />

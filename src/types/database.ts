@@ -60,6 +60,7 @@ export interface Customer {
   address: string | null;
   logo_url: string | null;
   notes: string | null;
+  assigned_member_id: string | null;
   created_at: string;
   updated_at: string;
 }
