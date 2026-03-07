@@ -1,6 +1,14 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { DashboardSidebar } from '@/components/dashboard/sidebar';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: {
+    template: '%s | Dealroom Gündesli & Kollegen',
+    default: 'Dashboard | Dealroom Gündesli & Kollegen',
+  },
+};
 
 export default async function DashboardLayout({
   children,

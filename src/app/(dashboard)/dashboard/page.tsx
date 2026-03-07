@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dealroom } from '@/types/database';
 import { DealroomList } from '@/components/dashboard/dealroom-list';
+import { Metadata } from 'next';
 
+export const metadata: Metadata = { title: 'Dashboard' };
 
 export default async function DashboardPage() {
   const supabase = createServerSupabaseClient();

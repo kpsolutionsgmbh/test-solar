@@ -4,6 +4,9 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dealroom, TrackingEvent } from '@/types/database';
 import { Eye, MousePointerClick, Video, FileSignature, TrendingUp, BarChart3, Users } from 'lucide-react';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = { title: 'Analytics' };
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });

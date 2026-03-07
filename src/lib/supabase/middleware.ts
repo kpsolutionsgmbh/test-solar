@@ -31,8 +31,16 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  // Protect dashboard routes
-  if (pathname.startsWith('/dashboard') && !user) {
+  // Public routes: no auth required
+  if (pathname.startsWith('/d/') || pathname === '/api/track') {
+    return supabaseResponse;
+  }
+
+  // Protect dashboard and API routes
+  if ((pathname.startsWith('/dashboard') || pathname.startsWith('/api/')) && !user) {
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);

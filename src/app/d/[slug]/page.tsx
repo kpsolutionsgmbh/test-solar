@@ -19,11 +19,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .eq('slug', params.slug)
     .single();
 
+  if (!dealroom) {
+    return {
+      title: 'Nicht verfügbar | Gündesli & Kollegen',
+      robots: { index: false, follow: false },
+    };
+  }
+
   const content = dealroom?.custom_content || dealroom?.generated_content;
   const title = content?.hero_title || `Angebot für ${dealroom?.client_company || 'Sie'}`;
 
   return {
     title: `${title} | Gündesli & Kollegen`,
+    robots: { index: false, follow: false },
     icons: {
       icon: '/favicon.ico',
       apple: '/apple-touch-icon.png',
@@ -42,27 +50,6 @@ export default async function DealroomPage({ params }: Props) {
     .single();
 
   if (!dealroom) {
-    const { data: inactiveDr } = await supabase
-      .from('dealrooms')
-      .select('status')
-      .eq('slug', params.slug)
-      .eq('status', 'inactive')
-      .single();
-
-    if (inactiveDr) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-[#fafafa] px-4">
-          <div className="text-center max-w-md">
-            <div className="h-16 w-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-5">
-              <svg className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-            </div>
-            <h1 className="text-xl font-semibold text-gray-900 mb-2">Nicht mehr verfügbar</h1>
-            <p className="text-gray-500">Dieser Dealroom ist nicht mehr aktiv. Bitte kontaktieren Sie Ihren Ansprechpartner für weitere Informationen.</p>
-          </div>
-        </div>
-      );
-    }
-
     notFound();
   }
 
