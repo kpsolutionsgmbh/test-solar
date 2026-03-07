@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
+import { nanoid } from 'nanoid';
 import { createClient } from '@/lib/supabase/client';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useDebouncedCallback } from '@/hooks/use-debounce';
@@ -23,6 +24,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Dealroom, DealroomContent, TeamMember } from '@/types/database';
 import { DynamicIcon } from '@/lib/icon-resolver';
 import { uploadFile } from '@/lib/upload';
+import { SaveTemplateModal } from '@/components/dashboard/save-template-modal';
+import { EmailSendModal } from '@/components/dashboard/email-send-modal';
 import {
   ArrowLeft,
   ExternalLink,
@@ -48,6 +51,9 @@ import {
   Undo2,
   Redo2,
   Check,
+  StickyNote,
+  FileStack,
+  Mail,
 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string; dotColor: string }> = {
@@ -91,6 +97,14 @@ export default function EditDealroomPage() {
   const [assignedMemberId, setAssignedMemberId] = useState('');
   const [clientLogoUrl, setClientLogoUrl] = useState('');
 
+  // Internal Notes
+  const [internalNotes, setInternalNotes] = useState<Array<{id: string; text: string; created_at: string; author: string}>>([]);
+  const [newNote, setNewNote] = useState('');
+
+  // Modals
+  const [templateModalOpen, setTemplateModalOpen] = useState(false);
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+
   useEffect(() => {
     const fetchDealroom = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -115,6 +129,7 @@ export default function EditDealroomPage() {
         setAssignedMemberId(data.assigned_member_id || '');
         setClientLogoUrl(data.client_logo_url || '');
         setContent(data.custom_content || data.generated_content);
+        setInternalNotes(data.internal_notes || []);
       }
       setTeamMembers((members as TeamMember[]) || []);
       setLoading(false);
@@ -122,6 +137,27 @@ export default function EditDealroomPage() {
     fetchDealroom();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
+
+  // Internal Notes functions
+  const addNote = async () => {
+    if (!newNote.trim() || !dealroom) return;
+    const note = {
+      id: crypto.randomUUID(),
+      text: newNote.trim(),
+      created_at: new Date().toISOString(),
+      author: '',
+    };
+    const updated = [note, ...internalNotes];
+    setInternalNotes(updated);
+    setNewNote('');
+    await supabase.from('dealrooms').update({ internal_notes: updated }).eq('id', params.id);
+  };
+
+  const deleteNote = async (noteId: string) => {
+    const updated = internalNotes.filter((n) => n.id !== noteId);
+    setInternalNotes(updated);
+    await supabase.from('dealrooms').update({ internal_notes: updated }).eq('id', params.id);
+  };
 
   const getSnapshot = useCallback((): FormSnapshot => ({
     clientName, clientCompany, clientPosition, clientEmail, clientPhone,
@@ -296,6 +332,41 @@ export default function EditDealroomPage() {
     }
   };
 
+  const handleDuplicate = async () => {
+    if (!dealroom) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const slug = nanoid(16);
+    const { data, error } = await supabase.from('dealrooms').insert({
+      admin_id: user.id,
+      slug,
+      status: 'draft',
+      client_name: '',
+      client_company: '',
+      client_position: null,
+      client_email: null,
+      client_phone: null,
+      client_address: null,
+      client_logo_url: null,
+      customer_id: null,
+      generated_content: dealroom.generated_content,
+      custom_content: content,
+      video_url: dealroom.video_url,
+      pandadoc_embed_url: null,
+      language,
+      assigned_member_id: assignedMemberId && assignedMemberId !== 'none' ? assignedMemberId : null,
+      ai_input_text: dealroom.ai_input_text,
+    }).select().single();
+
+    if (error) {
+      toast({ title: 'Fehler', description: 'Duplizieren fehlgeschlagen.', variant: 'destructive' });
+    } else if (data) {
+      toast({ title: 'Dealroom dupliziert!', description: 'Bitte Kundendaten ausfüllen.' });
+      router.push(`/dashboard/dealrooms/${data.id}`);
+    }
+  };
+
   const handleClientLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -369,6 +440,22 @@ export default function EditDealroomPage() {
               Aktivitäten
             </Link>
           </Button>
+          <Button variant="outline" size="sm" onClick={handleDuplicate}>
+            <Copy className="h-3.5 w-3.5 mr-1.5" />
+            Duplizieren
+          </Button>
+          {content && (
+            <Button variant="outline" size="sm" onClick={() => setTemplateModalOpen(true)}>
+              <FileStack className="h-3.5 w-3.5 mr-1.5" />
+              Als Template
+            </Button>
+          )}
+          {clientEmail && (
+            <Button variant="outline" size="sm" onClick={() => setEmailModalOpen(true)}>
+              <Mail className="h-3.5 w-3.5 mr-1.5" />
+              E-Mail
+            </Button>
+          )}
         </div>
       </div>
 
@@ -517,6 +604,37 @@ export default function EditDealroomPage() {
                 <Label className="text-xs">PandaDoc Embed-URL</Label>
                 <Input value={pandadocUrl} onChange={(e) => setPandadocUrl(e.target.value)} className="h-9" placeholder="https://..." />
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Internal Notes Card */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2 text-[#11485e]">
+                <StickyNote className="h-4 w-4" />
+                Interne Notizen
+                <span className="text-xs font-normal text-[#9ca3af] ml-auto">Nur Admin</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex gap-2">
+                <Input value={newNote} onChange={(e) => setNewNote(e.target.value)} placeholder="Notiz schreiben..." className="h-9" />
+                <Button size="sm" onClick={addNote} disabled={!newNote.trim()}>Hinzufügen</Button>
+              </div>
+              {internalNotes.map(note => (
+                <div key={note.id} className="bg-[#fafafa] rounded-lg p-3 text-sm">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-[#374151]">{note.text}</p>
+                    <button onClick={() => deleteNote(note.id)} className="text-[#9ca3af] hover:text-red-500 shrink-0">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-[#9ca3af] mt-1">
+                    {new Date(note.created_at).toLocaleDateString('de-DE')} {new Date(note.created_at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
+                    {note.author && ` – ${note.author}`}
+                  </p>
+                </div>
+              ))}
             </CardContent>
           </Card>
         </div>
@@ -828,6 +946,26 @@ export default function EditDealroomPage() {
           </div>
         </div>
       </div>
+      {content && (
+        <SaveTemplateModal
+          open={templateModalOpen}
+          onClose={() => setTemplateModalOpen(false)}
+          content={content}
+          videoUrl={videoUrl || null}
+          language={language}
+        />
+      )}
+
+      <EmailSendModal
+        open={emailModalOpen}
+        onClose={() => setEmailModalOpen(false)}
+        dealroomId={dealroom.id}
+        clientName={clientName}
+        clientCompany={clientCompany}
+        clientEmail={clientEmail}
+        contactName={teamMembers.find(m => m.id === assignedMemberId)?.name || 'Gündesli & Kollegen'}
+      />
+
       <ConfirmDialog
         open={deleteConfirmOpen}
         onClose={() => setDeleteConfirmOpen(false)}

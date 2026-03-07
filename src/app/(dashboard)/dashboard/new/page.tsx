@@ -20,6 +20,17 @@ import {
 } from '@/components/ui/select';
 import { useAudioRecorder } from '@/hooks/use-audio-recorder';
 import { Customer, DealroomContent, TeamMember } from '@/types/database';
+
+interface Template {
+  id: string;
+  name: string;
+  description: string | null;
+  product_type: string | null;
+  content: DealroomContent;
+  video_url: string | null;
+  language: string;
+  usage_count: number;
+}
 import { DynamicIcon } from '@/lib/icon-resolver';
 import {
   ArrowLeft,
@@ -35,6 +46,7 @@ import {
   Users,
   Upload,
   ImageIcon,
+  FileStack,
 } from 'lucide-react';
 import { uploadFile } from '@/lib/upload';
 
@@ -61,6 +73,10 @@ export default function NewDealroomPage() {
   const [inputMethod, setInputMethod] = useState<'text' | 'audio'>('text');
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [assignedMemberId, setAssignedMemberId] = useState<string>('');
+
+  // Templates
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
 
   // Customer selection
   const [customerSource, setCustomerSource] = useState<'new' | 'existing'>('new');
@@ -89,12 +105,14 @@ export default function NewDealroomPage() {
     const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const [{ data: members }, { data: custs }] = await Promise.all([
+      const [{ data: members }, { data: custs }, { data: tmpls }] = await Promise.all([
         supabase.from('team_members').select('*').eq('admin_id', user.id).eq('is_active', true).order('name'),
         supabase.from('customers').select('*').eq('admin_id', user.id).order('company'),
+        supabase.from('templates').select('*').eq('admin_id', user.id).eq('is_active', true).order('usage_count', { ascending: false }),
       ]);
       setTeamMembers((members as TeamMember[]) || []);
       setCustomers((custs as Customer[]) || []);
+      setTemplates((tmpls as Template[]) || []);
 
       // Pre-select customer from query param
       const preselectedId = searchParams.get('customer_id');
@@ -166,6 +184,17 @@ export default function NewDealroomPage() {
     if (prevIndex >= 0) {
       setCurrentStep(steps[prevIndex].key);
     }
+  };
+
+  const applyTemplate = (templateId: string) => {
+    const tmpl = templates.find(t => t.id === templateId);
+    if (!tmpl) return;
+    setSelectedTemplateId(templateId);
+    setGeneratedContent(tmpl.content);
+    if (tmpl.video_url) setVideoUrl(tmpl.video_url);
+    if (tmpl.language === 'en') setLanguage('en');
+    // Increment usage count
+    supabase.rpc('increment_template_usage', { template_id: templateId }).then(() => {});
   };
 
   const generateContent = async () => {
@@ -650,6 +679,45 @@ export default function NewDealroomPage() {
             <CardTitle>Kundensituation beschreiben</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* Template Selection */}
+            {templates.length > 0 && (
+              <div className="space-y-2 pb-4 border-b border-[#e5e7eb]">
+                <Label className="flex items-center gap-1.5 text-sm font-medium">
+                  <FileStack className="h-4 w-4" />
+                  Oder Template verwenden
+                </Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {templates.map((tmpl) => (
+                    <button
+                      key={tmpl.id}
+                      onClick={() => {
+                        applyTemplate(tmpl.id);
+                        // Skip to review since we already have content
+                        setCurrentStep('review');
+                      }}
+                      className={`text-left p-3 rounded-lg border transition-colors hover:border-[#11485e] hover:bg-[#11485e]/5 ${
+                        selectedTemplateId === tmpl.id
+                          ? 'border-[#11485e] bg-[#11485e]/5'
+                          : 'border-[#e5e7eb]'
+                      }`}
+                    >
+                      <p className="text-sm font-medium text-[#1a1a1a]">{tmpl.name}</p>
+                      {tmpl.description && (
+                        <p className="text-xs text-[#6b7280] mt-0.5 line-clamp-1">{tmpl.description}</p>
+                      )}
+                      <div className="flex items-center gap-2 mt-1.5">
+                        {tmpl.product_type && (
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#11485e]/10 text-[#11485e] font-medium">{tmpl.product_type}</span>
+                        )}
+                        <span className="text-[10px] text-[#9ca3af]">{tmpl.usage_count}× verwendet</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-[#9ca3af]">Template-Content wird direkt übernommen. Kundendaten werden automatisch angepasst.</p>
+              </div>
+            )}
+
             <div className="flex gap-2 mb-4">
               <Button
                 variant={inputMethod === 'text' ? 'default' : 'outline'}
