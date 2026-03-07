@@ -102,7 +102,8 @@ export default function NewDealroomPage() {
   const [generatedContent, setGeneratedContent] = useState<DealroomContent | null>(null);
   const [videoUrl, setVideoUrl] = useState('');
   const [pandadocUrl, setPandadocUrl] = useState('');
-  const [pendingDocuments, setPendingDocuments] = useState<File[]>([]);
+  const [pendingDocuments, setPendingDocuments] = useState<Array<{name: string; file_url: string; file_type: string; file_size: number}>>([]);
+  const [uploadingDoc, setUploadingDoc] = useState(false);
 
   // Fetch team members and customers on mount
   useEffect(() => {
@@ -291,26 +292,18 @@ export default function NewDealroomPage() {
 
       if (error) throw error;
 
-      // Upload pending documents
+      // Save pending documents (already uploaded to storage)
       if (pendingDocuments.length > 0 && newDealroom?.id) {
-        const docInserts = [];
-        for (let i = 0; i < pendingDocuments.length; i++) {
-          const file = pendingDocuments[i];
-          const fileUrl = await uploadFile(file, 'documents');
-          if (fileUrl) {
-            docInserts.push({
-              dealroom_id: newDealroom.id,
-              name: file.name,
-              file_url: fileUrl,
-              file_type: file.type || 'application/octet-stream',
-              file_size: file.size,
-              sort_order: i,
-            });
-          }
-        }
-        if (docInserts.length > 0) {
-          await supabase.from('dealroom_documents').insert(docInserts);
-        }
+        await supabase.from('dealroom_documents').insert(
+          pendingDocuments.map((doc, i) => ({
+            dealroom_id: newDealroom.id,
+            name: doc.name,
+            file_url: doc.file_url,
+            file_type: doc.file_type,
+            file_size: doc.file_size,
+            sort_order: i,
+          }))
+        );
       }
 
       const dealroomUrl = `${window.location.origin}/d/${slug}`;
@@ -1014,29 +1007,51 @@ export default function NewDealroomPage() {
               <p className="text-xs text-[#6b7280]">
                 PDFs, Broschüren oder andere Dateien für den Kunden zum Download
               </p>
-              <label className="flex items-center justify-center gap-2 border-2 border-dashed border-[#e5e7eb] rounded-lg py-6 cursor-pointer hover:border-[#11485e] hover:bg-[#11485e]/5 transition-colors">
-                <Upload className="h-5 w-5 text-[#6b7280]" />
-                <span className="text-sm text-[#6b7280]">Dateien auswählen</span>
-                <input
-                  type="file"
-                  multiple
-                  className="hidden"
-                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg"
-                  onChange={(e) => {
-                    if (e.target.files) {
-                      setPendingDocuments(prev => [...prev, ...Array.from(e.target.files!)]);
-                    }
-                    e.target.value = '';
-                  }}
-                />
-              </label>
+              {uploadingDoc ? (
+                <div className="flex items-center justify-center gap-2 border-2 border-dashed border-[#11485e] rounded-lg py-6 bg-[#11485e]/5">
+                  <Loader2 className="h-5 w-5 text-[#11485e] animate-spin" />
+                  <span className="text-sm text-[#11485e]">Wird hochgeladen...</span>
+                </div>
+              ) : (
+                <label className="flex items-center justify-center gap-2 border-2 border-dashed border-[#e5e7eb] rounded-lg py-6 cursor-pointer hover:border-[#11485e] hover:bg-[#11485e]/5 transition-colors">
+                  <Upload className="h-5 w-5 text-[#6b7280]" />
+                  <span className="text-sm text-[#6b7280]">{pendingDocuments.length > 0 ? 'Weitere Dateien hinzufügen' : 'Dateien auswählen'}</span>
+                  <input
+                    type="file"
+                    multiple
+                    className="hidden"
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg"
+                    onChange={async (e) => {
+                      if (!e.target.files?.length) return;
+                      setUploadingDoc(true);
+                      const files = Array.from(e.target.files);
+                      for (const file of files) {
+                        const fileUrl = await uploadFile(file, 'documents');
+                        if (fileUrl) {
+                          setPendingDocuments(prev => [...prev, {
+                            name: file.name,
+                            file_url: fileUrl,
+                            file_type: file.type || 'application/octet-stream',
+                            file_size: file.size,
+                          }]);
+                        } else {
+                          toast({ title: 'Fehler', description: `"${file.name}" konnte nicht hochgeladen werden.`, variant: 'destructive' });
+                        }
+                      }
+                      setUploadingDoc(false);
+                      toast({ title: `${files.length} Dokument${files.length !== 1 ? 'e' : ''} hochgeladen` });
+                      e.target.value = '';
+                    }}
+                  />
+                </label>
+              )}
               {pendingDocuments.length > 0 && (
                 <div className="space-y-1.5 mt-2">
-                  {pendingDocuments.map((file, i) => (
+                  {pendingDocuments.map((doc, i) => (
                     <div key={i} className="flex items-center gap-2 bg-[#fafafa] rounded-lg px-3 py-2">
                       <File className="h-4 w-4 text-[#6b7280] shrink-0" />
-                      <span className="text-sm text-[#1a1a1a] truncate flex-1">{file.name}</span>
-                      <span className="text-xs text-[#9ca3af] shrink-0">{(file.size / 1024).toFixed(0)} KB</span>
+                      <span className="text-sm text-[#1a1a1a] truncate flex-1">{doc.name}</span>
+                      <span className="text-xs text-[#9ca3af] shrink-0">{(doc.file_size / 1024).toFixed(0)} KB</span>
                       <button
                         type="button"
                         onClick={() => setPendingDocuments(prev => prev.filter((_, j) => j !== i))}

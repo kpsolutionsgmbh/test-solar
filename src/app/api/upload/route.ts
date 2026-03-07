@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing file or bucket' }, { status: 400 });
     }
 
-    const allowedBuckets = ['logos', 'avatars', 'references'];
+    const allowedBuckets = ['logos', 'avatars', 'references', 'documents'];
     if (!allowedBuckets.includes(bucket)) {
       return NextResponse.json({ error: 'Invalid bucket' }, { status: 400 });
     }

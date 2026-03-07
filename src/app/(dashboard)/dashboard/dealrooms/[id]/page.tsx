@@ -624,8 +624,8 @@ export default function EditDealroomPage() {
                     <FileUp className="h-3 w-3" />
                     Dokumente
                   </Label>
-                  <label className="text-xs text-[#11485e] font-medium cursor-pointer hover:underline flex items-center gap-1">
-                    <Upload className="h-3 w-3" />
+                  <label className={`text-xs text-[#11485e] font-medium flex items-center gap-1 ${uploadingDoc ? 'opacity-50' : 'cursor-pointer hover:underline'}`}>
+                    {uploadingDoc ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
                     {uploadingDoc ? 'Lädt...' : 'Hochladen'}
                     <input
                       type="file"
@@ -637,6 +637,7 @@ export default function EditDealroomPage() {
                         if (!e.target.files?.length) return;
                         setUploadingDoc(true);
                         const files = Array.from(e.target.files);
+                        let uploaded = 0;
                         for (const file of files) {
                           const fileUrl = await uploadFile(file, 'documents');
                           if (fileUrl) {
@@ -646,14 +647,16 @@ export default function EditDealroomPage() {
                               file_url: fileUrl,
                               file_type: file.type || 'application/octet-stream',
                               file_size: file.size,
-                              sort_order: documents.length,
+                              sort_order: documents.length + uploaded,
                             }).select().single();
-                            if (doc) setDocuments(prev => [...prev, doc]);
+                            if (doc) { setDocuments(prev => [...prev, doc]); uploaded++; }
+                          } else {
+                            toast({ title: 'Fehler', description: `"${file.name}" konnte nicht hochgeladen werden.`, variant: 'destructive' });
                           }
                         }
                         setUploadingDoc(false);
                         e.target.value = '';
-                        toast({ title: `${files.length} Dokument${files.length !== 1 ? 'e' : ''} hochgeladen` });
+                        if (uploaded > 0) toast({ title: `${uploaded} Dokument${uploaded !== 1 ? 'e' : ''} hochgeladen` });
                       }}
                     />
                   </label>
