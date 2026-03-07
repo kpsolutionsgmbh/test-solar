@@ -25,6 +25,8 @@ import {
   Zap,
   Timer,
   Cookie,
+  FileText,
+  Lightbulb,
 } from 'lucide-react';
 
 const iconMap: Record<string, React.ElementType> = {
@@ -42,6 +44,7 @@ const iconMap: Record<string, React.ElementType> = {
   zap: Zap,
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getIcon(name: string) {
   return iconMap[name] || AlertTriangle;
 }
@@ -53,6 +56,23 @@ function getVideoEmbedUrl(url: string): string | null {
   const loomMatch = url.match(/loom\.com\/share\/([a-zA-Z0-9]+)/);
   if (loomMatch) return `https://www.loom.com/embed/${loomMatch[1]}`;
   return url;
+}
+
+// Helper to render guarantee text with **bold** markdown
+function renderBoldText(text: string) {
+  const parts = text.split(/\*\*(.*?)\*\*/g);
+  return parts.map((part, i) =>
+    i % 2 === 1 ? <strong key={i} className="text-white font-bold">{part}</strong> : part
+  );
+}
+
+// Helper to get outcome text (supports string or {text, detail} format)
+function getOutcomeText(outcome: string | { text: string; detail?: string }): string {
+  return typeof outcome === 'string' ? outcome : outcome.text;
+}
+
+function getOutcomeDetail(outcome: string | { text: string; detail?: string }): string | undefined {
+  return typeof outcome === 'string' ? undefined : outcome.detail;
 }
 
 interface Props {
@@ -71,7 +91,6 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
   const [showCookieBanner, setShowCookieBanner] = useState(true);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
-  // Contact person: assigned team member or admin fallback
   const contact = assignedMember || (admin ? {
     name: admin.name,
     position: 'Geschäftsführer',
@@ -82,7 +101,6 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
 
   useEffect(() => {
     const cleanup = initDealroomTracking(dealroom.id);
-    // Check cookie consent
     if (typeof window !== 'undefined' && localStorage.getItem('cookie_consent')) {
       setShowCookieBanner(false);
     }
@@ -112,6 +130,11 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [dealroom.id]);
 
+  const handleCta = useCallback((ctaName: string) => {
+    switchTab('offer');
+    trackEvent(dealroom.id, 'cta_click', { cta: ctaName });
+  }, [dealroom.id, switchTab]);
+
   const acceptCookies = () => {
     localStorage.setItem('cookie_consent', 'accepted');
     setShowCookieBanner(false);
@@ -121,6 +144,21 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
   const formattedDate = new Date(dealroom.created_at).toLocaleDateString(
     dealroom.language === 'de' ? 'de-DE' : 'en-US',
     { year: 'numeric', month: 'long', day: 'numeric' }
+  );
+
+  // Reusable CTA block component
+  const CtaBlock = ({ text, derisking, ctaName, className = '' }: { text: string; derisking: string; ctaName: string; className?: string }) => (
+    <div className={`text-center py-8 ${className}`}>
+      <button
+        onClick={() => handleCta(ctaName)}
+        className="inline-flex items-center gap-3 px-10 py-4 rounded-2xl text-white font-semibold text-lg shadow-lg transition-all hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+        style={{ backgroundColor: brandColor }}
+      >
+        {text}
+        <ArrowRight className="h-5 w-5" />
+      </button>
+      <p className="text-sm text-[#9ca3af] mt-3">{derisking}</p>
+    </div>
   );
 
   return (
@@ -204,352 +242,517 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
         </div>
       </header>
 
-      {/* ALL TABS preloaded, only visibility toggled for instant switching */}
       <main>
         {/* ==================== OVERVIEW TAB ==================== */}
         <div className={activeTab === 'overview' ? '' : 'hidden'}>
           {content && (
-            <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 space-y-20">
-              {/* Hero + Contact Person */}
-              <section className="fade-in-up">
-                <div className="text-center mb-8">
-                  {dealroom.client_logo_url && (
-                    <div className="mb-6">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={dealroom.client_logo_url} alt={dealroom.client_company} className="h-14 object-contain mx-auto" />
-                    </div>
-                  )}
-                  <p className="text-sm uppercase tracking-wider font-medium mb-3" style={{ color: brandColor }}>
-                    {tr.hero.preparedFor}
-                  </p>
-                  <h1 className="text-[28px] sm:text-[36px] font-semibold text-[#1a1a1a] mb-4 leading-tight">
-                    {content.hero_title}
-                  </h1>
-                  <p className="text-[16px] text-[#6b7280] max-w-2xl mx-auto leading-relaxed">
-                    {content.hero_subtitle}
-                  </p>
-                  <div className="flex flex-wrap items-center justify-center gap-3 mt-4 text-sm text-[#6b7280]">
-                    <span className="font-medium text-[#1a1a1a]">{dealroom.client_company}</span>
-                    <span className="h-1 w-1 rounded-full bg-[#d1d5db]" />
-                    <span>{dealroom.client_name}</span>
-                    <span className="h-1 w-1 rounded-full bg-[#d1d5db]" />
-                    <span>{tr.hero.date} {formattedDate}</span>
-                  </div>
-                </div>
-
-                {/* Contact Person Card - prominent */}
-                {contact && (
-                  <div className="max-w-lg mx-auto rounded-2xl p-6 border-2 shadow-sm" style={{ borderColor: brandColor + '25', backgroundColor: brandColor + '05' }}>
-                    <p className="text-xs uppercase tracking-wider font-semibold mb-4" style={{ color: brandColor }}>
-                      {tr.hero.by}
-                    </p>
-                    <div className="flex items-center gap-4">
-                      <div
-                        className="h-16 w-16 rounded-full flex items-center justify-center text-white text-xl font-semibold shrink-0 shadow-md"
-                        style={{ backgroundColor: brandColor }}
-                      >
-                        {contact.avatar_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={contact.avatar_url} alt={contact.name} className="h-16 w-16 rounded-full object-cover" />
-                        ) : (
-                          contact.name.charAt(0)
-                        )}
+            <div>
+              {/* ===== 1. HERO SECTION ===== */}
+              <section className="fade-in-up bg-white">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-12 pb-8">
+                  <div className="text-center mb-10">
+                    {dealroom.client_logo_url && (
+                      <div className="mb-6">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={dealroom.client_logo_url} alt={dealroom.client_company} className="h-14 object-contain mx-auto" />
                       </div>
-                      <div>
-                        <p className="text-lg font-semibold text-[#1a1a1a]">
-                          <span className="px-2 py-0.5 rounded-md" style={{ backgroundColor: brandColor + '15', color: brandColor }}>
-                            {contact.name}
-                          </span>
-                        </p>
-                        {contact.position && (
-                          <p className="text-sm text-[#6b7280]">{contact.position}</p>
-                        )}
-                        <div className="flex flex-wrap items-center gap-3 mt-2 text-sm">
-                          {contact.phone && (
-                            <a href={`tel:${contact.phone}`} className="flex items-center gap-1 hover:underline" style={{ color: brandColor }}>
-                              <Phone className="h-3.5 w-3.5" /> {contact.phone}
-                            </a>
+                    )}
+                    <p className="text-sm uppercase tracking-wider font-medium mb-3" style={{ color: brandColor }}>
+                      {tr.hero.preparedFor}
+                    </p>
+                    <h1 className="text-[28px] sm:text-[40px] font-bold text-[#1a1a1a] mb-4 leading-tight max-w-3xl mx-auto">
+                      {content.hero_title}
+                    </h1>
+                    <p className="text-[17px] text-[#6b7280] max-w-2xl mx-auto leading-relaxed">
+                      {content.hero_subtitle}
+                    </p>
+                    <div className="flex flex-wrap items-center justify-center gap-3 mt-4 text-sm text-[#6b7280]">
+                      <span className="font-medium text-[#1a1a1a]">{dealroom.client_company}</span>
+                      <span className="h-1 w-1 rounded-full bg-[#d1d5db]" />
+                      <span>{dealroom.client_name}</span>
+                      <span className="h-1 w-1 rounded-full bg-[#d1d5db]" />
+                      <span>{tr.hero.date} {formattedDate}</span>
+                    </div>
+                  </div>
+
+                  {/* Contact Person Card - PROMINENT */}
+                  {contact && (
+                    <div className="max-w-xl mx-auto rounded-2xl p-6 sm:p-8 border-2 shadow-sm" style={{ borderColor: brandColor + '25', backgroundColor: brandColor + '05' }}>
+                      <p className="text-xs uppercase tracking-wider font-semibold mb-5" style={{ color: brandColor }}>
+                        {tr.hero.by}
+                      </p>
+                      <div className="flex items-center gap-5">
+                        <div className="h-20 w-20 rounded-full flex items-center justify-center text-white text-2xl font-semibold shrink-0 shadow-lg overflow-hidden" style={{ backgroundColor: brandColor }}>
+                          {contact.avatar_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={contact.avatar_url} alt={contact.name} className="h-20 w-20 rounded-full object-cover" />
+                          ) : (
+                            contact.name.charAt(0)
                           )}
-                          {contact.email && (
-                            <a href={`mailto:${contact.email}`} className="flex items-center gap-1 hover:underline" style={{ color: brandColor }}>
-                              <Mail className="h-3.5 w-3.5" /> {contact.email}
-                            </a>
+                        </div>
+                        <div>
+                          <p className="text-xl font-bold text-[#1a1a1a] mb-1">
+                            <span className="px-2.5 py-1 rounded-lg" style={{ backgroundColor: brandColor + '15', color: brandColor }}>
+                              {contact.name}
+                            </span>
+                          </p>
+                          {contact.position && (
+                            <p className="text-sm text-[#6b7280] mb-2">{contact.position}</p>
                           )}
+                          <div className="flex flex-wrap items-center gap-4 text-sm">
+                            {contact.phone && (
+                              <a href={`tel:${contact.phone}`} className="flex items-center gap-1.5 font-medium hover:underline" style={{ color: brandColor }}>
+                                <Phone className="h-4 w-4" /> {contact.phone}
+                              </a>
+                            )}
+                            {contact.email && (
+                              <a href={`mailto:${contact.email}`} className="flex items-center gap-1.5 font-medium hover:underline" style={{ color: brandColor }}>
+                                <Mail className="h-4 w-4" /> {contact.email}
+                              </a>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
+
+                  {/* Hero CTA */}
+                  <CtaBlock
+                    text={content.cta_text || tr.sections.ctaDefault}
+                    derisking={content.cta_derisking || tr.sections.ctaDerisking}
+                    ctaName="hero"
+                  />
+                </div>
               </section>
 
-              {/* Video */}
+              {/* ===== 2. VIDEO SECTION ===== */}
               {dealroom.video_url && (
-                <section className="fade-in-up">
-                  <div className="flex items-center gap-2 mb-5">
-                    <Play className="h-5 w-5" style={{ color: brandColor }} />
-                    <h2 className="text-xl font-semibold text-[#1a1a1a]">
-                      {tr.sections.videoTitle}
-                    </h2>
-                  </div>
-                  <div className="aspect-video rounded-2xl overflow-hidden bg-[#fafafa] border border-[#e5e7eb] shadow-sm">
-                    <iframe
-                      src={getVideoEmbedUrl(dealroom.video_url) || ''}
-                      className="w-full h-full"
-                      allowFullScreen
-                      allow="autoplay; fullscreen"
-                      onLoad={() => trackEvent(dealroom.id, 'video_play')}
-                    />
+                <section className="fade-in-up bg-[#fafafa]">
+                  <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+                    <div className="flex items-center gap-2 mb-5">
+                      <Play className="h-5 w-5" style={{ color: brandColor }} />
+                      <h2 className="text-xl font-semibold text-[#1a1a1a]">
+                        {tr.sections.videoTitle}
+                      </h2>
+                    </div>
+                    <div className="aspect-video rounded-2xl overflow-hidden bg-white border border-[#e5e7eb] shadow-sm">
+                      <iframe
+                        src={getVideoEmbedUrl(dealroom.video_url) || ''}
+                        className="w-full h-full"
+                        allowFullScreen
+                        allow="autoplay; fullscreen"
+                        onLoad={() => trackEvent(dealroom.id, 'video_play')}
+                      />
+                    </div>
                   </div>
                 </section>
               )}
 
-              {/* Situation / At a Glance - VERTICAL layout */}
-              <section className="fade-in-up space-y-8">
-                <div className="text-center">
-                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider text-white mb-4" style={{ backgroundColor: brandColor }}>
-                    <Target className="h-3.5 w-3.5" />
-                    {tr.sections.situationTitle}
+              {/* ===== 3. AUTHORITY BAR - Real Award Logos ===== */}
+              <section className="fade-in-up border-y border-[#e5e7eb] bg-white">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
+                  <p className="text-center text-sm font-medium text-[#9ca3af] uppercase tracking-wider mb-6">
+                    {tr.sections.authorityTitle}
+                  </p>
+                  <div className="flex items-center justify-center gap-8 sm:gap-12 flex-wrap">
+                    {/* eslint-disable @next/next/no-img-element */}
+                    <img src="/images/awards/focus-money.webp" alt="Focus Money" className="h-16 sm:h-20 object-contain opacity-90 hover:opacity-100 transition-opacity" />
+                    <img src="/images/awards/stiftung-warentest.webp" alt="Stiftung Warentest" className="h-16 sm:h-20 object-contain opacity-90 hover:opacity-100 transition-opacity" />
+                    <img src="/images/awards/disq-rating.jpg" alt="DISQ Rating" className="h-16 sm:h-20 object-contain opacity-90 hover:opacity-100 transition-opacity" />
+                    {/* eslint-enable @next/next/no-img-element */}
+                    <div className="flex items-center gap-2 px-4 py-3 rounded-xl border border-[#e5e7eb] bg-[#fafafa]">
+                      <Shield className="h-5 w-5" style={{ color: brandColor }} />
+                      <span className="text-sm font-semibold text-[#4b5563]">SIGNAL IDUNA</span>
+                    </div>
+                    <div className="flex items-center gap-2 px-4 py-3 rounded-xl border border-[#e5e7eb] bg-[#fafafa]">
+                      <Users className="h-5 w-5" style={{ color: brandColor }} />
+                      <span className="text-sm font-semibold text-[#4b5563]">BVK Mitglied</span>
+                    </div>
                   </div>
-                </div>
-
-                {/* Pain points */}
-                <div>
-                  <h3 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: brandColor }}>
-                    {tr.sections.situationSubtitle}
-                  </h3>
-                  <div className="space-y-3">
-                    {content.situation_points.map((point, i) => {
-                      const Icon = getIcon(point.icon);
-                      return (
-                        <div key={i} className="flex items-start gap-4 p-5 rounded-xl border border-[#e5e7eb] bg-white shadow-sm hover:shadow-md transition-shadow">
-                          <div className="h-10 w-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: brandColor + '12' }}>
-                            <Icon className="h-5 w-5" style={{ color: brandColor }} />
-                          </div>
-                          <span className="text-[#1a1a1a] pt-2">{point.text}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Goal */}
-                <div className="p-6 rounded-2xl border-2" style={{ borderColor: brandColor + '30', backgroundColor: brandColor + '06' }}>
-                  <div className="flex items-center gap-2 mb-3">
-                    <Target className="h-5 w-5" style={{ color: brandColor }} />
-                    <h3 className="text-sm font-semibold uppercase tracking-wider" style={{ color: brandColor }}>
-                      {tr.sections.goalTitle}
-                    </h3>
-                  </div>
-                  <p className="text-lg text-[#1a1a1a] font-medium">{content.goal}</p>
-                </div>
-
-                {/* Approach */}
-                <div className="p-6 rounded-2xl bg-[#fafafa] border border-[#e5e7eb]">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Zap className="h-5 w-5" style={{ color: brandColor }} />
-                    <h3 className="text-sm font-semibold uppercase tracking-wider" style={{ color: brandColor }}>
-                      {tr.sections.approachTitle}
-                    </h3>
-                  </div>
-                  <p className="text-[#6b7280] leading-relaxed">{content.approach}</p>
                 </div>
               </section>
 
-              {/* Cost of Inaction */}
-              <section className="fade-in-up">
-                <div className="bg-gradient-to-br from-red-50 via-orange-50 to-amber-50 rounded-2xl p-8 sm:p-10 border border-red-100 shadow-sm">
-                  <div className="flex items-center justify-center gap-2 mb-6">
-                    <Ban className="h-5 w-5 text-red-500" />
-                    <h2 className="text-xl font-semibold text-[#1a1a1a]">
+              {/* ===== 4. PAIN SECTION - Dark Cards ===== */}
+              <section className="fade-in-up bg-white">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-16">
+                  <div className="text-center mb-10">
+                    <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-red-50 mb-4">
+                      <AlertTriangle className="h-6 w-6 text-red-500" />
+                    </div>
+                    <h2 className="text-2xl sm:text-[28px] font-bold text-[#1a1a1a] mb-3">
                       {content.cost_of_inaction.headline}
                     </h2>
+                    <p className="text-[#6b7280] max-w-xl mx-auto">
+                      {tr.sections.situationDescription}
+                    </p>
                   </div>
-                  <div className="space-y-3">
-                    {content.cost_of_inaction.consequences.map((c, i) => {
-                      const Icon = getIcon(c.icon);
-                      return (
-                        <div key={i} className="flex items-start gap-4 bg-white/90 rounded-xl p-5 border border-red-100/50">
-                          <div className="h-10 w-10 rounded-lg bg-red-50 flex items-center justify-center shrink-0">
-                            <Icon className="h-5 w-5 text-red-500" />
-                          </div>
-                          <span className="text-[#1a1a1a] pt-2">{c.text}</span>
+
+                  {/* Dark Pain Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {content.situation_points.map((point, i) => (
+                      <div
+                        key={i}
+                        className="rounded-2xl p-6 border border-[#2a2a3e]/20 shadow-lg"
+                        style={{ backgroundColor: '#0f1a24' }}
+                      >
+                        <div className="text-3xl mb-4">
+                          {point.emoji || '⚠️'}
                         </div>
-                      );
-                    })}
+                        <h3 className="text-white font-bold text-lg mb-2 leading-snug">
+                          {point.heading || point.text}
+                        </h3>
+                        {point.subtext && (
+                          <p className="text-[#94a3b8] text-sm leading-relaxed">
+                            {point.subtext}
+                          </p>
+                        )}
+                        {/* Subtle amber glow at bottom */}
+                        <div className="mt-4 h-0.5 rounded-full bg-gradient-to-r from-amber-500/40 via-red-500/30 to-transparent" />
+                      </div>
+                    ))}
                   </div>
-                </div>
-              </section>
 
-              {/* Outcome Vision */}
-              <section className="fade-in-up">
-                <div className="flex items-center gap-2 mb-8 justify-center">
-                  <CheckCircle2 className="h-5 w-5" style={{ color: brandColor }} />
-                  <h2 className="text-xl font-semibold text-[#1a1a1a]">
-                    {tr.sections.outcomeTitle}
-                  </h2>
-                </div>
-                <div className="space-y-3">
-                  {content.outcome_vision.map((outcome, i) => (
-                    <div
-                      key={i}
-                      className="flex items-start gap-4 p-5 rounded-xl border-2"
-                      style={{ borderColor: brandColor + '20', backgroundColor: brandColor + '04' }}
-                    >
-                      <CheckCircle2 className="h-6 w-6 shrink-0 mt-0.5" style={{ color: brandColor }} />
-                      <p className="text-[#1a1a1a] font-medium text-lg">{outcome}</p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              {/* Process Steps */}
-              <section className="fade-in-up">
-                <div className="flex items-center gap-2 mb-8 justify-center">
-                  <Timer className="h-5 w-5" style={{ color: brandColor }} />
-                  <h2 className="text-xl font-semibold text-[#1a1a1a]">
-                    {tr.sections.processTitle}
-                  </h2>
-                </div>
-                <div className="space-y-0 relative">
-                  {/* Vertical line */}
-                  <div className="absolute left-5 top-6 bottom-6 w-0.5 bg-[#e5e7eb]" />
-                  {content.process_steps.map((step) => (
-                    <div key={step.step} className="flex gap-6 relative py-4">
-                      <div className="shrink-0 z-10">
+                  {/* Cost of Inaction consequences */}
+                  {content.cost_of_inaction.consequences.length > 0 && (
+                    <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {content.cost_of_inaction.consequences.map((c, i) => (
                         <div
-                          className="h-10 w-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md"
-                          style={{ backgroundColor: brandColor }}
+                          key={i}
+                          className="rounded-xl p-5 border border-[#2a2a3e]/20"
+                          style={{ backgroundColor: '#0f1a24' }}
                         >
-                          {step.step}
+                          <div className="text-2xl mb-3">{c.emoji || '💸'}</div>
+                          <h4 className="text-white font-semibold text-sm mb-1">
+                            {c.heading || c.text}
+                          </h4>
+                          {c.subtext && (
+                            <p className="text-[#94a3b8] text-xs leading-relaxed">{c.subtext}</p>
+                          )}
                         </div>
-                      </div>
-                      <div className="flex-1 bg-white rounded-xl p-5 border border-[#e5e7eb] shadow-sm">
-                        <h3 className="font-semibold text-[#1a1a1a] text-lg mb-2">{step.title}</h3>
-                        <div className="flex gap-4 mb-3">
-                          <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full font-medium" style={{ backgroundColor: brandColor + '12', color: brandColor }}>
-                            <Clock className="h-3 w-3" />
-                            {tr.sections.processDuration}: {step.duration}
-                          </span>
-                          <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-[#fafafa] text-[#6b7280] font-medium">
-                            <Timer className="h-3 w-3" />
-                            {tr.sections.processEffort}: {step.effort}
-                          </span>
-                        </div>
-                        <p className="text-sm text-[#6b7280] leading-relaxed">{step.description}</p>
-                      </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
+
+                  {/* CTA after Pain */}
+                  <CtaBlock
+                    text={tr.sections.ctaAfterPain}
+                    derisking={tr.sections.ctaDeriskingPain}
+                    ctaName="after-pain"
+                  />
                 </div>
               </section>
 
-              {/* Guarantee */}
-              <section className="fade-in-up">
-                <div
-                  className="rounded-2xl p-8 sm:p-10 text-center border-2 shadow-sm"
-                  style={{ borderColor: brandColor + '25', backgroundColor: brandColor + '06' }}
-                >
-                  <div className="h-16 w-16 rounded-full mx-auto mb-5 flex items-center justify-center shadow-md" style={{ backgroundColor: brandColor }}>
-                    <Shield className="h-8 w-8 text-white" />
+              {/* ===== 5. DREAM OUTCOME - Green Gradient Card ===== */}
+              <section className="fade-in-up bg-white">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-16">
+                  <div
+                    className="rounded-3xl p-8 sm:p-12 relative overflow-hidden"
+                    style={{
+                      background: `linear-gradient(135deg, ${brandColor} 0%, #0d3b4d 50%, #0a4a3a 100%)`,
+                    }}
+                  >
+                    {/* Subtle glow effects */}
+                    <div className="absolute top-0 right-0 w-64 h-64 rounded-full opacity-10" style={{ background: `radial-gradient(circle, #10b981, transparent)` }} />
+                    <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full opacity-10" style={{ background: `radial-gradient(circle, ${brandColor}, transparent)` }} />
+
+                    <div className="relative z-10">
+                      <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-white/10 text-emerald-300 mb-6">
+                        <CheckCircle2 className="h-3.5 w-3.5" />
+                        {tr.sections.outcomeSubtitle}
+                      </div>
+
+                      <h2 className="text-2xl sm:text-[28px] font-bold text-white mb-8 leading-tight max-w-2xl">
+                        {tr.sections.outcomeTitle.replace('Sie', dealroom.client_company)}
+                      </h2>
+
+                      <div className="space-y-4 mb-8">
+                        {content.outcome_vision.map((outcome, i) => (
+                          <div key={i} className="flex items-start gap-4">
+                            <CheckCircle2 className="h-6 w-6 text-emerald-400 shrink-0 mt-0.5" />
+                            <div>
+                              <p className="text-white font-semibold text-lg">{getOutcomeText(outcome)}</p>
+                              {getOutcomeDetail(outcome) && (
+                                <p className="text-white/60 text-sm mt-1">{getOutcomeDetail(outcome)}</p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Vision Quote */}
+                      {content.outcome_quote && (
+                        <div className="border-l-4 border-emerald-400/50 pl-6 py-2">
+                          <p className="text-white/90 text-lg italic leading-relaxed">
+                            &ldquo;{content.outcome_quote}&rdquo;
+                          </p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <h2 className="text-xl font-semibold text-[#1a1a1a] mb-3">
-                    {tr.sections.guaranteeTitle}
-                  </h2>
-                  <p className="text-[#6b7280] max-w-xl mx-auto leading-relaxed text-lg">
-                    {content.guarantee_text}
-                  </p>
+
+                  {/* CTA after Outcome */}
+                  <CtaBlock
+                    text={tr.sections.ctaAfterOutcome}
+                    derisking={tr.sections.ctaDeriskingOutcome}
+                    ctaName="after-outcome"
+                  />
                 </div>
               </section>
 
-              {/* CTA */}
-              <section className="fade-in-up text-center">
-                <button
-                  onClick={() => {
-                    switchTab('offer');
-                    trackEvent(dealroom.id, 'cta_click', { cta: 'main' });
-                  }}
-                  className="inline-flex items-center gap-3 px-10 py-5 rounded-2xl text-white font-semibold text-lg shadow-lg transition-all hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
-                  style={{ backgroundColor: brandColor }}
-                >
-                  {content.cta_text || tr.sections.ctaDefault}
-                  <ArrowRight className="h-5 w-5" />
-                </button>
-                <p className="text-sm text-[#6b7280] mt-5">
-                  {tr.sections.ctaContact}
-                </p>
-                {contact && (
-                  <div className="flex flex-wrap items-center justify-center gap-4 mt-2 text-sm">
-                    {contact.phone && (
-                      <a href={`tel:${contact.phone}`} className="flex items-center gap-1.5 hover:underline" style={{ color: brandColor }}>
-                        <Phone className="h-3.5 w-3.5" /> {contact.phone}
-                      </a>
-                    )}
-                    {contact.email && (
-                      <a href={`mailto:${contact.email}`} className="flex items-center gap-1.5 hover:underline" style={{ color: brandColor }}>
-                        <Mail className="h-3.5 w-3.5" /> {contact.email}
-                      </a>
-                    )}
+              {/* ===== 6. HOW IT WORKS - Process Steps ===== */}
+              <section className="fade-in-up bg-[#fafafa]">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-16">
+                  <div className="text-center mb-10">
+                    <div className="inline-flex items-center justify-center h-12 w-12 rounded-full mb-4" style={{ backgroundColor: brandColor + '12' }}>
+                      <Timer className="h-6 w-6" style={{ color: brandColor }} />
+                    </div>
+                    <h2 className="text-2xl sm:text-[28px] font-bold text-[#1a1a1a]">
+                      {tr.sections.processTitle}
+                    </h2>
                   </div>
-                )}
+
+                  <div className="space-y-0 relative max-w-3xl mx-auto">
+                    {/* Vertical line */}
+                    <div className="absolute left-5 top-6 bottom-6 w-0.5" style={{ backgroundColor: brandColor + '20' }} />
+                    {content.process_steps.map((step) => (
+                      <div key={step.step} className="flex gap-6 relative py-4">
+                        <div className="shrink-0 z-10">
+                          <div
+                            className="h-10 w-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md"
+                            style={{ backgroundColor: brandColor }}
+                          >
+                            {step.step}
+                          </div>
+                        </div>
+                        <div className="flex-1 bg-white rounded-xl p-6 border border-[#e5e7eb] shadow-sm">
+                          <h3 className="font-bold text-[#1a1a1a] text-lg mb-3">{step.title}</h3>
+                          <div className="flex flex-wrap gap-3 mb-3">
+                            <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-semibold" style={{ backgroundColor: brandColor + '12', color: brandColor }}>
+                              <Clock className="h-3 w-3" />
+                              {step.duration}
+                            </span>
+                            <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold">
+                              <Timer className="h-3 w-3" />
+                              {step.effort}
+                            </span>
+                          </div>
+                          <p className="text-sm text-[#6b7280] leading-relaxed mb-2">{step.description}</p>
+                          {step.customer_action && (
+                            <p className="text-xs text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2 mt-2 font-medium">
+                              {tr.sections.processYourAction} {step.customer_action}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* CTA after Process */}
+                  <CtaBlock
+                    text={tr.sections.ctaAfterProcess}
+                    derisking={tr.sections.ctaDeriskingProcess}
+                    ctaName="after-process"
+                  />
+                </div>
               </section>
 
-              {/* Static "About Us" Block */}
-              <section className="fade-in-up">
-                <div className="rounded-2xl overflow-hidden border border-[#e5e7eb] shadow-sm">
-                  <div className="grid grid-cols-1 lg:grid-cols-2">
-                    {/* Left: Info */}
-                    <div className="p-8 sm:p-10" style={{ backgroundColor: brandColor + '06' }}>
-                      <h3 className="text-xl font-semibold text-[#1a1a1a] mb-4">
-                        Gündesli & Kollegen
-                      </h3>
-                      <p className="text-sm text-[#6b7280] leading-relaxed mb-6">
-                        {dealroom.language === 'de'
-                          ? 'Als Bezirksdirektion der SIGNAL IDUNA Gruppe betreuen wir seit fast 25 Jahren über 4.000 zufriedene Kunden. Unser Team aus 6 Experten berät Sie in 8 Sprachen – persönlich, kompetent und mit über 50 Auszeichnungen für exzellente Beratung.'
-                          : 'As a district directorate of SIGNAL IDUNA Group, we have been serving over 4,000 satisfied clients for nearly 25 years. Our team of 6 experts advises you in 8 languages – personally, competently, and with over 50 awards for excellent consulting.'}
+              {/* ===== 7. GUARANTEE - Dark Teal Card ===== */}
+              <section className="fade-in-up bg-white">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-16">
+                  <div
+                    className="rounded-3xl p-8 sm:p-12 text-center relative overflow-hidden"
+                    style={{ backgroundColor: '#0a2e3d' }}
+                  >
+                    {/* Subtle glow */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full opacity-10" style={{ background: `radial-gradient(circle, ${brandColor}, transparent)` }} />
+
+                    <div className="relative z-10">
+                      <div
+                        className="h-16 w-16 rounded-full mx-auto mb-6 flex items-center justify-center shadow-lg"
+                        style={{ backgroundColor: brandColor, boxShadow: `0 0 40px ${brandColor}40` }}
+                      >
+                        <Shield className="h-8 w-8 text-white" />
+                      </div>
+                      <h2 className="text-2xl font-bold text-white mb-4">
+                        {content.guarantee_title || tr.sections.guaranteeTitle}
+                      </h2>
+                      <p className="text-[#94a3b8] max-w-xl mx-auto leading-relaxed text-lg">
+                        {renderBoldText(content.guarantee_text)}
                       </p>
-                      {/* Trust badges */}
-                      <div className="flex flex-wrap gap-3">
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#e5e7eb] text-xs font-medium text-[#6b7280]">
-                          <Shield className="h-3.5 w-3.5" style={{ color: brandColor }} />
-                          SIGNAL IDUNA
+                    </div>
+                  </div>
+
+                  {/* CTA after Guarantee */}
+                  <CtaBlock
+                    text={tr.sections.ctaAfterGuarantee}
+                    derisking={tr.sections.ctaDeriskingGuarantee}
+                    ctaName="after-guarantee"
+                  />
+                </div>
+              </section>
+
+              {/* ===== 8. SOCIAL PROOF INLINE (1-2 references if available) ===== */}
+              {references.length > 0 && (
+                <section className="fade-in-up bg-[#fafafa]">
+                  <div className="max-w-5xl mx-auto px-4 sm:px-6 py-16">
+                    <div className="text-center mb-8">
+                      <Star className="h-6 w-6 mx-auto mb-3" style={{ color: brandColor }} />
+                      <h2 className="text-xl font-bold text-[#1a1a1a]">{tr.references.title}</h2>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl mx-auto">
+                      {references.slice(0, 2).map((ref) => (
+                        <div key={ref.id} className="bg-white rounded-2xl p-6 border border-[#e5e7eb] shadow-sm">
+                          <div className="flex items-center gap-3 mb-4">
+                            {ref.logo_url ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={ref.logo_url} alt={ref.client_company} className="h-10 object-contain" />
+                            ) : (
+                              <div className="h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold text-sm" style={{ backgroundColor: brandColor }}>
+                                {ref.client_company.charAt(0)}
+                              </div>
+                            )}
+                            <div>
+                              <p className="font-semibold text-[#1a1a1a] text-sm">{ref.client_company}</p>
+                              <p className="text-xs text-[#6b7280]">{ref.client_name}</p>
+                            </div>
+                          </div>
+                          {ref.quote && (
+                            <p className="text-[#6b7280] italic text-sm leading-relaxed">
+                              &ldquo;{ref.quote}&rdquo;
+                            </p>
+                          )}
+                          {ref.result_summary && (
+                            <div className="mt-3 inline-block px-3 py-1 rounded-full text-xs font-semibold text-white" style={{ backgroundColor: brandColor }}>
+                              {ref.result_summary}
+                            </div>
+                          )}
                         </div>
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#e5e7eb] text-xs font-medium text-[#6b7280]">
-                          <Award className="h-3.5 w-3.5" style={{ color: brandColor }} />
-                          Stiftung Warentest
+                      ))}
+                    </div>
+                    {references.length > 2 && (
+                      <div className="text-center mt-6">
+                        <button
+                          onClick={() => switchTab('references')}
+                          className="text-sm font-medium hover:underline"
+                          style={{ color: brandColor }}
+                        >
+                          {dealroom.language === 'de' ? 'Alle Referenzen ansehen →' : 'View all references →'}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </section>
+              )}
+
+              {/* ===== 9. ABOUT US (Static) ===== */}
+              <section className="fade-in-up bg-white">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-16">
+                  <div className="rounded-2xl overflow-hidden border border-[#e5e7eb] shadow-sm">
+                    <div className="grid grid-cols-1 lg:grid-cols-2">
+                      {/* Left: Info */}
+                      <div className="p-8 sm:p-10" style={{ backgroundColor: brandColor + '06' }}>
+                        <h3 className="text-xl font-bold text-[#1a1a1a] mb-4">
+                          {tr.about.title}
+                        </h3>
+                        <p className="text-sm text-[#6b7280] leading-relaxed mb-6">
+                          {tr.about.description}
+                        </p>
+                        {/* Team Photo */}
+                        <div className="rounded-xl overflow-hidden mb-6">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src="/images/team/team-lg.jpeg" alt="Gündesli & Kollegen Team" className="w-full h-48 object-cover" />
                         </div>
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#e5e7eb] text-xs font-medium text-[#6b7280]">
-                          <Star className="h-3.5 w-3.5" style={{ color: brandColor }} />
-                          Focus Money
+                        {/* Trust badges */}
+                        <div className="flex flex-wrap gap-2">
+                          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#e5e7eb] text-xs font-medium text-[#6b7280]">
+                            <Shield className="h-3.5 w-3.5" style={{ color: brandColor }} />
+                            SIGNAL IDUNA
+                          </div>
+                          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#e5e7eb] text-xs font-medium text-[#6b7280]">
+                            <Award className="h-3.5 w-3.5" style={{ color: brandColor }} />
+                            Stiftung Warentest
+                          </div>
+                          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#e5e7eb] text-xs font-medium text-[#6b7280]">
+                            <Star className="h-3.5 w-3.5" style={{ color: brandColor }} />
+                            Focus Money
+                          </div>
+                          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#e5e7eb] text-xs font-medium text-[#6b7280]">
+                            <CheckCircle2 className="h-3.5 w-3.5" style={{ color: brandColor }} />
+                            DISQ Rating
+                          </div>
+                          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#e5e7eb] text-xs font-medium text-[#6b7280]">
+                            <Users className="h-3.5 w-3.5" style={{ color: brandColor }} />
+                            BVK Mitglied
+                          </div>
                         </div>
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#e5e7eb] text-xs font-medium text-[#6b7280]">
-                          <CheckCircle2 className="h-3.5 w-3.5" style={{ color: brandColor }} />
-                          DISQ Rating
-                        </div>
-                        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#e5e7eb] text-xs font-medium text-[#6b7280]">
-                          <Users className="h-3.5 w-3.5" style={{ color: brandColor }} />
-                          BVK Mitglied
+                      </div>
+                      {/* Right: Stats */}
+                      <div className="p-8 sm:p-10 flex flex-col justify-center" style={{ backgroundColor: brandColor }}>
+                        <div className="grid grid-cols-2 gap-6 text-white">
+                          <div>
+                            <p className="text-3xl font-bold">4.000+</p>
+                            <p className="text-sm opacity-80">{tr.about.statCustomers}</p>
+                          </div>
+                          <div>
+                            <p className="text-3xl font-bold">50+</p>
+                            <p className="text-sm opacity-80">{tr.about.statAwards}</p>
+                          </div>
+                          <div>
+                            <p className="text-3xl font-bold">25</p>
+                            <p className="text-sm opacity-80">{tr.about.statYears}</p>
+                          </div>
+                          <div>
+                            <p className="text-3xl font-bold">8</p>
+                            <p className="text-sm opacity-80">{tr.about.statLanguages}</p>
+                          </div>
                         </div>
                       </div>
                     </div>
-                    {/* Right: Stats / Visual */}
-                    <div className="p-8 sm:p-10 flex flex-col justify-center" style={{ backgroundColor: brandColor }}>
-                      <div className="grid grid-cols-2 gap-6 text-white">
-                        <div>
-                          <p className="text-3xl font-bold">4.000+</p>
-                          <p className="text-sm opacity-80">{dealroom.language === 'de' ? 'Zufriedene Kunden' : 'Satisfied Clients'}</p>
+                  </div>
+                </div>
+              </section>
+
+              {/* ===== 10. FINAL CTA BLOCK ===== */}
+              <section className="fade-in-up bg-[#fafafa]">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-16">
+                  <div
+                    className="rounded-3xl p-8 sm:p-12 text-center relative overflow-hidden"
+                    style={{ backgroundColor: brandColor }}
+                  >
+                    <div className="relative z-10">
+                      <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+                        {tr.sections.finalCtaTitle}
+                      </h2>
+                      <p className="text-white/80 text-lg mb-8 max-w-lg mx-auto">
+                        {tr.sections.finalCtaSubtitle}
+                      </p>
+                      <button
+                        onClick={() => handleCta('final')}
+                        className="inline-flex items-center gap-3 px-10 py-4 rounded-2xl bg-white font-semibold text-lg shadow-lg transition-all hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                        style={{ color: brandColor }}
+                      >
+                        {content.cta_text || tr.sections.ctaDefault}
+                        <ArrowRight className="h-5 w-5" />
+                      </button>
+                      <p className="text-white/60 text-sm mt-4">
+                        {content.cta_derisking || tr.sections.ctaDerisking}
+                      </p>
+
+                      {/* Contact info */}
+                      {contact && (
+                        <div className="flex flex-wrap items-center justify-center gap-5 mt-6 text-sm text-white/80">
+                          {contact.phone && (
+                            <a href={`tel:${contact.phone}`} className="flex items-center gap-1.5 hover:text-white transition-colors">
+                              <Phone className="h-4 w-4" /> {contact.phone}
+                            </a>
+                          )}
+                          {contact.email && (
+                            <a href={`mailto:${contact.email}`} className="flex items-center gap-1.5 hover:text-white transition-colors">
+                              <Mail className="h-4 w-4" /> {contact.email}
+                            </a>
+                          )}
                         </div>
-                        <div>
-                          <p className="text-3xl font-bold">50+</p>
-                          <p className="text-sm opacity-80">{dealroom.language === 'de' ? 'Auszeichnungen' : 'Awards'}</p>
-                        </div>
-                        <div>
-                          <p className="text-3xl font-bold">25</p>
-                          <p className="text-sm opacity-80">{dealroom.language === 'de' ? 'Jahre Erfahrung' : 'Years Experience'}</p>
-                        </div>
-                        <div>
-                          <p className="text-3xl font-bold">8</p>
-                          <p className="text-sm opacity-80">{dealroom.language === 'de' ? 'Sprachen' : 'Languages'}</p>
-                        </div>
-                      </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -584,7 +787,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
           </div>
         </div>
 
-        {/* ==================== REFERENCES TAB ==================== */}
+        {/* ==================== REFERENCES TAB - Split Layout ==================== */}
         <div className={activeTab === 'references' ? '' : 'hidden'}>
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
             <div className="text-center mb-10 fade-in-up">
@@ -599,55 +802,101 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                 <p>{dealroom.language === 'de' ? 'Referenzen werden in Kürze hinzugefügt.' : 'References will be added shortly.'}</p>
               </div>
             ) : (
-              <div className="space-y-6">
+              <div className="space-y-8">
                 {references.map((ref) => (
                   <div
                     key={ref.id}
-                    className="fade-in-up p-6 sm:p-8 rounded-2xl bg-white border border-[#e5e7eb] shadow-sm hover:shadow-md transition-shadow"
+                    className="fade-in-up rounded-2xl bg-white border border-[#e5e7eb] shadow-sm overflow-hidden"
                   >
-                    <div className="flex items-center gap-4 mb-4">
-                      {ref.logo_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={ref.logo_url} alt={ref.client_company} className="h-12 object-contain" />
-                      ) : (
-                        <div
-                          className="h-12 w-12 rounded-full flex items-center justify-center text-white font-semibold"
-                          style={{ backgroundColor: brandColor }}
-                        >
-                          {ref.client_company.charAt(0)}
-                        </div>
-                      )}
-                      <div>
-                        <p className="font-semibold text-[#1a1a1a] text-lg">{ref.client_company}</p>
-                        <p className="text-sm text-[#6b7280]">{ref.client_name}</p>
+                    <div className="grid grid-cols-1 lg:grid-cols-2">
+                      {/* Left: Video or Image */}
+                      <div className="bg-[#fafafa] flex items-center justify-center min-h-[280px]">
+                        {ref.video_url ? (
+                          <div className="w-full h-full">
+                            <iframe
+                              src={getVideoEmbedUrl(ref.video_url) || ''}
+                              className="w-full h-full min-h-[280px]"
+                              allowFullScreen
+                            />
+                          </div>
+                        ) : ref.image_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={ref.image_url} alt={ref.client_company} className="w-full h-full object-cover min-h-[280px]" />
+                        ) : (
+                          <div className="flex flex-col items-center justify-center p-8 text-center">
+                            <div className="h-20 w-20 rounded-full flex items-center justify-center text-white text-3xl font-bold mb-3" style={{ backgroundColor: brandColor }}>
+                              {ref.client_company.charAt(0)}
+                            </div>
+                            <p className="text-lg font-semibold text-[#1a1a1a]">{ref.client_company}</p>
+                          </div>
+                        )}
                       </div>
-                      {ref.result_summary && (
-                        <div
-                          className="ml-auto px-4 py-1.5 rounded-full text-sm font-semibold text-white"
-                          style={{ backgroundColor: brandColor }}
-                        >
-                          {ref.result_summary}
+
+                      {/* Right: Details */}
+                      <div className="p-6 sm:p-8 flex flex-col justify-center">
+                        {/* Header */}
+                        <div className="flex items-center gap-3 mb-4">
+                          {ref.logo_url ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={ref.logo_url} alt={ref.client_company} className="h-10 object-contain" />
+                          ) : (
+                            <div className="h-10 w-10 rounded-full flex items-center justify-center text-white font-semibold text-sm" style={{ backgroundColor: brandColor }}>
+                              {ref.client_company.charAt(0)}
+                            </div>
+                          )}
+                          <div>
+                            <p className="font-bold text-[#1a1a1a]">{ref.client_company}</p>
+                            <p className="text-sm text-[#6b7280]">{ref.client_name}</p>
+                          </div>
                         </div>
-                      )}
+
+                        {/* Quote */}
+                        {ref.quote && (
+                          <blockquote className="text-lg italic leading-relaxed pl-4 border-l-4 mb-5" style={{ borderColor: brandColor + '40', color: brandColor }}>
+                            &ldquo;{ref.quote}&rdquo;
+                          </blockquote>
+                        )}
+
+                        {/* Situation / Method / Result */}
+                        <div className="space-y-3">
+                          {ref.situation_text && (
+                            <div className="flex items-start gap-3">
+                              <div className="h-7 w-7 rounded-lg bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
+                                <FileText className="h-3.5 w-3.5 text-red-500" />
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold uppercase tracking-wider text-[#9ca3af] mb-0.5">{tr.references.situation}</p>
+                                <p className="text-sm text-[#6b7280]">{ref.situation_text}</p>
+                              </div>
+                            </div>
+                          )}
+                          {ref.method_text && (
+                            <div className="flex items-start gap-3">
+                              <div className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: brandColor + '12' }}>
+                                <Lightbulb className="h-3.5 w-3.5" style={{ color: brandColor }} />
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold uppercase tracking-wider text-[#9ca3af] mb-0.5">{tr.references.method}</p>
+                                <p className="text-sm text-[#6b7280]">{ref.method_text}</p>
+                              </div>
+                            </div>
+                          )}
+                          {ref.result_summary && (
+                            <div className="flex items-start gap-3">
+                              <div className="h-7 w-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0 mt-0.5">
+                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                              </div>
+                              <div>
+                                <p className="text-xs font-semibold uppercase tracking-wider text-[#9ca3af] mb-0.5">{tr.references.result}</p>
+                                <span className="inline-block px-3 py-1 rounded-full text-sm font-semibold text-white" style={{ backgroundColor: brandColor }}>
+                                  {ref.result_summary}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    {ref.quote && (
-                      <blockquote className="text-[#6b7280] italic text-lg leading-relaxed pl-4 border-l-4 mb-4" style={{ borderColor: brandColor + '40' }}>
-                        &ldquo;{ref.quote}&rdquo;
-                      </blockquote>
-                    )}
-                    {ref.image_url && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={ref.image_url} alt="" className="rounded-xl w-full object-cover max-h-64 mb-4" />
-                    )}
-                    {ref.video_url && (
-                      <div className="aspect-video rounded-xl overflow-hidden border border-[#e5e7eb]">
-                        <iframe
-                          src={getVideoEmbedUrl(ref.video_url) || ''}
-                          className="w-full h-full"
-                          allowFullScreen
-                        />
-                      </div>
-                    )}
                   </div>
                 ))}
               </div>
@@ -656,7 +905,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
         </div>
       </main>
 
-      {/* Footer with DSGVO links */}
+      {/* Footer */}
       <footer className="border-t border-[#e5e7eb] py-8 bg-[#fafafa]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#6b7280]">
@@ -696,8 +945,13 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
       {contact && (
         <div className="fixed bottom-0 left-0 right-0 sm:hidden z-40 bg-white border-t border-[#e5e7eb] p-3 flex items-center justify-between" style={{ marginBottom: showCookieBanner ? '120px' : 0 }}>
           <div className="flex items-center gap-2 min-w-0">
-            <div className="h-8 w-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0" style={{ backgroundColor: brandColor }}>
-              {contact.name.charAt(0)}
+            <div className="h-8 w-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 overflow-hidden" style={{ backgroundColor: brandColor }}>
+              {contact.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={contact.avatar_url} alt={contact.name} className="h-8 w-8 rounded-full object-cover" />
+              ) : (
+                contact.name.charAt(0)
+              )}
             </div>
             <span className="text-sm font-semibold truncate px-1.5 py-0.5 rounded" style={{ backgroundColor: brandColor + '15', color: brandColor }}>{contact.name}</span>
           </div>

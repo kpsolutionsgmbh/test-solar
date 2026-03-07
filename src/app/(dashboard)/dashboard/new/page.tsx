@@ -625,7 +625,7 @@ export default function NewDealroomPage() {
               {generatedContent.outcome_vision.map((outcome, i) => (
                 <Input
                   key={i}
-                  value={outcome}
+                  value={typeof outcome === 'string' ? outcome : outcome.text}
                   onChange={(e) => {
                     const updated = [...generatedContent.outcome_vision];
                     updated[i] = e.target.value;

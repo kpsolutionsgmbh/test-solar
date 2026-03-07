@@ -538,7 +538,7 @@ export default function EditDealroomPage() {
                   {content.outcome_vision.map((outcome, i) => (
                     <Input
                       key={i}
-                      value={outcome}
+                      value={typeof outcome === 'string' ? outcome : outcome.text}
                       onChange={(e) => {
                         const updated = [...content.outcome_vision];
                         updated[i] = e.target.value;

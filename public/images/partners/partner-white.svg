@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   id="Ebene_2"
+   data-name="Ebene 2"
+   viewBox="0 0 4896.25 3112.04"
+   version="1.1"
+   sodipodi:docname="logo_white.svg"
+   inkscape:version="1.2.2 (b0a84865, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview3571"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="0.25121266"
+     inkscape:cx="2304.8201"
+     inkscape:cy="1558.4405"
+     inkscape:window-width="1387"
+     inkscape:window-height="1027"
+     inkscape:window-x="0"
+     inkscape:window-y="25"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="Ebene_2" />
+  <defs
+     id="defs3561">
+    <style
+       id="style3556">
+      .cls-1 {
+        fill: none;
+      }
+
+      .cls-2 {
+        clip-path: url(#clippath);
+      }
+
+      .cls-3 {
+        fill: #1a1a18;
+      }
+    </style>
+    <clipPath
+       id="clippath">
+      <rect
+         class="cls-1"
+         width="4896.25"
+         height="3112.04"
+         id="rect3558" />
+    </clipPath>
+  </defs>
+  <g
+     id="Ebene_1-2"
+     data-name="Ebene 1"
+     style="fill:#ffffff;fill-opacity:1">
+    <g
+       class="cls-2"
+       clip-path="url(#clippath)"
+       id="g3567"
+       style="fill:#ffffff;fill-opacity:1">
+      <path
+         class="cls-3"
+         d="M227.04,3092.91L0,2352.71v-535.38H96.76v525.73l197.59,662.64h84.13l195.62-662.68v-525.69h98.66v531.58l-227.06,744H227.04Zm3026.8,0V1904.52h-287.06v-87.19h672.77v87.19h-288.96v1188.39h-96.76Zm631.5,0V1817.33h590.49v87.19h-493.73v471.6h447.81v85.28h-447.81v544.3h509.03v87.21h-605.79Zm910.31-1275.58h100.59v1275.58h-100.59V1817.33Zm-3430.04,68.05c-164.22,0-250.15,116.22-250.15,231.01v675.52c0,115.75,85.93,232.93,250.15,232.93,123.36,0,248.22-79.35,248.22-231.01v-677.44c0-111.98-86.99-231.01-248.22-231.01m0,1226.65c-105.29,0-194.96-35.03-259.31-101.28-56.9-58.57-89.52-139.02-89.52-220.74v-671.7c0-159.08,119.83-320.12,348.83-320.12s346.92,164.95,346.92,320.12v673.6c0,155.19-121.6,320.12-346.92,320.12m1056.3,0c-229.01,0-348.82-162-348.82-322.03v-671.7c0-159.08,119.81-320.12,348.82-320.12,248.53,0,330.52,174.72,343.17,290.05h-99.01c-15.9-116.03-117.44-202.86-244.16-202.86-147.29,0-250.14,95-250.14,231.01v675.52c0,134.97,105.19,232.93,250.14,232.93s246.33-99.32,246.33-231.01v-240.58h-195.2v-85.28h295.78v323.95c0,155.19-121.58,320.12-346.91,320.12"
+         id="path3563"
+         style="fill:#ffffff;fill-opacity:1" />
+      <path
+         class="cls-3"
+         d="M1117.6,1275.58v-109.12L1705.93,87.21h-559.62V0h647.89V120.63l-580.59,1067.74h578.68v87.2h-674.68ZM3254.28,702.31h231.01c99.96,0,181.26-78.72,181.26-175.51V264.63c0-97.84-81.31-177.42-181.26-177.42h-231.01V702.31Zm434.16,573.27l-202.83-487.98h-231.33v487.98h-96.76V0h333.51c153.75,0,274.18,117.1,274.18,266.56v254.5c0,109.24-57.94,199.87-154.99,242.45l-29.12,12.75,215.31,499.31h-107.98Zm-1263.29,19.14c-227.74,0-346.91-162.01-346.91-322.04V0h96.77V974.61c0,115.74,85.91,232.92,250.14,232.92s246.31-119.03,246.31-231.01V0h96.77V974.61c0,159.06-117.85,320.11-343.08,320.11"
+         id="path3565"
+         style="fill:#ffffff;fill-opacity:1" />
+    </g>
+  </g>
+</svg>

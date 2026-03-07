@@ -49,23 +49,40 @@ export interface Dealroom {
 export interface DealroomContent {
   hero_title: string;
   hero_subtitle: string;
-  situation_points: Array<{ icon: string; text: string }>;
+  situation_points: Array<{
+    icon: string;
+    text: string;
+    // New fields for dark card layout (heading + subtext)
+    emoji?: string;
+    heading?: string;
+    subtext?: string;
+  }>;
   goal: string;
   approach: string;
   cost_of_inaction: {
     headline: string;
-    consequences: Array<{ icon: string; text: string }>;
+    consequences: Array<{
+      icon: string;
+      text: string;
+      emoji?: string;
+      heading?: string;
+      subtext?: string;
+    }>;
   };
-  outcome_vision: string[];
+  outcome_vision: Array<string | { text: string; detail?: string }>;
+  outcome_quote?: string;
   process_steps: Array<{
     step: number;
     title: string;
     duration: string;
     effort: string;
     description: string;
+    customer_action?: string;
   }>;
+  guarantee_title?: string;
   guarantee_text: string;
   cta_text: string;
+  cta_derisking?: string;
 }
 
 export interface TrackingEvent {
@@ -98,6 +115,8 @@ export interface Reference {
   quote: string | null;
   logo_url: string | null;
   result_summary: string | null;
+  situation_text: string | null;
+  method_text: string | null;
   sort_order: number;
   is_active: boolean;
   created_at: string;

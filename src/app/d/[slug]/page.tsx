@@ -64,7 +64,7 @@ export default async function DealroomPage({ params }: Props) {
       : Promise.resolve({ data: null }),
     supabase
       .from('references')
-      .select('id, client_name, client_company, quote, result_summary, image_url, video_url, logo_url, sort_order')
+      .select('id, client_name, client_company, quote, result_summary, situation_text, method_text, image_url, video_url, logo_url, sort_order')
       .eq('admin_id', dr.admin_id)
       .eq('is_active', true)
       .order('sort_order'),

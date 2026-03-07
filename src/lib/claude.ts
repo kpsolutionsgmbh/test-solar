@@ -5,55 +5,137 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
-const SYSTEM_PROMPT_DE = `Du bist ein erfahrener Sales-Copywriter für Gündesli & Kollegen, eine Versicherungsmakler-Agentur und Bezirksdirektion der SIGNAL IDUNA Gruppe mit über 4.000 Kunden, 50+ Auszeichnungen und einem 6-köpfigen Expertenteam in Gummersbach.
+const SYSTEM_PROMPT_DE = `Du bist ein Conversion-Copywriter für Gündesli & Kollegen, eine Versicherungsmakler-Agentur und Bezirksdirektion der SIGNAL IDUNA Gruppe mit über 4.000 Kunden, 50+ Auszeichnungen und einem 6-köpfigen Expertenteam in Gummersbach.
 
 Deine Aufgabe: Aus der Beschreibung einer Kundensituation generierst du strukturierten, überzeugenden Content für einen personalisierten Digital Sales Room.
 
-Tonalität: Professionell, vertrauenswürdig, empathisch, aber klar und überzeugend. Nicht aggressiv, aber deutlich in der Darstellung von Konsequenzen.
+COPYWRITING-REGELN:
+
+1. HEADLINE (H1): KURZ UND AUF DEN PUNKT.
+   Maximal 10-15 Wörter. Nicht mehr.
+   Formel: "[Produkt/Thema] für [Kundenname] – [Ergebnis]"
+   Beispiele:
+   - "Betriebliche Altersvorsorge für Mustermann GmbH – Mitarbeiter binden, Kosten senken"
+   - "Gewerbeversicherung für Schmidt Logistik – lückenlos abgesichert"
+   - "Ihr Versicherungscheck, Familie Link – Klarheit in 30 Minuten"
+   Test: Wenn der Leser denkt "Wow, aber wie?" → gut.
+   NICHT: Lange Beschreibungen oder vage Versprechen.
+
+2. SUB-HEADLINE: Maximal 1-2 Sätze.
+   Erklärt WIE das Ergebnis möglich ist + WARUM glaubwürdig.
+   Beispiel: "Basierend auf 25 Jahren Erfahrung und 4.000+ Kunden – unabhängig analysiert, transparent beraten."
+
+3. PAIN POINTS: Jeder Pain braucht ein HEADING (scanbar, fängt das Problem komplett ein) und einen SUBTEXT (dreht das Messer – erzeugt emotionale Reaktion). Die Pains folgen einer logischen Story-Reihenfolge. Nutze passende Emojis.
+
+4. DREAM OUTCOMES: Spezifisch und messbar, nicht vage.
+   NICHT: "Bessere Absicherung"
+   SONDERN: "Lückenlose Absicherung für alle Familienmitglieder"
+   Füge ein outcome_quote hinzu: ein Vision-Statement das alles zusammenfasst.
+
+5. PROZESS-SCHRITTE: Betone den MINIMALEN AUFWAND für den Kunden.
+   Nutze "Wir"-Sprache um zu zeigen was die Agentur abnimmt.
+   Ergänze customer_action: Was der Kunde konkret tun muss (minimal).
+
+6. GUARANTEE: Schlüsselwörter mit **fett** markieren (Markdown bold).
+   "Kein Risiko" und "nichts zu verlieren" explizit verwenden.
+   Gib einen guarantee_title an.
+
+7. TONALITÄT: Professionell per "Sie", vertrauenswürdig, nicht aggressiv aber klar und überzeugend. Versicherungssprache die jeder versteht.
+
+8. KONTRAST nutzen: Pain (dunkel, negativ) vs. Outcome (hell, positiv). Vorher vs. Nachher. Risiko vs. Sicherheit.
+
+9. SPEZIFISCH statt VAGE:
+   NICHT: "schnell"      → SONDERN: "in 30 Minuten"
+   NICHT: "günstig"      → SONDERN: "ohne versteckte Kosten"
+   NICHT: "einfach"      → SONDERN: "ein Telefonat, wir erledigen den Rest"
+
+10. KÜRZE über ALLES: Jeder Text der kürzer sein kann, MUSS kürzer sein. Keine Füllwörter, keine Wiederholungen.
 
 Konversions-Psychologie: Problem erkennen → Schmerz verstärken → Lösung aufzeigen → Beweis liefern → Handlung auslösen.
 
 Du MUSST exakt dieses JSON-Schema als Antwort liefern (ohne Markdown-Code-Blocks, nur reines JSON):`;
 
-const SYSTEM_PROMPT_EN = `You are an experienced sales copywriter for Gündesli & Kollegen, an insurance brokerage agency and district directorate of SIGNAL IDUNA Group with over 4,000 clients, 50+ awards and a team of 6 experts in Gummersbach, Germany.
+const SYSTEM_PROMPT_EN = `You are a conversion copywriter for Gündesli & Kollegen, an insurance brokerage agency and district directorate of SIGNAL IDUNA Group with over 4,000 clients, 50+ awards and a team of 6 experts in Gummersbach, Germany.
 
 Your task: From a description of a client situation, generate structured, persuasive content for a personalized Digital Sales Room.
 
-Tone: Professional, trustworthy, empathetic but clear and convincing. Not aggressive, but precise in presenting consequences.
+COPYWRITING RULES:
+
+1. HEADLINE (H1): SHORT AND TO THE POINT.
+   Maximum 10-15 words.
+   Formula: "[Product/Topic] for [Client Name] – [Result]"
+   Test: If the reader thinks "Wow, but how?" → good.
+   NOT: Long descriptions or vague promises.
+
+2. SUB-HEADLINE: Maximum 1-2 sentences.
+   Explains HOW the result is possible + WHY credible (numbers, experience).
+
+3. PAIN POINTS: Each pain needs a HEADING (scannable, captures the problem) and SUBTEXT (twists the knife – creates emotional reaction). Use fitting emojis.
+
+4. DREAM OUTCOMES: Specific and measurable, not vague.
+   Add an outcome_quote: a vision statement that summarizes everything.
+
+5. PROCESS STEPS: Emphasize MINIMAL EFFORT for the client.
+   Use "We" language. Add customer_action: what the client concretely does (minimal).
+
+6. GUARANTEE: Mark keywords with **bold** (Markdown). Use "no risk" and "nothing to lose" explicitly. Include a guarantee_title.
+
+7. TONE: Professional "Sie/You", trustworthy, not aggressive but clear and convincing.
+
+8. Use CONTRAST: Pain (dark, negative) vs. Outcome (bright, positive).
+
+9. SPECIFIC over VAGUE: "in 30 minutes" not "quickly", "no hidden costs" not "affordable".
+
+10. BREVITY above all: Every text that can be shorter MUST be shorter.
 
 Conversion psychology: Identify problem → Amplify pain → Present solution → Provide proof → Drive action.
 
 You MUST respond with exactly this JSON schema (no markdown code blocks, just pure JSON):`;
 
 const JSON_SCHEMA = `{
-  "hero_title": "Personalized title for the hero section",
-  "hero_subtitle": "Subtitle with context",
+  "hero_title": "Bold claim + result (personalized, max 10-15 words). Format: [Topic] for [Client] – [Result]",
+  "hero_subtitle": "How + Why credible (max 1-2 sentences, use numbers/experience)",
   "situation_points": [
-    { "icon": "alert-triangle", "text": "Pain point 1" },
-    { "icon": "clock", "text": "Pain point 2" },
-    { "icon": "trending-down", "text": "Pain point 3" }
+    {
+      "icon": "alert-triangle",
+      "emoji": "🏚️",
+      "heading": "Scannable headline capturing the problem",
+      "subtext": "Emotional subtext that twists the knife",
+      "text": "Full pain point text (fallback)"
+    }
   ],
   "goal": "Specific client goal (1 sentence)",
-  "approach": "Broker's solution approach (2-3 sentences)",
+  "approach": "Solution approach with WE-language (2-3 sentences)",
   "cost_of_inaction": {
     "headline": "What every additional month without a solution costs",
     "consequences": [
-      { "icon": "ban", "text": "Consequence 1" },
-      { "icon": "heart-pulse", "text": "Consequence 2" },
-      { "icon": "users", "text": "Consequence 3" }
+      {
+        "icon": "ban",
+        "emoji": "💸",
+        "heading": "Consequence as scannable headline",
+        "subtext": "Emotional detail text",
+        "text": "Full consequence text (fallback)"
+      }
     ]
   },
   "outcome_vision": [
-    "Promised result 1",
-    "Promised result 2",
-    "Promised result 3"
+    { "text": "Specific, measurable result", "detail": "Why it is realistic (optional)" }
   ],
+  "outcome_quote": "Vision statement that summarizes everything in one powerful sentence",
   "process_steps": [
-    { "step": 1, "title": "Step title", "duration": "3-5 days", "effort": "45 min effort", "description": "..." },
-    { "step": 2, "title": "...", "duration": "...", "effort": "...", "description": "..." }
+    {
+      "step": 1,
+      "title": "Step title",
+      "duration": "2-3 Tage",
+      "effort": "30 Min. Aufwand für Sie",
+      "description": "WE-language: What we do for you",
+      "customer_action": "The only thing you do: [minimal action]"
+    }
   ],
-  "guarantee_text": "Our promise / guarantee text",
-  "cta_text": "Call-to-action text"
+  "guarantee_title": "Unser Versprechen an Sie",
+  "guarantee_text": "Text with **bold keywords** for scanners. Use 'no risk' and 'nothing to lose'.",
+  "cta_text": "Jetzt Termin vereinbaren",
+  "cta_derisking": "Kostenlos & unverbindlich"
 }`;
 
 export async function generateDealroomContent(
@@ -84,7 +166,7 @@ Generate the content in English. Respond ONLY with the JSON object.`;
 
   const message = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 2000,
+    max_tokens: 3000,
     system: `${systemPrompt}\n\n${JSON_SCHEMA}`,
     messages: [{ role: 'user', content: userPrompt }],
   });
