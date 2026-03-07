@@ -65,16 +65,31 @@ export interface Customer {
   updated_at: string;
 }
 
+export type VisualType = 'counter_down' | 'counter_up' | 'rising_number' | 'comparison_bar' | 'percentage_ring' | 'simple_icon';
+
+export interface VisualData {
+  from?: number;
+  to?: number;
+  value?: number;
+  you?: number;
+  competitor?: number;
+  label?: string;
+  prefix?: string;
+  suffix?: string;
+  color?: string;
+}
+
 export interface DealroomContent {
   hero_title: string;
   hero_subtitle: string;
   situation_points: Array<{
     icon: string;
     text: string;
-    // New fields for dark card layout (heading + subtext)
     emoji?: string;
     heading?: string;
     subtext?: string;
+    visual_type?: VisualType;
+    visual_data?: VisualData;
   }>;
   goal: string;
   approach: string;
@@ -88,7 +103,7 @@ export interface DealroomContent {
       subtext?: string;
     }>;
   };
-  outcome_vision: Array<string | { text: string; detail?: string }>;
+  outcome_vision: Array<string | { text: string; detail?: string; visual_type?: VisualType; visual_data?: VisualData }>;
   outcome_quote?: string;
   process_steps: Array<{
     step: number;

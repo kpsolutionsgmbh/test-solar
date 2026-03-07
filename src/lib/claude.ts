@@ -24,14 +24,32 @@ COPYWRITING-REGELN:
    Erklärt WIE das Ergebnis möglich ist + WARUM glaubwürdig.
    Beispiel: "Basierend auf 25 Jahren Erfahrung und 4.000+ Kunden – unabhängig analysiert, transparent beraten."
 
-3. PAIN POINTS: Generiere MAXIMAL 6 Pain-Points. Nicht mehr. Minimum 3.
-   Fasse ähnliche Probleme zusammen statt sie einzeln aufzulisten. Qualität über Quantität.
-   Jeder Pain braucht ein HEADING (scanbar, fängt das Problem komplett ein) und einen SUBTEXT (dreht das Messer – erzeugt emotionale Reaktion). Die Pains folgen einer logischen Story-Reihenfolge. Nutze KONTEXT-SPEZIFISCHE Emojis die zum jeweiligen Pain passen (z.B. 🏠 für Immobilien, 💼 für Beruf, 👨‍👩‍👧 für Familie, 🏥 für Gesundheit, 📉 für Finanzen). NICHT immer die gleichen Standard-Emojis verwenden.
+3. PAIN POINTS: Generiere EXAKT 3 Pain-Points. Nicht mehr, nicht weniger.
+   Drei starke Pains schlagen sechs mittelmäßige. Destilliere die wichtigsten, schmerzhaftesten Punkte.
+   Jeder Pain braucht:
+   - HEADING: Maximum 8 Wörter. Scanner müssen die Story nur aus Headlines verstehen.
+   - SUBTEXT: Maximum 1 Satz (15-20 Wörter). Dreht das Messer.
+   - EMOJI: Kontext-spezifisch (z.B. 📉 für Finanzen, 👷 für Fachkräfte).
+   - visual_type: Wähle einen Typ der den Pain visuell zeigt.
+   - visual_data: Konkrete Zahlen für die Visualisierung.
+
+   Visual-Typen:
+   - counter_down: Zahl die sinkt (Mitarbeiter, Umsatz). Felder: from, to, label
+   - counter_up: Kosten/Verluste die steigen. Felder: from (optional, default 0), to (=value), label, prefix, suffix
+   - rising_number: Eine große Impact-Zahl. Felder: value, prefix, suffix, color
+   - comparison_bar: Vergleich (Kunde vs. Konkurrenz/Markt). Felder: you, competitor, label
+   - percentage_ring: Prozentuales Risiko oder Lücke. Felder: value, label
+   - simple_icon: Nur großes Icon wenn keine Zahl passt. Keine visual_data nötig.
+
+   Sei SPEZIFISCH. Nutze echte Zahlen aus dem Kunden-Input wenn vorhanden.
+   "6 Fachkräfte verloren" statt "Mitarbeiter gehen". "€12.000/Monat" statt "hohe Kosten".
+   Wenn keine exakten Zahlen vorliegen, schätze realistische Branchenwerte und markiere mit "~".
 
 4. DREAM OUTCOMES: Generiere EXAKT 3 Ergebnisse. Nicht mehr, nicht weniger.
-   Jedes Ergebnis muss spezifisch und messbar sein. Fasse zusammen wenn nötig – 3 starke Outcomes schlagen 6 schwache.
+   Jedes Ergebnis: Maximum 8 Wörter. Spezifisch und messbar.
    NICHT: "Bessere Absicherung"
    SONDERN: "Lückenlose Absicherung für alle Familienmitglieder"
+   Jedes Outcome bekommt optional visual_type + visual_data (gleiche Typen wie Pain, aber positiv).
    Füge ein outcome_quote hinzu: ein Vision-Statement das alles zusammenfasst.
 
 5. PROZESS-SCHRITTE: Betone den MINIMALEN AUFWAND für den Kunden.
@@ -50,6 +68,12 @@ COPYWRITING-REGELN:
    NICHT: "einfach"      → SONDERN: "ein Telefonat, wir erledigen den Rest"
 
 10. KÜRZE über ALLES: Jeder Text der kürzer sein kann, MUSS kürzer sein. Keine Füllwörter, keine Wiederholungen.
+   TEXTLÄNGE-REGELN:
+   - Pain Headings: Maximum 8 Wörter. KÜRZER IST BESSER.
+   - Pain Subtext: Maximum 1 Satz (15-20 Wörter).
+   - Outcome Text: Maximum 8 Wörter pro Outcome.
+   - FAQ Antworten: Maximum 2 Sätze.
+   Jede Headline muss ALLEIN verständlich sein ohne den Subtext zu lesen.
 
 11. KONKRETE ZAHLEN (concrete_benefits): Generiere 3 greifbare Zahlen/KPIs die dem Kunden zeigen was er konkret bekommt. Große Zahlen oben (z.B. "€47.000", "32%", "€0"), kurzes Label, optionales Detail. Wenn keine exakten Zahlen möglich sind, nutze qualitative Benefits mit konkreten Zeitangaben ("In 30 Min.", "Ab Tag 1", "0 Eigenaufwand").
 
@@ -81,12 +105,21 @@ COPYWRITING RULES:
 2. SUB-HEADLINE: Maximum 1-2 sentences.
    Explains HOW the result is possible + WHY credible (numbers, experience).
 
-3. PAIN POINTS: Generate MAXIMUM 6 pain points. No more. Minimum 3.
-   Combine similar problems instead of listing them separately. Quality over quantity.
-   Each pain needs a HEADING (scannable, captures the problem) and SUBTEXT (twists the knife – creates emotional reaction). Use CONTEXT-SPECIFIC emojis that match each pain (e.g. 🏠 for real estate, 💼 for career, 👨‍👩‍👧 for family, 🏥 for health, 📉 for finance). Do NOT always use the same default emojis.
+3. PAIN POINTS: Generate EXACTLY 3 pain points. No more, no less.
+   Three strong pains beat six mediocre ones. Distill the most impactful points.
+   Each pain needs:
+   - HEADING: Maximum 8 words. Scanners must understand the story from headlines alone.
+   - SUBTEXT: Maximum 1 sentence (15-20 words).
+   - EMOJI: Context-specific.
+   - visual_type: Choose a type that visually shows the pain.
+   - visual_data: Concrete numbers for visualization.
+
+   Visual types: counter_down, counter_up, rising_number, comparison_bar, percentage_ring, simple_icon.
+   Be SPECIFIC. Use real numbers from client input. Estimate realistic industry values with "~" if needed.
 
 4. DREAM OUTCOMES: Generate EXACTLY 3 outcomes. No more, no less.
-   Each outcome must be specific and measurable. Combine if needed – 3 strong outcomes beat 6 weak ones.
+   Each outcome: Maximum 8 words. Specific and measurable.
+   Each outcome gets optional visual_type + visual_data (same types as pain, but positive).
    Add an outcome_quote: a vision statement that summarizes everything.
 
 5. PROCESS STEPS: Emphasize MINIMAL EFFORT for the client.
@@ -101,6 +134,12 @@ COPYWRITING RULES:
 9. SPECIFIC over VAGUE: "in 30 minutes" not "quickly", "no hidden costs" not "affordable".
 
 10. BREVITY above all: Every text that can be shorter MUST be shorter.
+   TEXT LENGTH RULES:
+   - Pain Headings: Maximum 8 words. SHORTER IS BETTER.
+   - Pain Subtext: Maximum 1 sentence (15-20 words).
+   - Outcome Text: Maximum 8 words per outcome.
+   - FAQ Answers: Maximum 2 sentences.
+   Every headline must be understandable ON ITS OWN without reading the subtext.
 
 11. CONCRETE BENEFITS (concrete_benefits): Generate 3 tangible numbers/KPIs showing the client what they concretely get. Large numbers on top (e.g. "€47,000", "32%", "€0"), short label, optional detail. If exact numbers aren't possible, use qualitative benefits with concrete timeframes ("In 30 min", "From day 1", "0 effort").
 
@@ -124,10 +163,12 @@ const JSON_SCHEMA = `{
   "situation_points": [
     {
       "icon": "alert-triangle",
-      "emoji": "🏚️",
-      "heading": "Scannable headline capturing the problem",
-      "subtext": "Emotional subtext that twists the knife",
-      "text": "Full pain point text (fallback)"
+      "emoji": "📉",
+      "heading": "Max 8 words – scannable headline",
+      "subtext": "Max 1 sentence – emotional subtext",
+      "text": "Full pain point text (fallback)",
+      "visual_type": "counter_down | counter_up | rising_number | comparison_bar | percentage_ring | simple_icon",
+      "visual_data": { "from": 35, "to": 29, "label": "Mitarbeiter", "prefix": "", "suffix": "", "value": 0, "you": 0, "competitor": 0, "color": "red" }
     }
   ],
   "goal": "Specific client goal (1 sentence)",
@@ -145,7 +186,12 @@ const JSON_SCHEMA = `{
     ]
   },
   "outcome_vision": [
-    { "text": "Specific, measurable result", "detail": "Why it is realistic (optional)" }
+    {
+      "text": "Max 8 words – specific, measurable result",
+      "detail": "Why it is realistic (optional)",
+      "visual_type": "counter_stable | rising_number | percentage_ring | simple_icon (optional)",
+      "visual_data": { "value": 35, "label": "Mitarbeiter bleiben", "prefix": "", "suffix": "" }
+    }
   ],
   "outcome_quote": "Vision statement that summarizes everything in one powerful sentence",
   "process_steps": [
