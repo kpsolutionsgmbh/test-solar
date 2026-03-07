@@ -85,7 +85,7 @@ export interface DealroomContent {
     detail?: string;
   }>;
   guarantee_title?: string;
-  guarantee_text: string;
+  guarantee_text?: string;
   cta_text: string;
   cta_derisking?: string;
   faq?: Array<{

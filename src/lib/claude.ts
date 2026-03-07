@@ -11,23 +11,25 @@ Deine Aufgabe: Aus der Beschreibung einer Kundensituation generierst du struktur
 
 COPYWRITING-REGELN:
 
-1. HEADLINE (H1): KURZ UND AUF DEN PUNKT.
-   Maximal 10-15 Wörter. Nicht mehr.
-   Formel: "[Produkt/Thema] für [Kundenname] – [Ergebnis]"
+1. HEADLINE (H1): NUR "[Versicherungsprodukt] für [Firmenname]". Sonst NICHTS.
+   KEIN Claim dahinter, KEIN Ergebnis-Versprechen, KEIN Zusatz nach dem Firmennamen.
    Beispiele:
-   - "Betriebliche Altersvorsorge für Mustermann GmbH – Mitarbeiter binden, Kosten senken"
-   - "Gewerbeversicherung für Schmidt Logistik – lückenlos abgesichert"
-   - "Ihr Versicherungscheck, Familie Link – Klarheit in 30 Minuten"
-   Test: Wenn der Leser denkt "Wow, aber wie?" → gut.
-   NICHT: Lange Beschreibungen oder vage Versprechen.
+   - "Betriebliche Altersvorsorge für Kröger Haustechnik"
+   - "Gewerbeversicherung für Schmidt Logistik GmbH"
+   - "Betriebshaftpflicht für Weber Elektrotechnik"
+   NICHT: "Betriebliche Altersvorsorge für Kröger Haustechnik – Fachkräfte binden, Fluktuation stoppen"
+   NICHT: "Lückenlose Absicherung für Kröger Haustechnik GmbH"
 
 2. SUB-HEADLINE: Maximal 1-2 Sätze.
    Erklärt WIE das Ergebnis möglich ist + WARUM glaubwürdig.
    Beispiel: "Basierend auf 25 Jahren Erfahrung und 4.000+ Kunden – unabhängig analysiert, transparent beraten."
 
-3. PAIN POINTS: Jeder Pain braucht ein HEADING (scanbar, fängt das Problem komplett ein) und einen SUBTEXT (dreht das Messer – erzeugt emotionale Reaktion). Die Pains folgen einer logischen Story-Reihenfolge. Nutze KONTEXT-SPEZIFISCHE Emojis die zum jeweiligen Pain passen (z.B. 🏠 für Immobilien, 💼 für Beruf, 👨‍👩‍👧 für Familie, 🏥 für Gesundheit, 📉 für Finanzen). NICHT immer die gleichen Standard-Emojis verwenden.
+3. PAIN POINTS: Generiere MAXIMAL 6 Pain-Points. Nicht mehr. Minimum 3.
+   Fasse ähnliche Probleme zusammen statt sie einzeln aufzulisten. Qualität über Quantität.
+   Jeder Pain braucht ein HEADING (scanbar, fängt das Problem komplett ein) und einen SUBTEXT (dreht das Messer – erzeugt emotionale Reaktion). Die Pains folgen einer logischen Story-Reihenfolge. Nutze KONTEXT-SPEZIFISCHE Emojis die zum jeweiligen Pain passen (z.B. 🏠 für Immobilien, 💼 für Beruf, 👨‍👩‍👧 für Familie, 🏥 für Gesundheit, 📉 für Finanzen). NICHT immer die gleichen Standard-Emojis verwenden.
 
-4. DREAM OUTCOMES: Spezifisch und messbar, nicht vage.
+4. DREAM OUTCOMES: Generiere EXAKT 3 Ergebnisse. Nicht mehr, nicht weniger.
+   Jedes Ergebnis muss spezifisch und messbar sein. Fasse zusammen wenn nötig – 3 starke Outcomes schlagen 6 schwache.
    NICHT: "Bessere Absicherung"
    SONDERN: "Lückenlose Absicherung für alle Familienmitglieder"
    Füge ein outcome_quote hinzu: ein Vision-Statement das alles zusammenfasst.
@@ -36,9 +38,7 @@ COPYWRITING-REGELN:
    Nutze "Wir"-Sprache um zu zeigen was die Agentur abnimmt.
    Ergänze customer_action: Was der Kunde konkret tun muss (minimal).
 
-6. GUARANTEE: Schlüsselwörter mit **fett** markieren (Markdown bold).
-   "Kein Risiko" und "nichts zu verlieren" explizit verwenden.
-   Gib einen guarantee_title an.
+6. NICHT GENERIEREN: Keinen Guarantee-Text, keinen "Unser Versprechen"-Block, kein Risiko-Umkehr-Statement als eigene Sektion.
 
 7. TONALITÄT: Professionell per "Sie", vertrauenswürdig, nicht aggressiv aber klar und überzeugend. Versicherungssprache die jeder versteht.
 
@@ -73,24 +73,26 @@ Your task: From a description of a client situation, generate structured, persua
 
 COPYWRITING RULES:
 
-1. HEADLINE (H1): SHORT AND TO THE POINT.
-   Maximum 10-15 words.
-   Formula: "[Product/Topic] for [Client Name] – [Result]"
-   Test: If the reader thinks "Wow, but how?" → good.
-   NOT: Long descriptions or vague promises.
+1. HEADLINE (H1): ONLY "[Insurance Product] for [Company Name]". Nothing else.
+   NO claim, NO result promise, NO addition after the company name.
+   Examples: "Business Insurance for Schmidt Logistics GmbH"
+   NOT: "Business Insurance for Schmidt Logistics – fully covered"
 
 2. SUB-HEADLINE: Maximum 1-2 sentences.
    Explains HOW the result is possible + WHY credible (numbers, experience).
 
-3. PAIN POINTS: Each pain needs a HEADING (scannable, captures the problem) and SUBTEXT (twists the knife – creates emotional reaction). Use CONTEXT-SPECIFIC emojis that match each pain (e.g. 🏠 for real estate, 💼 for career, 👨‍👩‍👧 for family, 🏥 for health, 📉 for finance). Do NOT always use the same default emojis.
+3. PAIN POINTS: Generate MAXIMUM 6 pain points. No more. Minimum 3.
+   Combine similar problems instead of listing them separately. Quality over quantity.
+   Each pain needs a HEADING (scannable, captures the problem) and SUBTEXT (twists the knife – creates emotional reaction). Use CONTEXT-SPECIFIC emojis that match each pain (e.g. 🏠 for real estate, 💼 for career, 👨‍👩‍👧 for family, 🏥 for health, 📉 for finance). Do NOT always use the same default emojis.
 
-4. DREAM OUTCOMES: Specific and measurable, not vague.
+4. DREAM OUTCOMES: Generate EXACTLY 3 outcomes. No more, no less.
+   Each outcome must be specific and measurable. Combine if needed – 3 strong outcomes beat 6 weak ones.
    Add an outcome_quote: a vision statement that summarizes everything.
 
 5. PROCESS STEPS: Emphasize MINIMAL EFFORT for the client.
    Use "We" language. Add customer_action: what the client concretely does (minimal).
 
-6. GUARANTEE: Mark keywords with **bold** (Markdown). Use "no risk" and "nothing to lose" explicitly. Include a guarantee_title.
+6. DO NOT GENERATE: No guarantee text, no "Our Promise" block, no risk-reversal statement as its own section.
 
 7. TONE: Professional "Sie/You", trustworthy, not aggressive but clear and convincing.
 
@@ -117,7 +119,7 @@ Conversion psychology: Identify problem → Amplify pain → Present solution �
 You MUST respond with exactly this JSON schema (no markdown code blocks, just pure JSON):`;
 
 const JSON_SCHEMA = `{
-  "hero_title": "Bold claim + result (personalized, max 10-15 words). Format: [Topic] for [Client] – [Result]",
+  "hero_title": "ONLY [Insurance Product] for [Company Name]. No claim, no addition.",
   "hero_subtitle": "How + Why credible (max 1-2 sentences, use numbers/experience)",
   "situation_points": [
     {
@@ -173,8 +175,6 @@ const JSON_SCHEMA = `{
       "detail": "Unverbindlich und ohne Verpflichtung"
     }
   ],
-  "guarantee_title": "Unser Versprechen an Sie",
-  "guarantee_text": "Text with **bold keywords** for scanners. Use 'no risk' and 'nothing to lose'.",
   "cta_text": "Jetzt Termin vereinbaren",
   "cta_derisking": "Kostenlos & unverbindlich",
   "faq": [

@@ -637,17 +637,6 @@ export default function NewDealroomPage() {
             </div>
 
             <div className="space-y-2">
-              <Label>Garantie-Text</Label>
-              <Textarea
-                value={generatedContent.guarantee_text}
-                onChange={(e) =>
-                  setGeneratedContent({ ...generatedContent, guarantee_text: e.target.value })
-                }
-                rows={2}
-              />
-            </div>
-
-            <div className="space-y-2">
               <Label>CTA-Text</Label>
               <Input
                 value={generatedContent.cta_text}

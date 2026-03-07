@@ -55,13 +55,6 @@ function getVideoEmbedUrl(url: string): string | null {
   return url;
 }
 
-function renderBoldText(text: string) {
-  const parts = text.split(/\*\*(.*?)\*\*/g);
-  return parts.map((part, i) =>
-    i % 2 === 1 ? <strong key={i} className="text-white font-bold">{part}</strong> : part
-  );
-}
-
 function getOutcomeText(outcome: string | { text: string; detail?: string }): string {
   return typeof outcome === 'string' ? outcome : outcome.text;
 }
@@ -475,7 +468,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
 
                     {/* Pain Cards */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-                      {content.situation_points.map((point, i) => (
+                      {content.situation_points.slice(0, 6).map((point, i) => (
                         <div
                           key={i}
                           className="rounded-xl p-5 border"
@@ -551,7 +544,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                       </h2>
 
                       <div className="space-y-4 mb-8">
-                        {content.outcome_vision.map((outcome, i) => (
+                        {content.outcome_vision.slice(0, 3).map((outcome, i) => (
                           <div key={i} className="flex items-start gap-3 sm:gap-4">
                             <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 text-[#22c55e] shrink-0 mt-0.5" style={{ filter: 'drop-shadow(0 0 6px rgba(34,197,94,0.4))' }} />
                             <div>
@@ -607,38 +600,6 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                   </div>
                 </section>
               )}
-
-              {/* ===== 5. GUARANTEE - Dark Teal Card ===== */}
-              <section className="fade-in-up bg-white">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-                  <div
-                    className="rounded-2xl sm:rounded-3xl p-6 sm:p-10 lg:p-12 text-center relative overflow-hidden"
-                    style={{ backgroundColor: '#0a2e3d' }}
-                  >
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full opacity-10" style={{ background: `radial-gradient(circle, ${brandColor}, transparent)` }} />
-                    <div className="relative z-10">
-                      <div
-                        className="h-14 w-14 sm:h-16 sm:w-16 rounded-full mx-auto mb-5 sm:mb-6 flex items-center justify-center shadow-lg"
-                        style={{ backgroundColor: brandColor, boxShadow: `0 0 40px ${brandColor}40` }}
-                      >
-                        <Shield className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
-                      </div>
-                      <h2 className="text-[22px] sm:text-[28px] font-bold text-white mb-4">
-                        {content.guarantee_title || tr.sections.guaranteeTitle}
-                      </h2>
-                      <p className="text-[#94a3b8] max-w-xl mx-auto leading-relaxed text-base sm:text-lg">
-                        {renderBoldText(content.guarantee_text)}
-                      </p>
-                    </div>
-                  </div>
-
-                  <CtaBlock
-                    text={tr.sections.ctaAfterGuarantee}
-                    derisking={tr.sections.ctaDeriskingGuarantee}
-                    ctaName="after-guarantee"
-                  />
-                </div>
-              </section>
 
               {/* ===== 7. FAQ ACCORDION ===== */}
               {content.faq && content.faq.length > 0 && (

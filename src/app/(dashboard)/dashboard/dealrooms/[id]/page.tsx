@@ -39,7 +39,6 @@ import {
   AlertTriangle,
   Rocket,
   ListChecks,
-  Shield,
   MousePointerClick,
   MessageSquareQuote,
   Users,
@@ -615,26 +614,17 @@ export default function EditDealroomPage() {
                 </CardContent>
               </Card>
 
-              {/* Guarantee + CTA */}
+              {/* CTA */}
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-sm font-semibold flex items-center gap-2 text-[#11485e]">
-                    <Shield className="h-4 w-4" />
-                    Garantie & Call-to-Action
+                    <MousePointerClick className="h-4 w-4" />
+                    Call-to-Action
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div className="space-y-1">
-                    <Label className="text-xs">Garantie-Text</Label>
-                    <Textarea
-                      value={content.guarantee_text}
-                      onChange={(e) => setContent({ ...content, guarantee_text: e.target.value })}
-                      rows={2}
-                    />
-                  </div>
-                  <div className="space-y-1">
                     <Label className="text-xs flex items-center gap-1">
-                      <MousePointerClick className="h-3 w-3" />
                       CTA-Text
                     </Label>
                     <Input
