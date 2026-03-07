@@ -165,40 +165,36 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
   };
 
   const brandColor = admin?.brand_color || '#11485e';
-  const formattedDate = new Date(dealroom.created_at).toLocaleDateString(
-    dealroom.language === 'de' ? 'de-DE' : 'en-US',
-    { year: 'numeric', month: 'long', day: 'numeric' }
-  );
 
-  // Social proof element (reusable under CTAs)
+  // Social proof element (reusable under CTAs) – vertical stack
   const SocialProof = () => (
-    <div className="flex items-center justify-center gap-3 mt-4">
+    <div className="flex flex-col items-center gap-1 mt-3">
       {/* Overlapping avatars */}
       <div className="flex -space-x-2">
         {[0, 1, 2].map((i) => (
           <div
             key={i}
-            className="h-7 w-7 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-white"
+            className="h-8 w-8 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-white"
             style={{ backgroundColor: i === 0 ? brandColor : i === 1 ? '#0d3d28' : '#6b7280' }}
           >
             {['M', 'S', 'K'][i]}
           </div>
         ))}
       </div>
-      <div className="flex items-center gap-1.5">
-        <div className="flex">
-          {[1, 2, 3, 4, 5].map((s) => (
-            <Star key={s} className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
-          ))}
-        </div>
-        <span className="text-xs text-[#6b7280] font-medium">4.500+ {dealroom.language === 'de' ? 'zufriedene Kunden' : 'satisfied clients'}</span>
+      {/* Stars ABOVE text */}
+      <div className="flex">
+        {[1, 2, 3, 4, 5].map((s) => (
+          <Star key={s} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+        ))}
       </div>
+      {/* Text directly below stars */}
+      <span className="text-sm text-[#6b7280] font-medium">4.500+ {dealroom.language === 'de' ? 'zufriedene Kunden' : 'satisfied clients'}</span>
     </div>
   );
 
   // Reusable CTA block with social proof
   const CtaBlock = ({ text, derisking, ctaName, className = '' }: { text: string; derisking: string; ctaName: string; className?: string }) => (
-    <div className={`text-center py-8 ${className}`}>
+    <div className={`text-center py-6 ${className}`}>
       <button
         onClick={() => handleCta(ctaName)}
         className="inline-flex items-center gap-3 px-8 sm:px-10 py-4 rounded-2xl text-white font-semibold text-base sm:text-lg shadow-lg transition-all hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] min-h-[48px]"
@@ -309,17 +305,11 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                     <p className="text-[15px] sm:text-[17px] text-[#6b7280] max-w-2xl mx-auto leading-relaxed">
                       {content.hero_subtitle}
                     </p>
-                    {/* V5: Urgency text */}
-                    <p className="text-xs text-[#9ca3af] mt-4">
-                      {dealroom.language === 'de'
-                        ? `Erstellt am ${formattedDate} – individuell für ${dealroom.client_company}`
-                        : `Created ${formattedDate} – individually for ${dealroom.client_company}`}
-                    </p>
                   </div>
 
                   {/* Video with teaser text */}
                   {dealroom.video_url && (
-                    <div className="mb-8">
+                    <div className="mb-4">
                       <div className="flex items-center gap-2 mb-3">
                         <Play className="h-5 w-5" style={{ color: brandColor }} />
                         <h2 className="text-[22px] sm:text-[28px] font-bold text-[#1a1a1a]">
@@ -354,9 +344,9 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                   {/* V5: Awards moved here (after first CTA) */}
                   <div className="flex items-center justify-center gap-6 sm:gap-10 flex-wrap mt-2 mb-8">
                     {/* eslint-disable @next/next/no-img-element */}
-                    <img src="/images/awards/focus-money.webp" alt="Focus Money" className="h-10 sm:h-14 object-contain opacity-80" />
-                    <img src="/images/awards/stiftung-warentest.webp" alt="Stiftung Warentest" className="h-10 sm:h-14 object-contain opacity-80" />
-                    <img src="/images/awards/disq-rating.jpg" alt="DISQ Rating" className="h-10 sm:h-14 object-contain opacity-80" />
+                    <img src="/images/awards/focus-money.webp" alt="Focus Money" className="h-16 sm:h-20 object-contain opacity-90" />
+                    <img src="/images/awards/stiftung-warentest.webp" alt="Stiftung Warentest" className="h-16 sm:h-20 object-contain opacity-90" />
+                    <img src="/images/awards/disq-rating.jpg" alt="DISQ Rating" className="h-16 sm:h-20 object-contain opacity-90" />
                     {/* eslint-enable @next/next/no-img-element */}
                   </div>
 
@@ -405,7 +395,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
 
               {/* ===== 2. PAIN SECTION - Dark Red-Brown Container ===== */}
               <section className="fade-in-up bg-white">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
                   <div className="rounded-2xl sm:rounded-3xl p-6 sm:p-10 overflow-hidden" style={{ backgroundColor: '#1f0f12' }}>
                     {/* Header */}
                     <div className="text-center mb-8">
@@ -476,7 +466,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
 
               {/* ===== 3. DREAM OUTCOME - Pure Green Gradient Card ===== */}
               <section className="fade-in-up bg-white">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
                   <div
                     className="rounded-2xl sm:rounded-3xl p-6 sm:p-10 lg:p-12 relative overflow-hidden"
                     style={{
@@ -534,7 +524,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
               {/* ===== 4. CONCRETE BENEFITS - Numbers Section ===== */}
               {content.concrete_benefits && content.concrete_benefits.length > 0 && (
                 <section className="fade-in-up bg-[#fafafa]">
-                  <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+                  <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
                     <h2 className="text-[22px] sm:text-[28px] font-bold text-[#1a1a1a] text-center mb-10">
                       {tr.sections.concreteBenefitsTitle}
                     </h2>
@@ -557,7 +547,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
 
               {/* ===== 5. HOW IT WORKS - Process Steps ===== */}
               <section className="fade-in-up bg-white">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
                   <div className="text-center mb-10">
                     <div className="inline-flex items-center justify-center h-12 w-12 rounded-full mb-4" style={{ backgroundColor: brandColor + '12' }}>
                       <Timer className="h-6 w-6" style={{ color: brandColor }} />
@@ -612,7 +602,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
 
               {/* ===== 6. GUARANTEE - Dark Teal Card ===== */}
               <section className="fade-in-up bg-white">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
                   <div
                     className="rounded-2xl sm:rounded-3xl p-6 sm:p-10 lg:p-12 text-center relative overflow-hidden"
                     style={{ backgroundColor: '#0a2e3d' }}
@@ -645,7 +635,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
               {/* ===== 7. FAQ ACCORDION ===== */}
               {content.faq && content.faq.length > 0 && (
                 <section className="fade-in-up bg-[#fafafa]">
-                  <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+                  <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
                     <h2 className="text-[22px] sm:text-[28px] font-bold text-[#1a1a1a] text-center mb-8">
                       {tr.sections.faqTitle}
                     </h2>
@@ -679,7 +669,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
               {/* ===== 8. SOCIAL PROOF INLINE ===== */}
               {references.length > 0 && (
                 <section className="fade-in-up bg-white">
-                  <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+                  <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
                     <div className="text-center mb-8">
                       <Star className="h-6 w-6 mx-auto mb-3" style={{ color: brandColor }} />
                       <h2 className="text-[22px] sm:text-[28px] font-bold text-[#1a1a1a]">{tr.references.title}</h2>
@@ -731,7 +721,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
 
               {/* ===== 9. KPI NUMBERS ===== */}
               <section className="fade-in-up bg-[#fafafa]">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 text-center">
                     <div>
                       <p className="text-3xl sm:text-4xl font-bold text-[#1a1a1a]">4.000+</p>
@@ -755,7 +745,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
 
               {/* ===== 10. ABOUT US with Bigger Marquee ===== */}
               <section className="fade-in-up bg-white">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
                   <div className="rounded-2xl overflow-hidden border border-[#e5e7eb] shadow-sm bg-white">
                     <div className="grid grid-cols-1 lg:grid-cols-2">
                       {/* Left: Info */}
@@ -809,7 +799,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
 
               {/* ===== 11. PARTNER LOGOS – Deep Teal Background ===== */}
               <section className="fade-in-up">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
                   <div className="rounded-2xl py-8 px-6 sm:px-10" style={{ backgroundColor: '#11485e' }}>
                     <p className="text-center text-xs sm:text-sm font-medium text-white/60 uppercase tracking-wider mb-6">
                       {tr.sections.partnersTitle}
@@ -821,7 +811,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                           key={i}
                           src={logo.src}
                           alt={logo.alt}
-                          className="h-8 sm:h-10 object-contain opacity-70 hover:opacity-100 transition-opacity duration-300 brightness-0 invert"
+                          className="h-16 sm:h-20 object-contain opacity-70 hover:opacity-100 transition-opacity duration-300 brightness-0 invert"
                         />
                       ))}
                     </div>
@@ -831,7 +821,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
 
               {/* ===== 12. FINAL CTA BLOCK ===== */}
               <section className="fade-in-up bg-[#fafafa]">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
                   <div
                     className="rounded-2xl sm:rounded-3xl p-6 sm:p-10 lg:p-12 text-center relative overflow-hidden"
                     style={{ backgroundColor: brandColor }}
@@ -876,41 +866,9 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
           )}
         </div>
 
-        {/* ==================== OFFER TAB with 3-step process ==================== */}
+        {/* ==================== OFFER TAB ==================== */}
         <div className={activeTab === 'offer' ? '' : 'hidden'}>
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
-            {/* 3-Step Process Bar */}
-            <div className="fade-in-up mb-8">
-              <h2 className="text-[22px] sm:text-[28px] font-bold text-[#1a1a1a] text-center mb-6">
-                {tr.offer.stepsTitle}
-              </h2>
-              <div className="flex items-center justify-center gap-2 sm:gap-4 max-w-xl mx-auto">
-                {[
-                  { num: '1', label: tr.offer.step1, active: true },
-                  { num: '2', label: tr.offer.step2, active: false },
-                  { num: '3', label: tr.offer.step3, active: false },
-                ].map((step, i) => (
-                  <div key={i} className="flex items-center gap-2 sm:gap-3">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="h-8 w-8 sm:h-9 sm:w-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                        style={{
-                          backgroundColor: step.active ? brandColor : '#e5e7eb',
-                          color: step.active ? 'white' : '#6b7280',
-                        }}
-                      >
-                        {step.num}
-                      </div>
-                      <span className={`text-xs sm:text-sm font-medium whitespace-nowrap ${step.active ? 'text-[#1a1a1a]' : 'text-[#9ca3af]'}`}>
-                        {step.label}
-                      </span>
-                    </div>
-                    {i < 2 && <ChevronRight className="h-4 w-4 text-[#d1d5db] shrink-0" />}
-                  </div>
-                ))}
-              </div>
-            </div>
-
             <div className="text-center mb-6 fade-in-up">
               <h3 className="text-[18px] sm:text-[22px] font-semibold text-[#1a1a1a] mb-1">
                 {tr.offer.title}
@@ -951,6 +909,38 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                 </div>
               </div>
             )}
+
+            {/* 3-Step Process Bar – BELOW contact */}
+            <div className="fade-in-up mt-10">
+              <h2 className="text-[22px] sm:text-[28px] font-bold text-[#1a1a1a] text-center mb-6">
+                {tr.offer.stepsTitle}
+              </h2>
+              <div className="flex flex-col md:flex-row items-center justify-center gap-4 max-w-xl mx-auto">
+                {[
+                  { num: '1', label: tr.offer.step1, active: true },
+                  { num: '2', label: tr.offer.step2, active: false },
+                  { num: '3', label: tr.offer.step3, active: false },
+                ].map((step, i) => (
+                  <div key={i} className="flex items-center gap-2 sm:gap-3">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="h-8 w-8 sm:h-9 sm:w-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+                        style={{
+                          backgroundColor: step.active ? brandColor : '#e5e7eb',
+                          color: step.active ? 'white' : '#6b7280',
+                        }}
+                      >
+                        {step.num}
+                      </div>
+                      <span className={`text-xs sm:text-sm font-medium whitespace-nowrap ${step.active ? 'text-[#1a1a1a]' : 'text-[#9ca3af]'}`}>
+                        {step.label}
+                      </span>
+                    </div>
+                    {i < 2 && <ChevronRight className="h-4 w-4 text-[#d1d5db] shrink-0 hidden md:block" />}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -964,7 +954,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
               <p className="text-[#6b7280]">{tr.references.subtitle}</p>
             </div>
             {references.length === 0 ? (
-              <div className="text-center py-12 sm:py-16 text-[#6b7280]">
+              <div className="text-center py-8 sm:py-10 text-[#6b7280]">
                 <Star className="h-12 w-12 mx-auto mb-4 text-[#d1d5db]" />
                 <p>{dealroom.language === 'de' ? 'Referenzen werden in Kürze hinzugefügt.' : 'References will be added shortly.'}</p>
               </div>
@@ -975,8 +965,8 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                     key={ref.id}
                     className="fade-in-up rounded-2xl bg-white border border-[#e5e7eb] shadow-sm overflow-hidden"
                   >
-                    <div className="grid grid-cols-1 lg:grid-cols-2">
-                      {/* Left: Video or Image */}
+                    <div className="flex flex-col-reverse lg:grid lg:grid-cols-2">
+                      {/* Video or Image – on mobile below (via flex-col-reverse) */}
                       <div className="bg-[#fafafa] flex items-center justify-center min-h-[240px] sm:min-h-[280px]">
                         {ref.video_url ? (
                           <div className="w-full h-full">

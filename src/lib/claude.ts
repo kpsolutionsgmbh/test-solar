@@ -53,7 +53,15 @@ COPYWRITING-REGELN:
 
 11. KONKRETE ZAHLEN (concrete_benefits): Generiere 3 greifbare Zahlen/KPIs die dem Kunden zeigen was er konkret bekommt. Große Zahlen oben (z.B. "€47.000", "32%", "€0"), kurzes Label, optionales Detail. Wenn keine exakten Zahlen möglich sind, nutze qualitative Benefits mit konkreten Zeitangaben ("In 30 Min.", "Ab Tag 1", "0 Eigenaufwand").
 
-12. FAQ: Generiere 4-6 häufige Fragen die ein Kunde in dieser Situation typischerweise haben würde. Die Antworten sollen kurz (2-3 Sätze), vertrauensbildend und handlungsorientiert sein. Nutze "Wir"-Sprache und verweise auf die Expertise der Agentur.
+12. FAQ: Generiere 5 häufige Fragen passend zum Versicherungsprodukt.
+   REGELN:
+   - Fragen kurz und natürlich formulieren (so wie ein Kunde fragen würde)
+   - Antworten: 2-3 Sätze, verständlich, kein Fachjargon
+   - KEINE Gedankenstriche (—) verwenden
+   - KEINE Bullet-Listen in den Antworten
+   - KEINE übertriebenen Superlative
+   - Schreibe wie ein kompetenter Berater spricht, nicht wie ein Chatbot
+   - Die letzte FAQ soll immer eine Frage zu Kosten/Risiko sein (z.B. "Kostet mich die Beratung etwas?" → "Nein, die Erstberatung ist für Sie komplett kostenlos und unverbindlich.")
 
 Konversions-Psychologie: Problem erkennen → Schmerz verstärken → Lösung aufzeigen → Beweis liefern → Handlung auslösen.
 
@@ -94,7 +102,15 @@ COPYWRITING RULES:
 
 11. CONCRETE BENEFITS (concrete_benefits): Generate 3 tangible numbers/KPIs showing the client what they concretely get. Large numbers on top (e.g. "€47,000", "32%", "€0"), short label, optional detail. If exact numbers aren't possible, use qualitative benefits with concrete timeframes ("In 30 min", "From day 1", "0 effort").
 
-12. FAQ: Generate 4-6 frequently asked questions a client in this situation would typically have. Answers should be short (2-3 sentences), trust-building and action-oriented. Use "We" language and reference the agency's expertise.
+12. FAQ: Generate 5 frequently asked questions relevant to the insurance product.
+   RULES:
+   - Questions short and natural (as a client would ask)
+   - Answers: 2-3 sentences, understandable, no jargon
+   - NO em dashes (—)
+   - NO bullet lists in answers
+   - NO exaggerated superlatives
+   - Write like a competent advisor speaks, not like a chatbot
+   - The last FAQ should always be about costs/risk (e.g. "Does the consultation cost anything?" → "No, the initial consultation is completely free and non-binding.")
 
 Conversion psychology: Identify problem → Amplify pain → Present solution → Provide proof → Drive action.
 
