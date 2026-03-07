@@ -17,6 +17,14 @@ export async function POST(request: NextRequest) {
 
     const userAgent = request.headers.get('user-agent') || null;
 
+    // Filter out bots and crawlers
+    if (userAgent) {
+      const botPatterns = /bot|crawler|spider|scraper|googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|facebookexternalhit|twitterbot|linkedinbot|whatsapp|telegrambot|preview|headless|phantom|selenium/i;
+      if (botPatterns.test(userAgent)) {
+        return NextResponse.json({ ok: true });
+      }
+    }
+
     const supabase = createServiceRoleClient();
 
     await supabase.from('tracking_events').insert({

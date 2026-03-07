@@ -13,7 +13,6 @@ import {
   Users,
   FileStack,
 } from 'lucide-react';
-import { NotificationBell } from './notification-bell';
 
 const mainNavItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -111,11 +110,6 @@ export function DashboardSidebar({ userName, companyName }: SidebarProps) {
           Einstellungen
         </Link>
       </nav>
-
-      {/* Notifications */}
-      <div className="px-3 py-2 border-t border-[#e5e7eb]">
-        <NotificationBell />
-      </div>
 
       {/* User section */}
       <div className="p-3 border-t border-[#e5e7eb]">

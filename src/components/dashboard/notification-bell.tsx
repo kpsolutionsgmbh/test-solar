@@ -161,7 +161,7 @@ export function NotificationBell() {
           <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
 
           {/* Dropdown */}
-          <div className="absolute left-full ml-2 top-0 w-80 bg-white border border-[#e5e7eb] rounded-xl shadow-xl z-50 max-h-[400px] overflow-y-auto">
+          <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-[#e5e7eb] rounded-xl shadow-xl z-50 max-h-[400px] overflow-y-auto">
             <div className="px-4 py-3 border-b border-[#e5e7eb]">
               <p className="text-sm font-semibold text-[#1a1a1a]">Benachrichtigungen</p>
             </div>

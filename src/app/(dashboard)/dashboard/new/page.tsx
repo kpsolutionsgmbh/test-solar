@@ -47,6 +47,9 @@ import {
   Upload,
   ImageIcon,
   FileStack,
+  FileUp,
+  X,
+  File,
 } from 'lucide-react';
 import { uploadFile } from '@/lib/upload';
 
@@ -99,6 +102,7 @@ export default function NewDealroomPage() {
   const [generatedContent, setGeneratedContent] = useState<DealroomContent | null>(null);
   const [videoUrl, setVideoUrl] = useState('');
   const [pandadocUrl, setPandadocUrl] = useState('');
+  const [pendingDocuments, setPendingDocuments] = useState<File[]>([]);
 
   // Fetch team members and customers on mount
   useEffect(() => {
@@ -264,7 +268,7 @@ export default function NewDealroomPage() {
       }
 
       const slug = nanoid(16);
-      const { error } = await supabase.from('dealrooms').insert({
+      const { data: newDealroom, error } = await supabase.from('dealrooms').insert({
         admin_id: user.id,
         slug,
         status: asDraft ? 'draft' : 'published',
@@ -283,9 +287,31 @@ export default function NewDealroomPage() {
         language,
         assigned_member_id: assignedMemberId && assignedMemberId !== 'none' ? assignedMemberId : null,
         published_at: asDraft ? null : new Date().toISOString(),
-      });
+      }).select('id').single();
 
       if (error) throw error;
+
+      // Upload pending documents
+      if (pendingDocuments.length > 0 && newDealroom?.id) {
+        const docInserts = [];
+        for (let i = 0; i < pendingDocuments.length; i++) {
+          const file = pendingDocuments[i];
+          const fileUrl = await uploadFile(file, 'documents');
+          if (fileUrl) {
+            docInserts.push({
+              dealroom_id: newDealroom.id,
+              name: file.name,
+              file_url: fileUrl,
+              file_type: file.type || 'application/octet-stream',
+              file_size: file.size,
+              sort_order: i,
+            });
+          }
+        }
+        if (docInserts.length > 0) {
+          await supabase.from('dealroom_documents').insert(docInserts);
+        }
+      }
 
       const dealroomUrl = `${window.location.origin}/d/${slug}`;
 
@@ -978,6 +1004,52 @@ export default function NewDealroomPage() {
                 Optional: Das Angebotsdokument zum Unterschreiben
               </p>
             </div>
+
+            {/* Documents Upload */}
+            <div className="space-y-2 border-t border-[#e5e7eb] pt-4">
+              <Label className="flex items-center gap-1.5">
+                <FileUp className="h-4 w-4" />
+                Dokumente (optional)
+              </Label>
+              <p className="text-xs text-[#6b7280]">
+                PDFs, Broschüren oder andere Dateien für den Kunden zum Download
+              </p>
+              <label className="flex items-center justify-center gap-2 border-2 border-dashed border-[#e5e7eb] rounded-lg py-6 cursor-pointer hover:border-[#11485e] hover:bg-[#11485e]/5 transition-colors">
+                <Upload className="h-5 w-5 text-[#6b7280]" />
+                <span className="text-sm text-[#6b7280]">Dateien auswählen</span>
+                <input
+                  type="file"
+                  multiple
+                  className="hidden"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg"
+                  onChange={(e) => {
+                    if (e.target.files) {
+                      setPendingDocuments(prev => [...prev, ...Array.from(e.target.files!)]);
+                    }
+                    e.target.value = '';
+                  }}
+                />
+              </label>
+              {pendingDocuments.length > 0 && (
+                <div className="space-y-1.5 mt-2">
+                  {pendingDocuments.map((file, i) => (
+                    <div key={i} className="flex items-center gap-2 bg-[#fafafa] rounded-lg px-3 py-2">
+                      <File className="h-4 w-4 text-[#6b7280] shrink-0" />
+                      <span className="text-sm text-[#1a1a1a] truncate flex-1">{file.name}</span>
+                      <span className="text-xs text-[#9ca3af] shrink-0">{(file.size / 1024).toFixed(0)} KB</span>
+                      <button
+                        type="button"
+                        onClick={() => setPendingDocuments(prev => prev.filter((_, j) => j !== i))}
+                        className="text-[#6b7280] hover:text-red-500 shrink-0"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="flex justify-between pt-4">
               <Button variant="outline" onClick={goBack}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -1025,6 +1097,12 @@ export default function NewDealroomPage() {
                   <span className="text-[#6b7280]">PandaDoc:</span>{' '}
                   <span className="font-medium">{pandadocUrl ? 'Ja' : 'Nein'}</span>
                 </div>
+                {pendingDocuments.length > 0 && (
+                  <div>
+                    <span className="text-[#6b7280]">Dokumente:</span>{' '}
+                    <span className="font-medium">{pendingDocuments.length} Datei{pendingDocuments.length !== 1 ? 'en' : ''}</span>
+                  </div>
+                )}
                 {assignedMemberId && assignedMemberId !== 'none' && (
                   <div>
                     <span className="text-[#6b7280]">Ansprechpartner:</span>{' '}

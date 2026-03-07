@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -57,7 +57,24 @@ Gündesli & Kollegen`;
   const [body, setBody] = useState(defaultBody);
 
   // Reset form when modal opens with new data
-  // Use useEffect to sync props -> state when modal opens
+  useEffect(() => {
+    if (open) {
+      setEmail(clientEmail);
+      setSubject(`Ihr persönliches Angebot – Gündesli & Kollegen`);
+      setBody(`Sehr geehrte/r ${clientName},
+
+vielen Dank für unser Gespräch. Wie besprochen habe ich Ihr persönliches Angebot für ${clientCompany} zusammengestellt.
+
+Hier können Sie es direkt einsehen:
+[LINK]
+
+Bei Fragen stehe ich Ihnen jederzeit zur Verfügung.
+
+Mit freundlichen Grüßen
+${contactName}
+Gündesli & Kollegen`);
+    }
+  }, [open, clientEmail, clientName, clientCompany, contactName]);
 
   const handleSend = async () => {
     if (!email.trim()) {

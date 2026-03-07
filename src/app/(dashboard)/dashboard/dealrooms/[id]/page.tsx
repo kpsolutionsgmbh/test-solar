@@ -100,6 +100,7 @@ export default function EditDealroomPage() {
   // Internal Notes
   const [internalNotes, setInternalNotes] = useState<Array<{id: string; text: string; created_at: string; author: string}>>([]);
   const [newNote, setNewNote] = useState('');
+  const [adminName, setAdminName] = useState('');
 
   // Modals
   const [templateModalOpen, setTemplateModalOpen] = useState(false);
@@ -110,10 +111,12 @@ export default function EditDealroomPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const [{ data }, { data: members }] = await Promise.all([
+      const [{ data }, { data: members }, { data: adminUser }] = await Promise.all([
         supabase.from('dealrooms').select('*').eq('id', params.id).single(),
         supabase.from('team_members').select('*').eq('admin_id', user.id).eq('is_active', true).order('name'),
+        supabase.from('admin_users').select('name').eq('id', user.id).single(),
       ]);
+      if (adminUser?.name) setAdminName(adminUser.name);
 
       if (data) {
         setDealroom(data as Dealroom);
@@ -145,7 +148,7 @@ export default function EditDealroomPage() {
       id: crypto.randomUUID(),
       text: newNote.trim(),
       created_at: new Date().toISOString(),
-      author: '',
+      author: adminName,
     };
     const updated = [note, ...internalNotes];
     setInternalNotes(updated);
@@ -937,7 +940,7 @@ export default function EditDealroomPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setStatus('archived')}
+                onClick={() => handleSave('archived')}
               >
                 <Archive className="h-4 w-4 mr-1" />
                 Archivieren
