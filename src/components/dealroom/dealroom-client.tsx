@@ -28,6 +28,7 @@ import {
   ChevronRight,
   ChevronDown,
   PenLine,
+  Rocket,
 } from 'lucide-react';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -877,6 +878,8 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
         {/* ==================== OFFER TAB ==================== */}
         <div className={activeTab === 'offer' ? '' : 'hidden'}>
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
+
+            {/* 1. PandaDoc Embed with headline + subline */}
             <div className="text-center mb-6 fade-in-up">
               <h3 className="text-[18px] sm:text-[22px] font-semibold text-[#1a1a1a] mb-1">
                 {tr.offer.title}
@@ -885,7 +888,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
             </div>
 
             {dealroom.pandadoc_embed_url ? (
-              <div className="fade-in-up rounded-2xl overflow-hidden border border-[#e5e7eb] shadow-sm" style={{ minHeight: '70vh' }}>
+              <div className="fade-in-up rounded-2xl overflow-hidden border-2 shadow-sm" style={{ borderColor: brandColor + '30', minHeight: '70vh' }}>
                 <iframe
                   src={dealroom.pandadoc_embed_url}
                   className="w-full"
@@ -899,26 +902,55 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
               </div>
             )}
 
-            {/* Questions? Contact block */}
+            {/* 2. Trust block – awards + social proof */}
+            <div className="fade-in-up mt-8 flex flex-col items-center gap-4">
+              <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2">
+                  <Award className="h-5 w-5" style={{ color: brandColor }} />
+                  <span className="text-xs sm:text-sm font-medium text-[#6b7280]">{dealroom.language === 'de' ? 'Zertifizierter Fachbetrieb' : 'Certified specialist'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" style={{ color: brandColor }} />
+                  <span className="text-xs sm:text-sm font-medium text-[#6b7280]">{dealroom.language === 'de' ? 'TÜV-geprüft' : 'TÜV certified'}</span>
+                </div>
+              </div>
+              <SocialProof />
+            </div>
+
+            {/* 3. Contact card with avatar */}
             {contact && (
-              <div className="text-center mt-8 fade-in-up">
-                <p className="text-sm font-medium text-[#6b7280] mb-3">{tr.offer.questionsTitle}</p>
-                <div className="flex flex-wrap items-center justify-center gap-4 text-sm">
-                  {contact.phone && (
-                    <a href={`tel:${contact.phone}`} className="flex items-center gap-1.5 font-medium hover:underline min-h-[44px]" style={{ color: brandColor }}>
-                      <Phone className="h-4 w-4" /> {contact.phone}
-                    </a>
+              <div className="fade-in-up mt-10">
+                <p className="text-sm font-medium text-[#6b7280] text-center mb-4">{tr.offer.questionsTitle}</p>
+                <div className="max-w-md mx-auto rounded-2xl border border-[#e5e7eb] bg-white shadow-sm p-5 flex items-center gap-4">
+                  {contact.avatar_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={contact.avatar_url} alt={contact.name} className="h-14 w-14 rounded-full object-cover shrink-0" />
+                  ) : (
+                    <div className="h-14 w-14 rounded-full flex items-center justify-center text-white text-lg font-bold shrink-0" style={{ backgroundColor: brandColor }}>
+                      {contact.name?.charAt(0) || '?'}
+                    </div>
                   )}
-                  {contact.email && (
-                    <a href={`mailto:${contact.email}`} className="flex items-center gap-1.5 font-medium hover:underline min-h-[44px]" style={{ color: brandColor }}>
-                      <Mail className="h-4 w-4" /> {contact.email}
-                    </a>
-                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-[#1a1a1a] text-sm sm:text-base">{contact.name}</p>
+                    {contact.position && <p className="text-xs text-[#9ca3af]">{contact.position}</p>}
+                    <div className="flex flex-wrap gap-3 mt-2 text-sm">
+                      {contact.phone && (
+                        <a href={`tel:${contact.phone}`} className="flex items-center gap-1.5 font-medium hover:underline min-h-[44px]" style={{ color: brandColor }}>
+                          <Phone className="h-4 w-4" /> {contact.phone}
+                        </a>
+                      )}
+                      {contact.email && (
+                        <a href={`mailto:${contact.email}`} className="flex items-center gap-1.5 font-medium hover:underline min-h-[44px]" style={{ color: brandColor }}>
+                          <Mail className="h-4 w-4" /> {contact.email}
+                        </a>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* 3-Step Process Bar – BELOW contact */}
+            {/* 4. 3-Step Process Bar */}
             <div className="fade-in-up mt-10">
               <h2 className="text-[22px] sm:text-[28px] font-bold text-[#1a1a1a] text-center mb-6">
                 {tr.offer.stepsTitle}
@@ -949,6 +981,72 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                 ))}
               </div>
             </div>
+
+            {/* 5. Post-Signature Flow */}
+            <div className="fade-in-up mt-12">
+              <h2 className="text-[20px] sm:text-[24px] font-bold text-[#1a1a1a] text-center mb-2">
+                {dealroom.language === 'de' ? 'Was nach Ihrer Unterschrift passiert' : 'What happens after you sign'}
+              </h2>
+              <p className="text-sm text-[#6b7280] text-center mb-8">
+                {dealroom.language === 'de' ? 'Drei einfache Schritte – wir kümmern uns um alles' : 'Three simple steps – we take care of everything'}
+              </p>
+              <div className="max-w-lg mx-auto space-y-6">
+                {[
+                  {
+                    icon: Phone,
+                    title: dealroom.language === 'de' ? 'Telefonisches Erstgespräch' : 'Initial phone call',
+                    desc: dealroom.language === 'de'
+                      ? `${contact?.name || 'Ihr Berater'} meldet sich innerhalb von 24 Stunden telefonisch bei Ihnen, um die nächsten Schritte zu besprechen.`
+                      : `${contact?.name || 'Your advisor'} will call you within 24 hours to discuss next steps.`,
+                  },
+                  {
+                    icon: Users,
+                    title: dealroom.language === 'de' ? 'Feinabstimmung (15–30 Min.)' : 'Fine-tuning meeting (15–30 min)',
+                    desc: dealroom.language === 'de'
+                      ? `In einem kurzen Termin geht ${contact?.name || 'Ihr Berater'} alle Details mit Ihnen durch und passt alles genau an Ihre Situation an.`
+                      : `In a short meeting, ${contact?.name || 'your advisor'} will go through all details and tailor everything to your situation.`,
+                  },
+                  {
+                    icon: Rocket,
+                    title: dealroom.language === 'de' ? 'Versicherungsschutz startet' : 'Coverage begins',
+                    desc: dealroom.language === 'de'
+                      ? 'Ihr individueller Versicherungsschutz tritt in Kraft – Sie sind ab sofort bestens abgesichert.'
+                      : 'Your individual insurance coverage takes effect – you are fully protected from now on.',
+                  },
+                ].map((item, i) => (
+                  <div key={i} className="flex items-start gap-4">
+                    <div className="flex flex-col items-center">
+                      <div className="h-10 w-10 rounded-full flex items-center justify-center text-white shrink-0" style={{ backgroundColor: brandColor }}>
+                        <item.icon className="h-5 w-5" />
+                      </div>
+                      {i < 2 && <div className="w-px h-6 mt-1" style={{ backgroundColor: brandColor + '30' }} />}
+                    </div>
+                    <div className="pt-1">
+                      <p className="font-semibold text-[#1a1a1a] text-sm sm:text-base">{item.title}</p>
+                      <p className="text-sm text-[#6b7280] mt-0.5">{item.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 6. Partner Logos */}
+            {partnerLogos.length > 0 && (
+              <div className="fade-in-up mt-12">
+                <div className="rounded-2xl py-8 px-6 sm:px-10" style={{ backgroundColor: '#11485e' }}>
+                  <p className="text-center text-xs sm:text-sm font-medium text-white/60 uppercase tracking-wider mb-6">
+                    {tr.sections.partnersTitle}
+                  </p>
+                  <div className="flex items-center justify-center gap-8 sm:gap-12 flex-wrap">
+                    {partnerLogos.map((logo, i) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img key={i} src={logo.src} alt={logo.alt} className="h-16 sm:h-20 object-contain opacity-70 hover:opacity-100 transition-opacity duration-300 brightness-0 invert" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
 
