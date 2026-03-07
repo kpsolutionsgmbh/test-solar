@@ -41,6 +41,7 @@ const translations = {
       finalCtaTitle: 'Bereit für den nächsten Schritt?',
       finalCtaSubtitle: 'Lassen Sie uns gemeinsam Ihre Situation analysieren – kostenlos und unverbindlich.',
       partnersTitle: 'Unsere Partner & Netzwerk',
+      faqTitle: 'Häufige Fragen',
     },
     offer: {
       title: 'Ihr individuelles Angebot',
@@ -121,6 +122,7 @@ const translations = {
       finalCtaTitle: 'Ready for the next step?',
       finalCtaSubtitle: 'Let\'s analyze your situation together – free and non-binding.',
       partnersTitle: 'Our Partners & Network',
+      faqTitle: 'Frequently Asked Questions',
     },
     offer: {
       title: 'Your Individual Proposal',

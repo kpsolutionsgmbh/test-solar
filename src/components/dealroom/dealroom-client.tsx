@@ -18,7 +18,6 @@ import {
   Mail,
   MapPin,
   Award,
-  Globe,
   Star,
   Play,
   Target,
@@ -28,6 +27,7 @@ import {
   FileText,
   Lightbulb,
   ChevronRight,
+  ChevronDown,
 } from 'lucide-react';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -78,7 +78,7 @@ const teamImages = [
   { src: '/images/team/team-lg-2.jpeg', alt: 'Teammeeting' },
 ];
 
-// Partner logos
+// Partner logos (white logos for dark background)
 const partnerLogos = [
   { src: '/images/partners/citydriver.png', alt: 'CityDriver' },
   { src: '/images/partners/netzwerk.png', alt: 'Netzwerk' },
@@ -100,6 +100,8 @@ type TabKey = 'overview' | 'offer' | 'references';
 export function DealroomClient({ dealroom, content, admin, assignedMember, references, translations: tr }: Props) {
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
   const [showCookieBanner, setShowCookieBanner] = useState(true);
+  const [scrollProgress, setScrollProgress] = useState(0);
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   const contact = assignedMember || (admin ? {
@@ -117,6 +119,17 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
     }
     return cleanup;
   }, [dealroom.id]);
+
+  // Scroll progress indicator
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      setScrollProgress(docHeight > 0 ? (scrollTop / docHeight) * 100 : 0);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     observerRef.current = new IntersectionObserver(
@@ -157,7 +170,33 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
     { year: 'numeric', month: 'long', day: 'numeric' }
   );
 
-  // Reusable CTA block
+  // Social proof element (reusable under CTAs)
+  const SocialProof = () => (
+    <div className="flex items-center justify-center gap-3 mt-4">
+      {/* Overlapping avatars */}
+      <div className="flex -space-x-2">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="h-7 w-7 rounded-full border-2 border-white flex items-center justify-center text-[10px] font-bold text-white"
+            style={{ backgroundColor: i === 0 ? brandColor : i === 1 ? '#0d3d28' : '#6b7280' }}
+          >
+            {['M', 'S', 'K'][i]}
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center gap-1.5">
+        <div className="flex">
+          {[1, 2, 3, 4, 5].map((s) => (
+            <Star key={s} className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+          ))}
+        </div>
+        <span className="text-xs text-[#6b7280] font-medium">4.500+ {dealroom.language === 'de' ? 'zufriedene Kunden' : 'satisfied clients'}</span>
+      </div>
+    </div>
+  );
+
+  // Reusable CTA block with social proof
   const CtaBlock = ({ text, derisking, ctaName, className = '' }: { text: string; derisking: string; ctaName: string; className?: string }) => (
     <div className={`text-center py-8 ${className}`}>
       <button
@@ -169,11 +208,18 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
         <ArrowRight className="h-5 w-5" />
       </button>
       <p className="text-sm text-[#9ca3af] mt-3">{derisking}</p>
+      <SocialProof />
     </div>
   );
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Scroll Progress Bar */}
+      <div
+        className="fixed top-0 left-0 h-[2px] z-[60] transition-all duration-150"
+        style={{ width: `${scrollProgress}%`, backgroundColor: brandColor }}
+      />
+
       {/* Cookie Banner */}
       {showCookieBanner && (
         <div className="fixed bottom-0 left-0 right-0 z-[100] bg-white border-t border-[#e5e7eb] shadow-2xl p-4 sm:p-6">
@@ -205,37 +251,21 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
         </div>
       )}
 
-      {/* Sticky Header */}
+      {/* V5: Simplified Header – centered logo + centered tabs */}
       <header className="border-b border-[#e5e7eb] bg-white/95 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
-          {/* Trust badges bar */}
-          <div className="flex items-center justify-between py-2 border-b border-[#f0f0f0] overflow-x-auto">
-            <div className="flex items-center gap-4 sm:gap-6 text-xs text-[#6b7280]">
-              <span className="flex items-center gap-1.5 whitespace-nowrap font-medium">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/images/logo-blue.svg" alt="Gündesli & Kollegen" className="h-5 object-contain" />
-              </span>
-              <span className="flex items-center gap-1.5 whitespace-nowrap">
-                <Award className="h-3.5 w-3.5" style={{ color: brandColor }} />
-                {tr.trust.awards}
-              </span>
-              <span className="flex items-center gap-1.5 whitespace-nowrap">
-                <Users className="h-3.5 w-3.5" style={{ color: brandColor }} />
-                {tr.trust.customers}
-              </span>
-              <span className="flex items-center gap-1.5 whitespace-nowrap">
-                <Globe className="h-3.5 w-3.5" style={{ color: brandColor }} />
-                {tr.trust.languages}
-              </span>
-            </div>
+          {/* Centered Logo */}
+          <div className="flex items-center justify-center py-3 border-b border-[#f0f0f0]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/images/logo-blue.svg" alt="Gündesli & Kollegen" className="h-6 object-contain" />
           </div>
-          {/* Tab navigation */}
-          <nav className="flex items-center overflow-x-auto">
+          {/* Centered Tab Navigation */}
+          <nav className="flex items-center justify-center overflow-x-auto">
             {(['overview', 'offer', 'references'] as TabKey[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => switchTab(tab)}
-                className="relative px-4 sm:px-5 py-3.5 text-sm font-medium transition-all whitespace-nowrap min-h-[44px]"
+                className="relative px-5 sm:px-6 py-3.5 text-sm font-medium transition-all whitespace-nowrap min-h-[44px]"
                 style={{
                   color: activeTab === tab ? brandColor : '#6b7280',
                 }}
@@ -258,7 +288,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
         <div className={activeTab === 'overview' ? '' : 'hidden'}>
           {content && (
             <div>
-              {/* ===== 1. HERO: Headline → Video → CTA → Ansprechpartner ===== */}
+              {/* ===== 1. HERO ===== */}
               <section className="fade-in-up bg-white">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-10 sm:pt-12 pb-6">
                   {/* Client Logo + Prepared For */}
@@ -272,23 +302,36 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                     <p className="text-sm uppercase tracking-wider font-medium mb-3" style={{ color: brandColor }}>
                       {tr.hero.preparedFor}
                     </p>
-                    <h1 className="text-[26px] sm:text-[36px] lg:text-[40px] font-bold text-[#1a1a1a] mb-4 leading-tight max-w-3xl mx-auto">
+                    {/* V5: H1 = 36px consistent */}
+                    <h1 className="text-[28px] sm:text-[36px] font-bold text-[#1a1a1a] mb-4 leading-tight max-w-3xl mx-auto">
                       {content.hero_title}
                     </h1>
                     <p className="text-[15px] sm:text-[17px] text-[#6b7280] max-w-2xl mx-auto leading-relaxed">
                       {content.hero_subtitle}
                     </p>
+                    {/* V5: Urgency text */}
+                    <p className="text-xs text-[#9ca3af] mt-4">
+                      {dealroom.language === 'de'
+                        ? `Erstellt am ${formattedDate} – individuell für ${dealroom.client_company}`
+                        : `Created ${formattedDate} – individually for ${dealroom.client_company}`}
+                    </p>
                   </div>
 
-                  {/* Video directly after headline */}
+                  {/* Video with teaser text */}
                   {dealroom.video_url && (
                     <div className="mb-8">
-                      <div className="flex items-center gap-2 mb-4">
+                      <div className="flex items-center gap-2 mb-3">
                         <Play className="h-5 w-5" style={{ color: brandColor }} />
-                        <h2 className="text-lg font-semibold text-[#1a1a1a]">
+                        <h2 className="text-[22px] sm:text-[28px] font-bold text-[#1a1a1a]">
                           {tr.sections.videoTitle}
                         </h2>
                       </div>
+                      {/* V5: Video teaser text */}
+                      <p className="text-sm text-[#6b7280] mb-3">
+                        {dealroom.language === 'de'
+                          ? `${contact?.name || 'Ihr Berater'} hat eine persönliche Nachricht für Sie aufgenommen.`
+                          : `${contact?.name || 'Your advisor'} recorded a personal message for you.`}
+                      </p>
                       <div className="aspect-video rounded-2xl overflow-hidden bg-[#fafafa] border border-[#e5e7eb] shadow-sm">
                         <iframe
                           src={getVideoEmbedUrl(dealroom.video_url) || ''}
@@ -301,12 +344,21 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                     </div>
                   )}
 
-                  {/* CTA after video */}
+                  {/* V5: First CTA always "Angebot ansehen" (hardcoded) */}
                   <CtaBlock
-                    text={content.cta_text || tr.sections.ctaDefault}
+                    text={dealroom.language === 'de' ? 'Angebot ansehen' : 'View Proposal'}
                     derisking={content.cta_derisking || tr.sections.ctaDerisking}
                     ctaName="hero"
                   />
+
+                  {/* V5: Awards moved here (after first CTA) */}
+                  <div className="flex items-center justify-center gap-6 sm:gap-10 flex-wrap mt-2 mb-8">
+                    {/* eslint-disable @next/next/no-img-element */}
+                    <img src="/images/awards/focus-money.webp" alt="Focus Money" className="h-10 sm:h-14 object-contain opacity-80" />
+                    <img src="/images/awards/stiftung-warentest.webp" alt="Stiftung Warentest" className="h-10 sm:h-14 object-contain opacity-80" />
+                    <img src="/images/awards/disq-rating.jpg" alt="DISQ Rating" className="h-10 sm:h-14 object-contain opacity-80" />
+                    {/* eslint-enable @next/next/no-img-element */}
+                  </div>
 
                   {/* Contact Person Card */}
                   {contact && (
@@ -348,31 +400,10 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                       </div>
                     </div>
                   )}
-
-                  {/* Date info */}
-                  <p className="text-center text-xs text-[#9ca3af] mt-6">
-                    {tr.hero.date} {formattedDate}
-                  </p>
                 </div>
               </section>
 
-              {/* ===== 2. AUTHORITY BAR - Award Logos (no SIGNAL IDUNA, no BVK) ===== */}
-              <section className="fade-in-up border-y border-[#e5e7eb] bg-white">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-                  <p className="text-center text-xs sm:text-sm font-medium text-[#9ca3af] uppercase tracking-wider mb-6">
-                    {tr.sections.authorityTitle}
-                  </p>
-                  <div className="flex items-center justify-center gap-6 sm:gap-12 flex-wrap">
-                    {/* eslint-disable @next/next/no-img-element */}
-                    <img src="/images/awards/focus-money.webp" alt="Focus Money" className="h-14 sm:h-20 object-contain opacity-90 hover:opacity-100 transition-opacity" />
-                    <img src="/images/awards/stiftung-warentest.webp" alt="Stiftung Warentest" className="h-14 sm:h-20 object-contain opacity-90 hover:opacity-100 transition-opacity" />
-                    <img src="/images/awards/disq-rating.jpg" alt="DISQ Rating" className="h-14 sm:h-20 object-contain opacity-90 hover:opacity-100 transition-opacity" />
-                    {/* eslint-enable @next/next/no-img-element */}
-                  </div>
-                </div>
-              </section>
-
-              {/* ===== 3. PAIN SECTION - Dark Red-Brown Container ===== */}
+              {/* ===== 2. PAIN SECTION - Dark Red-Brown Container ===== */}
               <section className="fade-in-up bg-white">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
                   <div className="rounded-2xl sm:rounded-3xl p-6 sm:p-10 overflow-hidden" style={{ backgroundColor: '#1f0f12' }}>
@@ -381,7 +412,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                       <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-red-500/20 mb-4">
                         <AlertTriangle className="h-6 w-6 text-red-400" />
                       </div>
-                      <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
+                      <h2 className="text-[22px] sm:text-[28px] font-bold text-white mb-2">
                         {content.cost_of_inaction.headline}
                       </h2>
                       <p className="text-[#d1d5db] text-sm sm:text-base max-w-lg mx-auto">
@@ -400,7 +431,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                           <div className="text-[32px] sm:text-[36px] mb-3 leading-none">
                             {point.emoji || '⚠️'}
                           </div>
-                          <h3 className="text-white font-bold text-base sm:text-lg mb-2 leading-snug">
+                          <h3 className="text-white font-bold text-base sm:text-[18px] mb-2 leading-snug">
                             {point.heading || point.text}
                           </h3>
                           {point.subtext && (
@@ -443,7 +474,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                 </div>
               </section>
 
-              {/* ===== 4. DREAM OUTCOME - Pure Green Gradient Card ===== */}
+              {/* ===== 3. DREAM OUTCOME - Pure Green Gradient Card ===== */}
               <section className="fade-in-up bg-white">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
                   <div
@@ -452,7 +483,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                       background: 'linear-gradient(160deg, #0a2e1a 0%, #0d3d28 60%, #0a2e1a 100%)',
                     }}
                   >
-                    {/* Green glow top-right */}
+                    {/* Green glow */}
                     <div className="absolute top-0 right-0 w-72 h-72 rounded-full opacity-[0.08]" style={{ background: 'radial-gradient(circle, #4ade80, transparent)' }} />
                     <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full opacity-[0.06]" style={{ background: 'radial-gradient(circle, #22c55e, transparent)' }} />
 
@@ -462,7 +493,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                         {tr.sections.outcomeSubtitle}
                       </div>
 
-                      <h2 className="text-xl sm:text-2xl lg:text-[28px] font-bold text-white mb-8 leading-tight max-w-2xl">
+                      <h2 className="text-[22px] sm:text-[28px] font-bold text-white mb-8 leading-tight max-w-2xl">
                         {tr.sections.outcomeTitle.replace('Sie', dealroom.client_company)}
                       </h2>
 
@@ -500,11 +531,11 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                 </div>
               </section>
 
-              {/* ===== 5. CONCRETE BENEFITS - Numbers Section ===== */}
+              {/* ===== 4. CONCRETE BENEFITS - Numbers Section ===== */}
               {content.concrete_benefits && content.concrete_benefits.length > 0 && (
                 <section className="fade-in-up bg-[#fafafa]">
                   <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
-                    <h2 className="text-xl sm:text-2xl font-bold text-[#1a1a1a] text-center mb-10">
+                    <h2 className="text-[22px] sm:text-[28px] font-bold text-[#1a1a1a] text-center mb-10">
                       {tr.sections.concreteBenefitsTitle}
                     </h2>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -524,14 +555,14 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                 </section>
               )}
 
-              {/* ===== 6. HOW IT WORKS - Process Steps ===== */}
+              {/* ===== 5. HOW IT WORKS - Process Steps ===== */}
               <section className="fade-in-up bg-white">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
                   <div className="text-center mb-10">
                     <div className="inline-flex items-center justify-center h-12 w-12 rounded-full mb-4" style={{ backgroundColor: brandColor + '12' }}>
                       <Timer className="h-6 w-6" style={{ color: brandColor }} />
                     </div>
-                    <h2 className="text-xl sm:text-2xl lg:text-[28px] font-bold text-[#1a1a1a]">
+                    <h2 className="text-[22px] sm:text-[28px] font-bold text-[#1a1a1a]">
                       {tr.sections.processTitle}
                     </h2>
                   </div>
@@ -549,7 +580,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                           </div>
                         </div>
                         <div className="flex-1 bg-[#fafafa] rounded-xl p-5 sm:p-6 border border-[#e5e7eb] shadow-sm">
-                          <h3 className="font-bold text-[#1a1a1a] text-base sm:text-lg mb-3">{step.title}</h3>
+                          <h3 className="font-bold text-[#1a1a1a] text-[18px] sm:text-[22px] mb-3">{step.title}</h3>
                           <div className="flex flex-wrap gap-2 sm:gap-3 mb-3">
                             <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-semibold" style={{ backgroundColor: brandColor + '12', color: brandColor }}>
                               <Clock className="h-3 w-3" />
@@ -579,7 +610,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                 </div>
               </section>
 
-              {/* ===== 7. GUARANTEE - Dark Teal Card ===== */}
+              {/* ===== 6. GUARANTEE - Dark Teal Card ===== */}
               <section className="fade-in-up bg-white">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
                   <div
@@ -594,7 +625,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                       >
                         <Shield className="h-7 w-7 sm:h-8 sm:w-8 text-white" />
                       </div>
-                      <h2 className="text-xl sm:text-2xl font-bold text-white mb-4">
+                      <h2 className="text-[22px] sm:text-[28px] font-bold text-white mb-4">
                         {content.guarantee_title || tr.sections.guaranteeTitle}
                       </h2>
                       <p className="text-[#94a3b8] max-w-xl mx-auto leading-relaxed text-base sm:text-lg">
@@ -611,13 +642,47 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                 </div>
               </section>
 
+              {/* ===== 7. FAQ ACCORDION ===== */}
+              {content.faq && content.faq.length > 0 && (
+                <section className="fade-in-up bg-[#fafafa]">
+                  <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
+                    <h2 className="text-[22px] sm:text-[28px] font-bold text-[#1a1a1a] text-center mb-8">
+                      {tr.sections.faqTitle}
+                    </h2>
+                    <div className="space-y-3">
+                      {content.faq.map((item, i) => (
+                        <div key={i} className="bg-white rounded-xl border border-[#e5e7eb] overflow-hidden shadow-sm">
+                          <button
+                            onClick={() => setOpenFaqIndex(openFaqIndex === i ? null : i)}
+                            className="w-full flex items-center justify-between p-5 text-left min-h-[48px]"
+                          >
+                            <span className="font-semibold text-[#1a1a1a] text-[15px] sm:text-base pr-4">{item.question}</span>
+                            <ChevronDown
+                              className={`h-5 w-5 text-[#6b7280] shrink-0 transition-transform duration-200 ${openFaqIndex === i ? 'rotate-180' : ''}`}
+                            />
+                          </button>
+                          <div
+                            className="overflow-hidden transition-all duration-200"
+                            style={{ maxHeight: openFaqIndex === i ? '300px' : '0px' }}
+                          >
+                            <p className="px-5 pb-5 text-sm text-[#6b7280] leading-relaxed">
+                              {item.answer}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+              )}
+
               {/* ===== 8. SOCIAL PROOF INLINE ===== */}
               {references.length > 0 && (
-                <section className="fade-in-up bg-[#fafafa]">
+                <section className="fade-in-up bg-white">
                   <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
                     <div className="text-center mb-8">
                       <Star className="h-6 w-6 mx-auto mb-3" style={{ color: brandColor }} />
-                      <h2 className="text-xl font-bold text-[#1a1a1a]">{tr.references.title}</h2>
+                      <h2 className="text-[22px] sm:text-[28px] font-bold text-[#1a1a1a]">{tr.references.title}</h2>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-3xl mx-auto">
                       {references.slice(0, 2).map((ref) => (
@@ -664,8 +729,8 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                 </section>
               )}
 
-              {/* ===== 9. KPI NUMBERS (own section) ===== */}
-              <section className="fade-in-up bg-white">
+              {/* ===== 9. KPI NUMBERS ===== */}
+              <section className="fade-in-up bg-[#fafafa]">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 text-center">
                     <div>
@@ -688,14 +753,14 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                 </div>
               </section>
 
-              {/* ===== 10. ABOUT US with Marquee ===== */}
-              <section className="fade-in-up bg-[#fafafa]">
+              {/* ===== 10. ABOUT US with Bigger Marquee ===== */}
+              <section className="fade-in-up bg-white">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-16">
                   <div className="rounded-2xl overflow-hidden border border-[#e5e7eb] shadow-sm bg-white">
                     <div className="grid grid-cols-1 lg:grid-cols-2">
                       {/* Left: Info */}
                       <div className="p-6 sm:p-8 lg:p-10" style={{ backgroundColor: brandColor + '06' }}>
-                        <h3 className="text-xl font-bold text-[#1a1a1a] mb-4">
+                        <h3 className="text-[18px] sm:text-[22px] font-bold text-[#1a1a1a] mb-4">
                           {tr.about.title}
                         </h3>
                         <p className="text-sm text-[#6b7280] leading-relaxed mb-6">
@@ -721,11 +786,9 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                           </div>
                         </div>
                       </div>
-                      {/* Right: Marquee */}
+                      {/* Right: Bigger Marquee (V5: h-[280px], w-[380px] per image) */}
                       <div className="p-4 sm:p-6 lg:p-8 flex items-center overflow-hidden relative">
-                        {/* Fade-Gradient left */}
                         <div className="absolute left-0 top-0 bottom-0 w-12 sm:w-16 bg-gradient-to-r from-white to-transparent z-10 lg:from-[#fafafa]" />
-                        {/* Marquee */}
                         <div className="flex gap-4 animate-marquee">
                           {[...teamImages, ...teamImages].map((img, i) => (
                             // eslint-disable-next-line @next/next/no-img-element
@@ -733,11 +796,10 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                               key={i}
                               src={img.src}
                               alt={img.alt}
-                              className="rounded-xl object-cover flex-shrink-0 h-32 sm:h-40 w-48 sm:w-56"
+                              className="rounded-xl object-cover flex-shrink-0 h-[220px] sm:h-[280px] w-[300px] sm:w-[380px]"
                             />
                           ))}
                         </div>
-                        {/* Fade-Gradient right */}
                         <div className="absolute right-0 top-0 bottom-0 w-12 sm:w-16 bg-gradient-to-l from-white to-transparent z-10 lg:from-[#fafafa]" />
                       </div>
                     </div>
@@ -745,22 +807,24 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                 </div>
               </section>
 
-              {/* ===== 11. PARTNER LOGOS ===== */}
-              <section className="fade-in-up bg-white">
+              {/* ===== 11. PARTNER LOGOS – Deep Teal Background ===== */}
+              <section className="fade-in-up">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
-                  <p className="text-center text-xs sm:text-sm font-medium text-[#9ca3af] uppercase tracking-wider mb-6">
-                    {tr.sections.partnersTitle}
-                  </p>
-                  <div className="flex items-center justify-center gap-8 sm:gap-12 flex-wrap">
-                    {partnerLogos.map((logo, i) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        key={i}
-                        src={logo.src}
-                        alt={logo.alt}
-                        className="h-8 sm:h-10 object-contain grayscale hover:grayscale-0 opacity-60 hover:opacity-100 transition-all duration-300"
-                      />
-                    ))}
+                  <div className="rounded-2xl py-8 px-6 sm:px-10" style={{ backgroundColor: '#11485e' }}>
+                    <p className="text-center text-xs sm:text-sm font-medium text-white/60 uppercase tracking-wider mb-6">
+                      {tr.sections.partnersTitle}
+                    </p>
+                    <div className="flex items-center justify-center gap-8 sm:gap-12 flex-wrap">
+                      {partnerLogos.map((logo, i) => (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          key={i}
+                          src={logo.src}
+                          alt={logo.alt}
+                          className="h-8 sm:h-10 object-contain opacity-70 hover:opacity-100 transition-opacity duration-300 brightness-0 invert"
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </section>
@@ -773,7 +837,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                     style={{ backgroundColor: brandColor }}
                   >
                     <div className="relative z-10">
-                      <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-3">
+                      <h2 className="text-[22px] sm:text-[28px] lg:text-[32px] font-bold text-white mb-3">
                         {tr.sections.finalCtaTitle}
                       </h2>
                       <p className="text-white/80 text-base sm:text-lg mb-8 max-w-lg mx-auto">
@@ -817,7 +881,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
             {/* 3-Step Process Bar */}
             <div className="fade-in-up mb-8">
-              <h2 className="text-xl sm:text-2xl font-bold text-[#1a1a1a] text-center mb-6">
+              <h2 className="text-[22px] sm:text-[28px] font-bold text-[#1a1a1a] text-center mb-6">
                 {tr.offer.stepsTitle}
               </h2>
               <div className="flex items-center justify-center gap-2 sm:gap-4 max-w-xl mx-auto">
@@ -848,7 +912,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
             </div>
 
             <div className="text-center mb-6 fade-in-up">
-              <h3 className="text-lg sm:text-xl font-semibold text-[#1a1a1a] mb-1">
+              <h3 className="text-[18px] sm:text-[22px] font-semibold text-[#1a1a1a] mb-1">
                 {tr.offer.title}
               </h3>
               <p className="text-sm text-[#6b7280]">{tr.offer.subtitle}</p>
@@ -894,7 +958,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
         <div className={activeTab === 'references' ? '' : 'hidden'}>
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
             <div className="text-center mb-8 sm:mb-10 fade-in-up">
-              <h2 className="text-xl sm:text-2xl font-semibold text-[#1a1a1a] mb-2">
+              <h2 className="text-[22px] sm:text-[28px] font-bold text-[#1a1a1a] mb-2">
                 {tr.references.title}
               </h2>
               <p className="text-[#6b7280]">{tr.references.subtitle}</p>
@@ -1041,34 +1105,20 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
         </div>
       </footer>
 
-      {/* Sticky Contact Bar (mobile) */}
-      {contact && (
-        <div className="fixed bottom-0 left-0 right-0 sm:hidden z-40 bg-white border-t border-[#e5e7eb] p-3 flex items-center justify-between" style={{ marginBottom: showCookieBanner ? '120px' : 0 }}>
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="h-8 w-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 overflow-hidden" style={{ backgroundColor: brandColor }}>
-              {contact.avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={contact.avatar_url} alt={contact.name} className="h-8 w-8 rounded-full object-cover" />
-              ) : (
-                contact.name.charAt(0)
-              )}
-            </div>
-            <span className="text-sm font-semibold truncate px-1.5 py-0.5 rounded" style={{ backgroundColor: brandColor + '15', color: brandColor }}>{contact.name}</span>
-          </div>
-          <div className="flex gap-2">
-            {contact.phone && (
-              <a href={`tel:${contact.phone}`} className="h-10 w-10 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: brandColor }}>
-                <Phone className="h-4 w-4" />
-              </a>
-            )}
-            {contact.email && (
-              <a href={`mailto:${contact.email}`} className="h-10 w-10 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: brandColor }}>
-                <Mail className="h-4 w-4" />
-              </a>
-            )}
-          </div>
-        </div>
-      )}
+      {/* V5: Sticky Mobile CTA (replaces old contact bar) */}
+      <div
+        className="fixed bottom-0 left-0 right-0 sm:hidden z-40 bg-white border-t border-[#e5e7eb] p-3 transition-transform"
+        style={{ marginBottom: showCookieBanner ? '120px' : 0 }}
+      >
+        <button
+          onClick={() => handleCta('sticky-mobile')}
+          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-white font-semibold text-base shadow-lg min-h-[48px]"
+          style={{ backgroundColor: brandColor }}
+        >
+          {dealroom.language === 'de' ? 'Angebot ansehen' : 'View Proposal'}
+          <ArrowRight className="h-5 w-5" />
+        </button>
+      </div>
     </div>
   );
 }

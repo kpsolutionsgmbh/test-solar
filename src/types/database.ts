@@ -88,6 +88,10 @@ export interface DealroomContent {
   guarantee_text: string;
   cta_text: string;
   cta_derisking?: string;
+  faq?: Array<{
+    question: string;
+    answer: string;
+  }>;
 }
 
 export interface TrackingEvent {

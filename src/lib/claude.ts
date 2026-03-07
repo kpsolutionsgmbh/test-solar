@@ -25,7 +25,7 @@ COPYWRITING-REGELN:
    Erklärt WIE das Ergebnis möglich ist + WARUM glaubwürdig.
    Beispiel: "Basierend auf 25 Jahren Erfahrung und 4.000+ Kunden – unabhängig analysiert, transparent beraten."
 
-3. PAIN POINTS: Jeder Pain braucht ein HEADING (scanbar, fängt das Problem komplett ein) und einen SUBTEXT (dreht das Messer – erzeugt emotionale Reaktion). Die Pains folgen einer logischen Story-Reihenfolge. Nutze passende Emojis.
+3. PAIN POINTS: Jeder Pain braucht ein HEADING (scanbar, fängt das Problem komplett ein) und einen SUBTEXT (dreht das Messer – erzeugt emotionale Reaktion). Die Pains folgen einer logischen Story-Reihenfolge. Nutze KONTEXT-SPEZIFISCHE Emojis die zum jeweiligen Pain passen (z.B. 🏠 für Immobilien, 💼 für Beruf, 👨‍👩‍👧 für Familie, 🏥 für Gesundheit, 📉 für Finanzen). NICHT immer die gleichen Standard-Emojis verwenden.
 
 4. DREAM OUTCOMES: Spezifisch und messbar, nicht vage.
    NICHT: "Bessere Absicherung"
@@ -53,6 +53,8 @@ COPYWRITING-REGELN:
 
 11. KONKRETE ZAHLEN (concrete_benefits): Generiere 3 greifbare Zahlen/KPIs die dem Kunden zeigen was er konkret bekommt. Große Zahlen oben (z.B. "€47.000", "32%", "€0"), kurzes Label, optionales Detail. Wenn keine exakten Zahlen möglich sind, nutze qualitative Benefits mit konkreten Zeitangaben ("In 30 Min.", "Ab Tag 1", "0 Eigenaufwand").
 
+12. FAQ: Generiere 4-6 häufige Fragen die ein Kunde in dieser Situation typischerweise haben würde. Die Antworten sollen kurz (2-3 Sätze), vertrauensbildend und handlungsorientiert sein. Nutze "Wir"-Sprache und verweise auf die Expertise der Agentur.
+
 Konversions-Psychologie: Problem erkennen → Schmerz verstärken → Lösung aufzeigen → Beweis liefern → Handlung auslösen.
 
 Du MUSST exakt dieses JSON-Schema als Antwort liefern (ohne Markdown-Code-Blocks, nur reines JSON):`;
@@ -72,7 +74,7 @@ COPYWRITING RULES:
 2. SUB-HEADLINE: Maximum 1-2 sentences.
    Explains HOW the result is possible + WHY credible (numbers, experience).
 
-3. PAIN POINTS: Each pain needs a HEADING (scannable, captures the problem) and SUBTEXT (twists the knife – creates emotional reaction). Use fitting emojis.
+3. PAIN POINTS: Each pain needs a HEADING (scannable, captures the problem) and SUBTEXT (twists the knife – creates emotional reaction). Use CONTEXT-SPECIFIC emojis that match each pain (e.g. 🏠 for real estate, 💼 for career, 👨‍👩‍👧 for family, 🏥 for health, 📉 for finance). Do NOT always use the same default emojis.
 
 4. DREAM OUTCOMES: Specific and measurable, not vague.
    Add an outcome_quote: a vision statement that summarizes everything.
@@ -91,6 +93,8 @@ COPYWRITING RULES:
 10. BREVITY above all: Every text that can be shorter MUST be shorter.
 
 11. CONCRETE BENEFITS (concrete_benefits): Generate 3 tangible numbers/KPIs showing the client what they concretely get. Large numbers on top (e.g. "€47,000", "32%", "€0"), short label, optional detail. If exact numbers aren't possible, use qualitative benefits with concrete timeframes ("In 30 min", "From day 1", "0 effort").
+
+12. FAQ: Generate 4-6 frequently asked questions a client in this situation would typically have. Answers should be short (2-3 sentences), trust-building and action-oriented. Use "We" language and reference the agency's expertise.
 
 Conversion psychology: Identify problem → Amplify pain → Present solution → Provide proof → Drive action.
 
@@ -156,7 +160,10 @@ const JSON_SCHEMA = `{
   "guarantee_title": "Unser Versprechen an Sie",
   "guarantee_text": "Text with **bold keywords** for scanners. Use 'no risk' and 'nothing to lose'.",
   "cta_text": "Jetzt Termin vereinbaren",
-  "cta_derisking": "Kostenlos & unverbindlich"
+  "cta_derisking": "Kostenlos & unverbindlich",
+  "faq": [
+    { "question": "Häufige Frage zum Thema", "answer": "Kurze, vertrauensbildende Antwort (2-3 Sätze)" }
+  ]
 }`;
 
 export async function generateDealroomContent(
