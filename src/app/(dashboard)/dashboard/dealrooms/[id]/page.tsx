@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import { useDebouncedCallback } from '@/hooks/use-debounce';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,7 +25,6 @@ import { DynamicIcon } from '@/lib/icon-resolver';
 import { uploadFile } from '@/lib/upload';
 import {
   ArrowLeft,
-  Save,
   ExternalLink,
   Copy,
   Activity,
@@ -44,6 +45,9 @@ import {
   Users,
   Upload,
   ImageIcon,
+  Undo2,
+  Redo2,
+  Check,
 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string; dotColor: string }> = {
@@ -62,9 +66,17 @@ export default function EditDealroomPage() {
 
   const [dealroom, setDealroom] = useState<Dealroom | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [content, setContent] = useState<DealroomContent | null>(null);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+
+  // Undo/Redo
+  type FormSnapshot = { clientName: string; clientCompany: string; clientPosition: string; clientEmail: string; clientPhone: string; videoUrl: string; pandadocUrl: string; clientLogoUrl: string; language: 'de' | 'en'; assignedMemberId: string; content: DealroomContent | null };
+  const historyRef = useRef<FormSnapshot[]>([]);
+  const historyIndexRef = useRef(-1);
+  const isUndoRedoRef = useRef(false);
+  const initializedRef = useRef(false);
 
   // Editable fields
   const [clientName, setClientName] = useState('');
@@ -111,10 +123,117 @@ export default function EditDealroomPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
+  const getSnapshot = useCallback((): FormSnapshot => ({
+    clientName, clientCompany, clientPosition, clientEmail, clientPhone,
+    videoUrl, pandadocUrl, clientLogoUrl, language, assignedMemberId, content,
+  }), [clientName, clientCompany, clientPosition, clientEmail, clientPhone, videoUrl, pandadocUrl, clientLogoUrl, language, assignedMemberId, content]);
+
+  const applySnapshot = useCallback((s: FormSnapshot) => {
+    isUndoRedoRef.current = true;
+    setClientName(s.clientName);
+    setClientCompany(s.clientCompany);
+    setClientPosition(s.clientPosition);
+    setClientEmail(s.clientEmail);
+    setClientPhone(s.clientPhone);
+    setVideoUrl(s.videoUrl);
+    setPandadocUrl(s.pandadocUrl);
+    setClientLogoUrl(s.clientLogoUrl);
+    setLanguage(s.language);
+    setAssignedMemberId(s.assignedMemberId);
+    setContent(s.content);
+    setTimeout(() => { isUndoRedoRef.current = false; }, 50);
+  }, []);
+
+  const undo = useCallback(() => {
+    if (historyIndexRef.current > 0) {
+      historyIndexRef.current--;
+      applySnapshot(historyRef.current[historyIndexRef.current]);
+    }
+  }, [applySnapshot]);
+
+  const redo = useCallback(() => {
+    if (historyIndexRef.current < historyRef.current.length - 1) {
+      historyIndexRef.current++;
+      applySnapshot(historyRef.current[historyIndexRef.current]);
+    }
+  }, [applySnapshot]);
+
+  // Keyboard shortcuts for undo/redo
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) redo();
+        else undo();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [undo, redo]);
+
+  // Auto-save with debounce
+  const debouncedAutoSave = useDebouncedCallback(async () => {
+    if (!dealroom) return;
+    setAutoSaveStatus('saving');
+    const { error } = await supabase
+      .from('dealrooms')
+      .update({
+        client_name: clientName,
+        client_company: clientCompany,
+        client_position: clientPosition || null,
+        client_email: clientEmail || null,
+        client_phone: clientPhone || null,
+        client_logo_url: clientLogoUrl || null,
+        video_url: videoUrl || null,
+        pandadoc_embed_url: pandadocUrl || null,
+        status,
+        language,
+        assigned_member_id: assignedMemberId && assignedMemberId !== 'none' ? assignedMemberId : null,
+        custom_content: content,
+      })
+      .eq('id', params.id);
+
+    if (error) {
+      setAutoSaveStatus('error');
+    } else {
+      setAutoSaveStatus('saved');
+      setDealroom(prev => prev ? { ...prev, client_name: clientName, client_company: clientCompany, custom_content: content } : null);
+      if (dealroom?.slug) {
+        fetch('/api/revalidate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: dealroom.slug }) }).catch(() => {});
+      }
+    }
+  }, 1500);
+
+  // Track changes for auto-save and undo/redo history
+  useEffect(() => {
+    if (loading || !dealroom) return;
+    const snap = getSnapshot();
+
+    if (!initializedRef.current) {
+      historyRef.current = [snap];
+      historyIndexRef.current = 0;
+      initializedRef.current = true;
+      return;
+    }
+
+    if (isUndoRedoRef.current) return;
+
+    // Push to history
+    const newHistory = historyRef.current.slice(0, historyIndexRef.current + 1);
+    newHistory.push(snap);
+    if (newHistory.length > 50) newHistory.shift();
+    historyRef.current = newHistory;
+    historyIndexRef.current = newHistory.length - 1;
+
+    // Trigger auto-save
+    setAutoSaveStatus('idle');
+    debouncedAutoSave();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientName, clientCompany, clientPosition, clientEmail, clientPhone, videoUrl, pandadocUrl, clientLogoUrl, language, assignedMemberId, content]);
+
   const handleSave = async (statusOverride?: Dealroom['status']) => {
     const saveStatus = statusOverride || status;
     if (statusOverride) setStatus(statusOverride);
-    setSaving(true);
     const { error } = await supabase
       .from('dealrooms')
       .update({
@@ -136,7 +255,6 @@ export default function EditDealroomPage() {
       })
       .eq('id', params.id);
 
-    setSaving(false);
     if (error) {
       toast({ title: 'Fehler', description: 'Speichern fehlgeschlagen.', variant: 'destructive' });
     } else {
@@ -652,43 +770,77 @@ export default function EditDealroomPage() {
           variant="ghost"
           size="sm"
           className="text-destructive hover:text-destructive"
-          onClick={async () => {
-            if (confirm('Dealroom wirklich löschen?')) {
-              await supabase.from('dealrooms').delete().eq('id', params.id);
-              router.push('/dashboard');
-              router.refresh();
-            }
-          }}
+          onClick={() => setDeleteConfirmOpen(true)}
         >
           <Trash2 className="h-4 w-4 mr-1" />
           Löschen
         </Button>
-        <div className="flex gap-2">
-          {status === 'draft' && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleSave('published')}
+        <div className="flex items-center gap-3">
+          {/* Auto-save status */}
+          <span className="text-xs text-[#6b7280] flex items-center gap-1">
+            {autoSaveStatus === 'saving' && <><Loader2 className="h-3 w-3 animate-spin" /> Speichert...</>}
+            {autoSaveStatus === 'saved' && <><Check className="h-3 w-3 text-emerald-500" /> Gespeichert</>}
+            {autoSaveStatus === 'error' && <><AlertTriangle className="h-3 w-3 text-red-500" /> Fehler</>}
+          </span>
+
+          {/* Undo/Redo */}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={undo}
+              disabled={historyIndexRef.current <= 0}
+              className="h-8 w-8 flex items-center justify-center rounded-lg text-[#6b7280] hover:text-[#11485e] hover:bg-[#e7eef1] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              title="Rückgängig (Cmd+Z)"
             >
-              Veröffentlichen
-            </Button>
-          )}
-          {status === 'published' && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setStatus('archived')}
+              <Undo2 size={16} />
+            </button>
+            <button
+              onClick={redo}
+              disabled={historyIndexRef.current >= historyRef.current.length - 1}
+              className="h-8 w-8 flex items-center justify-center rounded-lg text-[#6b7280] hover:text-[#11485e] hover:bg-[#e7eef1] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              title="Wiederholen (Cmd+Shift+Z)"
             >
-              <Archive className="h-4 w-4 mr-1" />
-              Archivieren
-            </Button>
-          )}
-          <Button onClick={() => handleSave()} disabled={saving} size="sm">
-            {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-            Speichern
-          </Button>
+              <Redo2 size={16} />
+            </button>
+          </div>
+
+          <div className="w-px h-6 bg-[#e5e7eb]" />
+
+          <div className="flex gap-2">
+            {status === 'draft' && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleSave('published')}
+              >
+                Veröffentlichen
+              </Button>
+            )}
+            {status === 'published' && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setStatus('archived')}
+              >
+                <Archive className="h-4 w-4 mr-1" />
+                Archivieren
+              </Button>
+            )}
+          </div>
         </div>
       </div>
+      <ConfirmDialog
+        open={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+        onConfirm={async () => {
+          await supabase.from('dealrooms').delete().eq('id', params.id);
+          router.push('/dashboard');
+          router.refresh();
+        }}
+        title="Dealroom löschen?"
+        description={`Der Dealroom "${clientCompany} - ${clientName}" wird unwiderruflich gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.`}
+        confirmText="Löschen"
+        variant="destructive"
+      />
     </div>
   );
 }

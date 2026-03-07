@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { nanoid } from 'nanoid';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAudioRecorder } from '@/hooks/use-audio-recorder';
-import { DealroomContent, TeamMember } from '@/types/database';
+import { Customer, DealroomContent, TeamMember } from '@/types/database';
 import { DynamicIcon } from '@/lib/icon-resolver';
 import {
   ArrowLeft,
@@ -51,6 +51,7 @@ const steps: { key: Step; label: string }[] = [
 
 export default function NewDealroomPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
   const { toast } = useToast();
   const audioRecorder = useAudioRecorder();
@@ -60,6 +61,11 @@ export default function NewDealroomPage() {
   const [inputMethod, setInputMethod] = useState<'text' | 'audio'>('text');
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [assignedMemberId, setAssignedMemberId] = useState<string>('');
+
+  // Customer selection
+  const [customerSource, setCustomerSource] = useState<'new' | 'existing'>('new');
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string>('');
 
   // Form state
   const [clientName, setClientName] = useState('');
@@ -75,20 +81,36 @@ export default function NewDealroomPage() {
   const [videoUrl, setVideoUrl] = useState('');
   const [pandadocUrl, setPandadocUrl] = useState('');
 
-  // Fetch team members on mount
+  // Fetch team members and customers on mount
   useEffect(() => {
-    const fetchMembers = async () => {
+    const fetchData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data } = await supabase
-        .from('team_members')
-        .select('*')
-        .eq('admin_id', user.id)
-        .eq('is_active', true)
-        .order('name');
-      setTeamMembers((data as TeamMember[]) || []);
+      const [{ data: members }, { data: custs }] = await Promise.all([
+        supabase.from('team_members').select('*').eq('admin_id', user.id).eq('is_active', true).order('name'),
+        supabase.from('customers').select('*').eq('admin_id', user.id).order('company'),
+      ]);
+      setTeamMembers((members as TeamMember[]) || []);
+      setCustomers((custs as Customer[]) || []);
+
+      // Pre-select customer from query param
+      const preselectedId = searchParams.get('customer_id');
+      if (preselectedId && custs) {
+        const found = (custs as Customer[]).find(c => c.id === preselectedId);
+        if (found) {
+          setCustomerSource('existing');
+          setSelectedCustomerId(found.id);
+          setClientName(`${found.first_name} ${found.last_name}`);
+          setClientCompany(found.company);
+          setClientPosition(found.position || '');
+          setClientEmail(found.email || '');
+          setClientPhone(found.phone || '');
+          setClientAddress(found.address || '');
+          setClientLogoUrl(found.logo_url || '');
+        }
+      }
     };
-    fetchMembers();
+    fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -99,6 +121,20 @@ export default function NewDealroomPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audioRecorder.isRecording, audioRecorder.transcript]);
+
+  const handleSelectCustomer = (customerId: string) => {
+    setSelectedCustomerId(customerId);
+    const cust = customers.find(c => c.id === customerId);
+    if (cust) {
+      setClientName(`${cust.first_name} ${cust.last_name}`);
+      setClientCompany(cust.company);
+      setClientPosition(cust.position || '');
+      setClientEmail(cust.email || '');
+      setClientPhone(cust.phone || '');
+      setClientAddress(cust.address || '');
+      setClientLogoUrl(cust.logo_url || '');
+    }
+  };
 
   const currentStepIndex = steps.findIndex((s) => s.key === currentStep);
 
@@ -163,6 +199,7 @@ export default function NewDealroomPage() {
         client_phone: clientPhone || null,
         client_address: clientAddress || null,
         client_logo_url: clientLogoUrl || null,
+        customer_id: customerSource === 'existing' && selectedCustomerId ? selectedCustomerId : null,
         video_url: videoUrl || null,
         pandadoc_embed_url: pandadocUrl || null,
         ai_input_text: inputText || null,
@@ -246,6 +283,48 @@ export default function NewDealroomPage() {
             <CardTitle>Kundendaten</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {customers.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  {([['new', 'Neuen Kunden anlegen'], ['existing', 'Vorhandenen Kunden wählen']] as const).map(([val, label]) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => {
+                        setCustomerSource(val);
+                        if (val === 'new') {
+                          setSelectedCustomerId('');
+                          setClientName(''); setClientCompany(''); setClientPosition('');
+                          setClientEmail(''); setClientPhone(''); setClientAddress('');
+                          setClientLogoUrl('');
+                        }
+                      }}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                        customerSource === val
+                          ? 'border-[#11485e] bg-[#11485e]/5 text-[#11485e]'
+                          : 'border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                {customerSource === 'existing' && (
+                  <Select value={selectedCustomerId} onValueChange={handleSelectCustomer}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Kunde auswählen..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {customers.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.company} – {c.first_name} {c.last_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+            )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="clientName">Name *</Label>

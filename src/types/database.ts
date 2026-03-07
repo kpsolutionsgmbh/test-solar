@@ -44,6 +44,24 @@ export interface Dealroom {
   published_at: string | null;
   language: 'de' | 'en';
   assigned_member_id: string | null;
+  customer_id: string | null;
+}
+
+export interface Customer {
+  id: string;
+  admin_id: string;
+  salutation: 'Herr' | 'Frau';
+  first_name: string;
+  last_name: string;
+  company: string;
+  position: string | null;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  logo_url: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface DealroomContent {

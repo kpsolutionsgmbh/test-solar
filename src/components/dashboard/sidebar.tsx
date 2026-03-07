@@ -10,11 +10,13 @@ import {
   Settings,
   LogOut,
   BarChart3,
+  Users,
 } from 'lucide-react';
 
 const mainNavItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/new', label: 'Neuer Dealroom', icon: Plus },
+  { href: '/dashboard/customers', label: 'Kunden', icon: Users },
   { href: '/dashboard/references', label: 'Referenzen', icon: Award },
   { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
 ];

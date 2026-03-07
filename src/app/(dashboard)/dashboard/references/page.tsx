@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -38,6 +39,7 @@ export default function ReferencesPage() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRef, setEditingRef] = useState<Reference | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   // Form
   const [clientName, setClientName] = useState('');
@@ -130,7 +132,6 @@ export default function ReferencesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Referenz löschen?')) return;
     await supabase.from('references').delete().eq('id', id);
     toast({ title: 'Referenz gelöscht' });
     fetchRefs();
@@ -157,111 +158,118 @@ export default function ReferencesPage() {
               Neue Referenz
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-[900px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingRef ? 'Referenz bearbeiten' : 'Neue Referenz'}
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 pt-2">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label>Kundenname *</Label>
-                  <Input value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Max Mustermann" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Firma *</Label>
-                  <Input value={clientCompany} onChange={(e) => setClientCompany(e.target.value)} placeholder="Musterfirma GmbH" />
-                </div>
-              </div>
-              <div className="space-y-1.5">
-                <Label>Zitat / Testimonial</Label>
-                <Textarea value={quote} onChange={(e) => setQuote(e.target.value)} placeholder="Die Zusammenarbeit war..." rows={3} />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Ergebnis-Zusammenfassung</Label>
-                <Input value={resultSummary} onChange={(e) => setResultSummary(e.target.value)} placeholder="z.B. 40% Ersparnis" />
-              </div>
-              <div className="space-y-2">
-                <Label>Medientyp</Label>
-                <div className="flex gap-2">
-                  {([['none', 'Keins'], ['image', 'Bild'], ['video', 'Video']] as const).map(([val, label]) => (
-                    <button
-                      key={val}
-                      type="button"
-                      onClick={() => setMediaType(val as MediaType)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
-                        mediaType === val
-                          ? 'border-[#11485e] bg-[#11485e]/5 text-[#11485e]'
-                          : 'border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]'
-                      }`}
-                    >
-                      {val === 'image' && <Image className="h-3.5 w-3.5 inline mr-1.5" />}
-                      {val === 'video' && <Video className="h-3.5 w-3.5 inline mr-1.5" />}
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {mediaType === 'image' && (
-                <div className="space-y-1.5">
-                  <Label className="flex items-center gap-1.5">
-                    <Image className="h-3.5 w-3.5" />
-                    Bild
-                  </Label>
-                  <div className="flex items-center gap-3">
-                    {imageUrl && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={imageUrl} alt="" className="h-12 w-12 rounded object-cover" />
-                    )}
-                    <label className="cursor-pointer">
-                      <Button variant="outline" size="sm" asChild>
-                        <span>
-                          <Upload className="h-3.5 w-3.5 mr-1" />
-                          {imageUrl ? 'Bild ändern' : 'Bild hochladen'}
-                        </span>
-                      </Button>
-                      <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                    </label>
-                    {imageUrl && (
-                      <Button variant="ghost" size="sm" onClick={() => setImageUrl('')} className="text-destructive text-xs">
-                        Entfernen
-                      </Button>
-                    )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-2">
+              {/* Left: Text fields */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label>Kundenname *</Label>
+                    <Input value={clientName} onChange={(e) => setClientName(e.target.value)} placeholder="Max Mustermann" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>Firma *</Label>
+                    <Input value={clientCompany} onChange={(e) => setClientCompany(e.target.value)} placeholder="Musterfirma GmbH" />
                   </div>
                 </div>
-              )}
-              {mediaType === 'video' && (
-                <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label>Zitat / Testimonial</Label>
+                  <Textarea value={quote} onChange={(e) => setQuote(e.target.value)} placeholder="Die Zusammenarbeit war..." rows={3} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Ergebnis-Zusammenfassung</Label>
+                  <Input value={resultSummary} onChange={(e) => setResultSummary(e.target.value)} placeholder="z.B. 40% Ersparnis" />
+                </div>
+              </div>
+
+              {/* Right: Media uploads */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Medientyp</Label>
+                  <div className="flex gap-2">
+                    {([['none', 'Keins'], ['image', 'Bild'], ['video', 'Video']] as const).map(([val, label]) => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => setMediaType(val as MediaType)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                          mediaType === val
+                            ? 'border-[#11485e] bg-[#11485e]/5 text-[#11485e]'
+                            : 'border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]'
+                        }`}
+                      >
+                        {val === 'image' && <Image className="h-3.5 w-3.5 inline mr-1.5" />}
+                        {val === 'video' && <Video className="h-3.5 w-3.5 inline mr-1.5" />}
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {mediaType === 'image' && (
                   <div className="space-y-1.5">
                     <Label className="flex items-center gap-1.5">
-                      <Video className="h-3.5 w-3.5" />
-                      Video-URL (YouTube / Loom)
+                      <Image className="h-3.5 w-3.5" />
+                      Bild
                     </Label>
-                    <Input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://youtube.com/watch?v=... oder https://loom.com/share/..." />
-                  </div>
-                  {videoUrl && getVideoThumbnail(videoUrl) && (
-                    <div className="relative rounded-lg overflow-hidden border border-[#e5e7eb]">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={getVideoThumbnail(videoUrl)!} alt="Thumbnail" className="w-full h-32 object-cover" />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                        <div className="h-10 w-10 rounded-full bg-white/90 flex items-center justify-center">
-                          <Play className="h-5 w-5 text-[#1a1a1a] ml-0.5" />
-                        </div>
-                      </div>
-                      <p className="text-[10px] text-[#9ca3af] px-2 py-1">Automatisches Thumbnail</p>
+                    <div className="flex items-center gap-3">
+                      {imageUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={imageUrl} alt="" className="h-12 w-12 rounded object-cover" />
+                      )}
+                      <label className="cursor-pointer">
+                        <Button variant="outline" size="sm" asChild>
+                          <span>
+                            <Upload className="h-3.5 w-3.5 mr-1" />
+                            {imageUrl ? 'Bild ändern' : 'Bild hochladen'}
+                          </span>
+                        </Button>
+                        <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                      </label>
+                      {imageUrl && (
+                        <Button variant="ghost" size="sm" onClick={() => setImageUrl('')} className="text-destructive text-xs">
+                          Entfernen
+                        </Button>
+                      )}
                     </div>
-                  )}
-                </div>
-              )}
-              <div className="flex justify-end gap-2 pt-2">
-                <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>
-                  Abbrechen
-                </Button>
-                <Button onClick={handleSave} disabled={!clientName || !clientCompany}>
-                  {editingRef ? 'Aktualisieren' : 'Erstellen'}
-                </Button>
+                  </div>
+                )}
+                {mediaType === 'video' && (
+                  <div className="space-y-3">
+                    <div className="space-y-1.5">
+                      <Label className="flex items-center gap-1.5">
+                        <Video className="h-3.5 w-3.5" />
+                        Video-URL (YouTube / Loom)
+                      </Label>
+                      <Input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://youtube.com/watch?v=... oder https://loom.com/share/..." />
+                    </div>
+                    {videoUrl && getVideoThumbnail(videoUrl) && (
+                      <div className="relative rounded-lg overflow-hidden border border-[#e5e7eb]">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={getVideoThumbnail(videoUrl)!} alt="Thumbnail" className="w-full h-32 object-cover" />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                          <div className="h-10 w-10 rounded-full bg-white/90 flex items-center justify-center">
+                            <Play className="h-5 w-5 text-[#1a1a1a] ml-0.5" />
+                          </div>
+                        </div>
+                        <p className="text-[10px] text-[#9ca3af] px-2 py-1">Automatisches Thumbnail</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-4 border-t border-[#e5e7eb] mt-4">
+              <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>
+                Abbrechen
+              </Button>
+              <Button onClick={handleSave} disabled={!clientName || !clientCompany}>
+                {editingRef ? 'Aktualisieren' : 'Erstellen'}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -323,7 +331,7 @@ export default function ReferencesPage() {
                   <Button variant="ghost" size="sm" onClick={() => openEdit(ref)}>
                     <Pencil className="h-3.5 w-3.5" />
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => handleDelete(ref.id)} className="text-destructive">
+                  <Button variant="ghost" size="sm" onClick={() => setDeleteConfirmId(ref.id)} className="text-destructive">
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
@@ -332,6 +340,17 @@ export default function ReferencesPage() {
           ))}
         </div>
       )}
+      <ConfirmDialog
+        open={!!deleteConfirmId}
+        onClose={() => setDeleteConfirmId(null)}
+        onConfirm={() => {
+          if (deleteConfirmId) handleDelete(deleteConfirmId);
+        }}
+        title="Referenz löschen?"
+        description="Diese Referenz wird unwiderruflich gelöscht. Diese Aktion kann nicht rückgängig gemacht werden."
+        confirmText="Löschen"
+        variant="destructive"
+      />
     </div>
   );
 }

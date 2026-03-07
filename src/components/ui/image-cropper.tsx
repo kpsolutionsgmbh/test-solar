@@ -11,6 +11,8 @@ interface ImageCropperProps {
   open: boolean;
   onClose: () => void;
   onCropComplete: (croppedBlob: Blob) => void;
+  cropShape?: 'round' | 'rect';
+  aspect?: number;
 }
 
 function createImage(url: string): Promise<HTMLImageElement> {
@@ -50,7 +52,7 @@ async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<Blob> {
   });
 }
 
-export function ImageCropper({ imageSrc, open, onClose, onCropComplete }: ImageCropperProps) {
+export function ImageCropper({ imageSrc, open, onClose, onCropComplete, cropShape = 'round', aspect = 1 }: ImageCropperProps) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
@@ -83,8 +85,8 @@ export function ImageCropper({ imageSrc, open, onClose, onCropComplete }: ImageC
             image={imageSrc}
             crop={crop}
             zoom={zoom}
-            aspect={1}
-            cropShape="round"
+            aspect={aspect}
+            cropShape={cropShape}
             onCropChange={setCrop}
             onZoomChange={setZoom}
             onCropComplete={onCropDone}

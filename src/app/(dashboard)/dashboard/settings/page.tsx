@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -39,6 +40,7 @@ export default function SettingsPage() {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [memberDialogOpen, setMemberDialogOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
+  const [deleteMemberId, setDeleteMemberId] = useState<string | null>(null);
   const [memberName, setMemberName] = useState('');
   const [memberPosition, setMemberPosition] = useState('');
   const [memberEmail, setMemberEmail] = useState('');
@@ -179,7 +181,6 @@ export default function SettingsPage() {
   };
 
   const handleDeleteMember = async (id: string) => {
-    if (!confirm('Teammitglied löschen?')) return;
     await supabase.from('team_members').delete().eq('id', id);
     toast({ title: 'Teammitglied gelöscht' });
     fetchData();
@@ -396,7 +397,7 @@ export default function SettingsPage() {
                       <Button variant="ghost" size="sm" onClick={() => openEditMember(m)}>
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDeleteMember(m.id)} className="text-destructive">
+                      <Button variant="ghost" size="sm" onClick={() => setDeleteMemberId(m.id)} className="text-destructive">
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
                     </div>
@@ -450,6 +451,17 @@ export default function SettingsPage() {
         open={cropperOpen}
         onClose={() => setCropperOpen(false)}
         onCropComplete={handleCroppedAvatar}
+      />
+      <ConfirmDialog
+        open={!!deleteMemberId}
+        onClose={() => setDeleteMemberId(null)}
+        onConfirm={() => {
+          if (deleteMemberId) handleDeleteMember(deleteMemberId);
+        }}
+        title="Teammitglied löschen?"
+        description="Das Teammitglied wird unwiderruflich gelöscht. Diese Aktion kann nicht rückgängig gemacht werden."
+        confirmText="Löschen"
+        variant="destructive"
       />
     </div>
   );
