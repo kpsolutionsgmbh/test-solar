@@ -22,12 +22,12 @@ import {
   Play,
   Target,
   Zap,
-  Timer,
   Cookie,
   FileText,
   Lightbulb,
   ChevronRight,
   ChevronDown,
+  PenLine,
 } from 'lucide-react';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -393,6 +393,69 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                 </div>
               </section>
 
+              {/* ===== NEW: "So einfach geht's" – 3 steps: Video → Angebot → Unterschreiben ===== */}
+              <section className="fade-in-up bg-[#fafafa]">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+                  <h2 className="text-[22px] sm:text-[28px] font-bold text-[#1a1a1a] text-center">
+                    {dealroom.language === 'de' ? "So einfach geht's" : 'How it works'}
+                  </h2>
+                  <p className="text-base text-[#6b7280] text-center mt-2 mb-8">
+                    {dealroom.language === 'de'
+                      ? 'In drei Schritten von der Übersicht zur Zusammenarbeit'
+                      : 'Three steps from overview to collaboration'}
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+                    {[
+                      {
+                        icon: <Play className="h-6 w-6" />,
+                        step: dealroom.language === 'de' ? 'Schritt 1' : 'Step 1',
+                        title: dealroom.language === 'de' ? 'Video anschauen' : 'Watch the video',
+                        description: dealroom.language === 'de'
+                          ? 'Ihr Ansprechpartner erklärt Ihnen persönlich, worum es geht und warum dieses Angebot zu Ihrer Situation passt.'
+                          : 'Your contact person explains personally what it\'s about and why this offer fits your situation.',
+                      },
+                      {
+                        icon: <FileText className="h-6 w-6" />,
+                        step: dealroom.language === 'de' ? 'Schritt 2' : 'Step 2',
+                        title: dealroom.language === 'de' ? 'Angebot durchlesen' : 'Review the proposal',
+                        description: dealroom.language === 'de'
+                          ? 'Prüfen Sie unser Angebot in Ruhe – alles transparent und individuell auf Sie zugeschnitten.'
+                          : 'Review our proposal at your leisure – everything transparent and tailored to you.',
+                      },
+                      {
+                        icon: <PenLine className="h-6 w-6" />,
+                        step: dealroom.language === 'de' ? 'Schritt 3' : 'Step 3',
+                        title: dealroom.language === 'de' ? 'Unterschreiben & starten' : 'Sign & get started',
+                        description: dealroom.language === 'de'
+                          ? 'Passt alles? Unterschreiben Sie digital und wir legen direkt los. Kein Papierkram, kein Warten.'
+                          : 'Everything fits? Sign digitally and we get started right away. No paperwork, no waiting.',
+                      },
+                    ].map((s, i) => (
+                      <div key={i}>
+                        <div className="bg-white border border-[#e5e7eb] rounded-xl p-6 text-center">
+                          <div
+                            className="h-12 w-12 rounded-full flex items-center justify-center mx-auto mb-4"
+                            style={{ backgroundColor: brandColor + '12', color: brandColor }}
+                          >
+                            {s.icon}
+                          </div>
+                          <p className="text-[13px] font-semibold mb-1" style={{ color: brandColor }}>{s.step}</p>
+                          <h3 className="text-[18px] font-bold text-[#1a1a1a] mb-2">{s.title}</h3>
+                          <p className="text-sm text-[#6b7280] leading-relaxed">{s.description}</p>
+                        </div>
+                        {/* Arrow between cards on mobile */}
+                        {i < 2 && (
+                          <div className="flex justify-center py-2 md:hidden">
+                            <ChevronDown className="h-5 w-5 text-[#d1d5db]" />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
               {/* ===== 2. PAIN SECTION - Dark Red-Brown Container ===== */}
               <section className="fade-in-up bg-white">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
@@ -545,62 +608,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                 </section>
               )}
 
-              {/* ===== 5. HOW IT WORKS - Process Steps ===== */}
-              <section className="fade-in-up bg-white">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-                  <div className="text-center mb-10">
-                    <div className="inline-flex items-center justify-center h-12 w-12 rounded-full mb-4" style={{ backgroundColor: brandColor + '12' }}>
-                      <Timer className="h-6 w-6" style={{ color: brandColor }} />
-                    </div>
-                    <h2 className="text-[22px] sm:text-[28px] font-bold text-[#1a1a1a]">
-                      {tr.sections.processTitle}
-                    </h2>
-                  </div>
-
-                  <div className="space-y-0 relative max-w-3xl mx-auto">
-                    <div className="absolute left-5 top-6 bottom-6 w-0.5" style={{ backgroundColor: brandColor + '20' }} />
-                    {content.process_steps.map((step) => (
-                      <div key={step.step} className="flex gap-4 sm:gap-6 relative py-3 sm:py-4">
-                        <div className="shrink-0 z-10">
-                          <div
-                            className="h-10 w-10 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md"
-                            style={{ backgroundColor: brandColor }}
-                          >
-                            {step.step}
-                          </div>
-                        </div>
-                        <div className="flex-1 bg-[#fafafa] rounded-xl p-5 sm:p-6 border border-[#e5e7eb] shadow-sm">
-                          <h3 className="font-bold text-[#1a1a1a] text-[18px] sm:text-[22px] mb-3">{step.title}</h3>
-                          <div className="flex flex-wrap gap-2 sm:gap-3 mb-3">
-                            <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-semibold" style={{ backgroundColor: brandColor + '12', color: brandColor }}>
-                              <Clock className="h-3 w-3" />
-                              {step.duration}
-                            </span>
-                            <span className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 font-semibold">
-                              <Timer className="h-3 w-3" />
-                              {step.effort}
-                            </span>
-                          </div>
-                          <p className="text-sm text-[#6b7280] leading-relaxed">{step.description}</p>
-                          {step.customer_action && (
-                            <p className="text-xs text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2 mt-3 font-medium">
-                              {tr.sections.processYourAction} {step.customer_action}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <CtaBlock
-                    text={tr.sections.ctaAfterProcess}
-                    derisking={tr.sections.ctaDeriskingProcess}
-                    ctaName="after-process"
-                  />
-                </div>
-              </section>
-
-              {/* ===== 6. GUARANTEE - Dark Teal Card ===== */}
+              {/* ===== 5. GUARANTEE - Dark Teal Card ===== */}
               <section className="fade-in-up bg-white">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
                   <div
