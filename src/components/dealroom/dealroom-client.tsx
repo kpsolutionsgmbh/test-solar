@@ -25,7 +25,6 @@ import {
   Cookie,
   FileText,
   Lightbulb,
-  ChevronRight,
   ChevronDown,
   PenLine,
   Rocket,
@@ -902,21 +901,6 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
               </div>
             )}
 
-            {/* 2. Trust block – awards + social proof */}
-            <div className="fade-in-up mt-8 flex flex-col items-center gap-4">
-              <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2">
-                  <Award className="h-5 w-5" style={{ color: brandColor }} />
-                  <span className="text-xs sm:text-sm font-medium text-[#6b7280]">{dealroom.language === 'de' ? 'Zertifizierter Fachbetrieb' : 'Certified specialist'}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Shield className="h-5 w-5" style={{ color: brandColor }} />
-                  <span className="text-xs sm:text-sm font-medium text-[#6b7280]">{dealroom.language === 'de' ? 'TÜV-geprüft' : 'TÜV certified'}</span>
-                </div>
-              </div>
-              <SocialProof />
-            </div>
-
             {/* 3. Contact card with avatar */}
             {contact && (
               <div className="fade-in-up mt-10">
@@ -949,38 +933,6 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                 </div>
               </div>
             )}
-
-            {/* 4. 3-Step Process Bar */}
-            <div className="fade-in-up mt-10">
-              <h2 className="text-[22px] sm:text-[28px] font-bold text-[#1a1a1a] text-center mb-6">
-                {tr.offer.stepsTitle}
-              </h2>
-              <div className="flex flex-col md:flex-row items-center justify-center gap-4 max-w-xl mx-auto">
-                {[
-                  { num: '1', label: tr.offer.step1, active: true },
-                  { num: '2', label: tr.offer.step2, active: false },
-                  { num: '3', label: tr.offer.step3, active: false },
-                ].map((step, i) => (
-                  <div key={i} className="flex items-center gap-2 sm:gap-3">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="h-8 w-8 sm:h-9 sm:w-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
-                        style={{
-                          backgroundColor: step.active ? brandColor : '#e5e7eb',
-                          color: step.active ? 'white' : '#6b7280',
-                        }}
-                      >
-                        {step.num}
-                      </div>
-                      <span className={`text-xs sm:text-sm font-medium whitespace-nowrap ${step.active ? 'text-[#1a1a1a]' : 'text-[#9ca3af]'}`}>
-                        {step.label}
-                      </span>
-                    </div>
-                    {i < 2 && <ChevronRight className="h-4 w-4 text-[#d1d5db] shrink-0 hidden md:block" />}
-                  </div>
-                ))}
-              </div>
-            </div>
 
             {/* 5. Post-Signature Flow */}
             <div className="fade-in-up mt-12">
