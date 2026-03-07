@@ -832,6 +832,9 @@ export default function EditDealroomPage() {
         open={deleteConfirmOpen}
         onClose={() => setDeleteConfirmOpen(false)}
         onConfirm={async () => {
+          if (dealroom?.slug) {
+            await fetch('/api/revalidate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: dealroom.slug }) });
+          }
           await supabase.from('dealrooms').delete().eq('id', params.id);
           router.push('/dashboard');
           router.refresh();
