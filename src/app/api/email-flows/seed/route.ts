@@ -123,7 +123,10 @@ export async function POST() {
       .insert(defaultFlows.map(f => ({ ...f, admin_id: user.id })))
       .select();
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      console.error('Seed flows error:', error.message);
+      return NextResponse.json({ error: 'Flows konnten nicht erstellt werden' }, { status: 500 });
+    }
     return NextResponse.json({ created: data?.length || 0 });
   } catch {
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });

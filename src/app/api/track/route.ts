@@ -10,6 +10,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
 
+    // Whitelist allowed event types
+    const allowedEvents = [
+      'page_view', 'tab_switch', 'scroll', 'video_play', 'video_pause',
+      'document_click', 'link_click', 'faq_toggle', 'session_start', 'session_end',
+      'cta_click', 'reference_view', 'time_on_page',
+    ];
+    if (!allowedEvents.includes(event_type)) {
+      return NextResponse.json({ error: 'Invalid event type' }, { status: 400 });
+    }
+
     // Anonymize IP (remove last octet)
     const forwarded = request.headers.get('x-forwarded-for');
     const ip = forwarded?.split(',')[0]?.trim() || 'unknown';
@@ -35,15 +45,6 @@ export async function POST(request: NextRequest) {
       user_agent: userAgent,
       session_id,
     });
-
-    // Auto-sign: when a PandaDoc signature event is received, update dealroom status to 'signed'
-    if (event_type === 'pandadoc_sign') {
-      await supabase
-        .from('dealrooms')
-        .update({ status: 'signed' })
-        .eq('id', dealroom_id)
-        .eq('status', 'published');
-    }
 
     return NextResponse.json({ ok: true });
   } catch (error) {

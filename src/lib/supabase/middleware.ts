@@ -32,7 +32,12 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Public routes: no auth required
-  if (pathname.startsWith('/d/') || pathname === '/api/track') {
+  if (
+    pathname.startsWith('/d/') ||
+    pathname === '/api/track' ||
+    pathname === '/api/unsubscribe' ||
+    pathname.startsWith('/api/cron/')
+  ) {
     return supabaseResponse;
   }
 

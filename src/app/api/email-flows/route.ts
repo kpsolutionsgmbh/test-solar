@@ -14,7 +14,10 @@ export async function GET() {
       .eq('admin_id', user.id)
       .order('created_at', { ascending: true });
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      console.error('Email flows DB error:', error.message);
+      return NextResponse.json({ error: 'Operation fehlgeschlagen' }, { status: 500 });
+    }
     return NextResponse.json(data);
   } catch {
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
@@ -35,7 +38,10 @@ export async function POST(request: NextRequest) {
       .select()
       .single();
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      console.error('Email flows DB error:', error.message);
+      return NextResponse.json({ error: 'Operation fehlgeschlagen' }, { status: 500 });
+    }
     return NextResponse.json(data);
   } catch {
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });
@@ -72,7 +78,10 @@ export async function PUT(request: NextRequest) {
       .select()
       .single();
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) {
+      console.error('Email flows DB error:', error.message);
+      return NextResponse.json({ error: 'Operation fehlgeschlagen' }, { status: 500 });
+    }
 
     // Update selected dealrooms if provided
     if (Array.isArray(selected_dealroom_ids)) {

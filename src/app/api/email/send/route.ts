@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
 
       if (sendError) {
         console.error('Resend error:', sendError);
-        return NextResponse.json({ error: `E-Mail konnte nicht gesendet werden: ${sendError.message}` }, { status: 500 });
+        return NextResponse.json({ error: 'E-Mail konnte nicht gesendet werden' }, { status: 500 });
       }
     }
 

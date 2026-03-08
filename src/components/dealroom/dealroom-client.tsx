@@ -35,7 +35,8 @@ function getVideoEmbedUrl(url: string): string | null {
   if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
   const loomMatch = url.match(/loom\.com\/share\/([a-zA-Z0-9]+)/);
   if (loomMatch) return `https://www.loom.com/embed/${loomMatch[1]}`;
-  return url;
+  // Reject unrecognized URLs — only YouTube and Loom are allowed
+  return null;
 }
 
 function getOutcomeText(outcome: string | { text: string; detail?: string }): string {

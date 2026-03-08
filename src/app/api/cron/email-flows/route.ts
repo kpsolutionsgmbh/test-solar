@@ -20,8 +20,13 @@ interface EligibleDealroom {
 
 export async function GET(req: NextRequest) {
   // Auth: Only Vercel Cron or CRON_SECRET should call this
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    console.error('CRON_SECRET is not configured');
+    return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 });
+  }
   const authHeader = req.headers.get('Authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
