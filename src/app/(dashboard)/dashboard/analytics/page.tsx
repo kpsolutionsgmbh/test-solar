@@ -3,7 +3,8 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dealroom, TrackingEvent } from '@/types/database';
-import { Eye, MousePointerClick, Video, FileSignature, TrendingUp, BarChart3, Users, Flame } from 'lucide-react';
+import { BarChart3, Flame } from 'lucide-react';
+import { AnalyticsStatsGrid } from '@/components/dashboard/analytics-stats';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = { title: 'Analytics' };
@@ -92,50 +93,14 @@ export default async function AnalyticsPage() {
       </div>
 
       {/* Global Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
-        <Card className="border-none shadow-sm">
-          <CardContent className="pt-4 pb-3 text-center">
-            <Eye className="h-5 w-5 text-[#11485e] mx-auto mb-1" />
-            <p className="text-2xl font-bold text-[#1a1a1a]">{totalViews}</p>
-            <p className="text-[10px] text-[#6b7280] uppercase tracking-wide">Seitenaufrufe</p>
-          </CardContent>
-        </Card>
-        <Card className="border-none shadow-sm">
-          <CardContent className="pt-4 pb-3 text-center">
-            <Users className="h-5 w-5 text-blue-600 mx-auto mb-1" />
-            <p className="text-2xl font-bold text-[#1a1a1a]">{uniqueSessions}</p>
-            <p className="text-[10px] text-[#6b7280] uppercase tracking-wide">Sessions</p>
-          </CardContent>
-        </Card>
-        <Card className="border-none shadow-sm">
-          <CardContent className="pt-4 pb-3 text-center">
-            <Video className="h-5 w-5 text-purple-600 mx-auto mb-1" />
-            <p className="text-2xl font-bold text-[#1a1a1a]">{totalVideoPlays}</p>
-            <p className="text-[10px] text-[#6b7280] uppercase tracking-wide">Video-Plays</p>
-          </CardContent>
-        </Card>
-        <Card className="border-none shadow-sm">
-          <CardContent className="pt-4 pb-3 text-center">
-            <MousePointerClick className="h-5 w-5 text-amber-600 mx-auto mb-1" />
-            <p className="text-2xl font-bold text-[#1a1a1a]">{totalCtaClicks}</p>
-            <p className="text-[10px] text-[#6b7280] uppercase tracking-wide">CTA-Klicks</p>
-          </CardContent>
-        </Card>
-        <Card className="border-none shadow-sm">
-          <CardContent className="pt-4 pb-3 text-center">
-            <FileSignature className="h-5 w-5 text-emerald-600 mx-auto mb-1" />
-            <p className="text-2xl font-bold text-[#1a1a1a]">{totalSigns}</p>
-            <p className="text-[10px] text-[#6b7280] uppercase tracking-wide">Unterschriften</p>
-          </CardContent>
-        </Card>
-        <Card className="border-none shadow-sm bg-gradient-to-br from-[#11485e]/5 to-[#11485e]/10">
-          <CardContent className="pt-4 pb-3 text-center">
-            <TrendingUp className="h-5 w-5 text-[#11485e] mx-auto mb-1" />
-            <p className="text-2xl font-bold text-[#11485e]">{recentViews}</p>
-            <p className="text-[10px] text-[#6b7280] uppercase tracking-wide">Letzte 7 Tage</p>
-          </CardContent>
-        </Card>
-      </div>
+      <AnalyticsStatsGrid
+        totalViews={totalViews}
+        uniqueSessions={uniqueSessions}
+        totalVideoPlays={totalVideoPlays}
+        totalCtaClicks={totalCtaClicks}
+        totalSigns={totalSigns}
+        recentViews={recentViews}
+      />
 
       {/* Engagement Score Distribution */}
       <Card className="mb-6">
