@@ -3,7 +3,6 @@
 import { type ReactNode } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { NumberTicker } from "@/components/magicui/number-ticker";
-import { BorderBeam } from "@/components/magicui/border-beam";
 
 interface StatCardProps {
   label: string;
@@ -11,8 +10,6 @@ interface StatCardProps {
   icon: ReactNode;
   gradient: string;
   textColor: string;
-  beamColorFrom?: string;
-  beamColorTo?: string;
 }
 
 function StatCard({
@@ -21,11 +18,9 @@ function StatCard({
   icon,
   gradient,
   textColor,
-  beamColorFrom = "#11485e",
-  beamColorTo = "#22c55e",
 }: StatCardProps) {
   return (
-    <Card className={`relative overflow-hidden border-none shadow-sm ${gradient}`}>
+    <Card className={`border-none shadow-sm ${gradient}`}>
       <CardContent className="pt-5 pb-4">
         <div className="flex items-center justify-between">
           <div>
@@ -39,13 +34,6 @@ function StatCard({
           {icon}
         </div>
       </CardContent>
-      <BorderBeam
-        size={80}
-        duration={8}
-        colorFrom={beamColorFrom}
-        colorTo={beamColorTo}
-        borderWidth={1.5}
-      />
     </Card>
   );
 }
@@ -70,8 +58,6 @@ export function StatsGrid({ total, published, drafts, interactions }: StatsGridP
         }
         gradient="bg-gradient-to-br from-[#11485e]/5 to-[#11485e]/10"
         textColor="text-[#11485e]"
-        beamColorFrom="#11485e"
-        beamColorTo="#3b82f6"
       />
       <StatCard
         label="Live"
@@ -83,8 +69,6 @@ export function StatsGrid({ total, published, drafts, interactions }: StatsGridP
         }
         gradient="bg-gradient-to-br from-emerald-50 to-emerald-100/50"
         textColor="text-emerald-700"
-        beamColorFrom="#22c55e"
-        beamColorTo="#10b981"
       />
       <StatCard
         label="Entwürfe"
@@ -96,8 +80,6 @@ export function StatsGrid({ total, published, drafts, interactions }: StatsGridP
         }
         gradient="bg-gradient-to-br from-amber-50 to-amber-100/50"
         textColor="text-amber-700"
-        beamColorFrom="#f59e0b"
-        beamColorTo="#fbbf24"
       />
       <StatCard
         label="Interaktionen"
@@ -109,8 +91,6 @@ export function StatsGrid({ total, published, drafts, interactions }: StatsGridP
         }
         gradient="bg-gradient-to-br from-blue-50 to-blue-100/50"
         textColor="text-blue-700"
-        beamColorFrom="#3b82f6"
-        beamColorTo="#6366f1"
       />
     </div>
   );
