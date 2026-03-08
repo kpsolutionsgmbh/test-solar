@@ -23,6 +23,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid bucket' }, { status: 400 });
     }
 
+    // Size limits per bucket (in bytes)
+    const sizeLimits: Record<string, number> = {
+      logos: 5 * 1024 * 1024,       // 5 MB
+      avatars: 5 * 1024 * 1024,     // 5 MB
+      references: 5 * 1024 * 1024,  // 5 MB
+      documents: 20 * 1024 * 1024,  // 20 MB
+    };
+    if (file.size > (sizeLimits[bucket] || 5 * 1024 * 1024)) {
+      const limitMB = (sizeLimits[bucket] || 5 * 1024 * 1024) / (1024 * 1024);
+      return NextResponse.json(
+        { error: `Datei zu groß. Maximale Größe: ${limitMB} MB` },
+        { status: 413 }
+      );
+    }
+
+    // Allowed MIME types per bucket
+    const allowedTypes: Record<string, string[]> = {
+      logos: ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'],
+      avatars: ['image/png', 'image/jpeg', 'image/webp'],
+      references: ['image/png', 'image/jpeg', 'image/webp', 'video/mp4', 'video/webm'],
+      documents: ['application/pdf'],
+    };
+    if (!allowedTypes[bucket]?.includes(file.type)) {
+      return NextResponse.json(
+        { error: `Dateityp nicht erlaubt. Erlaubt: ${allowedTypes[bucket]?.join(', ')}` },
+        { status: 415 }
+      );
+    }
+
     const ext = file.name.split('.').pop() || 'png';
     const fileName = `${bucket}_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
 
