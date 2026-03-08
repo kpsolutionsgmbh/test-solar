@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
@@ -24,6 +24,9 @@ import {
   SkipForward,
   MailOpen,
   MousePointerClick,
+  Eye,
+  AlertTriangle,
+  Check,
 } from 'lucide-react';
 
 type Tab = 'automatic' | 'single' | 'history';
@@ -49,6 +52,15 @@ interface DealroomOption {
   client_email: string | null;
   slug: string;
   status: string;
+  customer_id: string | null;
+  assigned_member_id: string | null;
+  customers: { salutation: string; first_name: string; last_name: string; company: string } | null;
+  team_members: { name: string; email: string; phone: string | null } | null;
+}
+
+interface AdminProfile {
+  name: string;
+  email: string;
 }
 
 interface Props {
@@ -56,6 +68,7 @@ interface Props {
   lastExecutions: Record<string, string>;
   logs: EmailLog[];
   dealrooms: DealroomOption[];
+  adminProfile?: AdminProfile;
 }
 
 const triggerLabels: Record<string, string> = {
@@ -122,11 +135,22 @@ Mit freundlichen Grüßen
 
 const personalizationLabels = [
   { label: '{{anrede}}', desc: 'Herr/Frau' },
+  { label: '{{vorname}}', desc: 'Vorname' },
   { label: '{{nachname}}', desc: 'Nachname' },
   { label: '{{firma}}', desc: 'Firmenname' },
   { label: '{{ansprechpartner_name}}', desc: 'Ihr Name' },
+  { label: '{{ansprechpartner_telefon}}', desc: 'Ihre Telefonnummer' },
+  { label: '{{ansprechpartner_email}}', desc: 'Ihre E-Mail' },
   { label: '{{dealroom_link}}', desc: 'Link zum Angebot' },
 ];
+
+function replacePlaceholders(template: string, replacements: Record<string, string>): string {
+  let result = template;
+  for (const [placeholder, value] of Object.entries(replacements)) {
+    result = result.replaceAll(placeholder, value);
+  }
+  return result;
+}
 
 function formatRelativeTime(dateStr: string | null): string {
   if (!dateStr) return 'Noch nie ausgeführt';
@@ -158,7 +182,7 @@ function formatDateTime(dateStr: string): string {
   return `${d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })}, ${time}`;
 }
 
-export function EmailPageClient({ flows, lastExecutions, logs, dealrooms }: Props) {
+export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminProfile }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('automatic');
   const router = useRouter();
   const { toast } = useToast();
@@ -169,7 +193,7 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms }: Prop
   const [emailSubject, setEmailSubject] = useState('');
   const [emailBody, setEmailBody] = useState('');
   const [sending, setSending] = useState(false);
-  const [includeLink, setIncludeLink] = useState(true);
+  const [showPreview, setShowPreview] = useState(false);
   const bodyRef = useRef<HTMLTextAreaElement>(null);
 
   // History filter
@@ -183,9 +207,57 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms }: Prop
     return !q || d.client_name.toLowerCase().includes(q) || d.client_company.toLowerCase().includes(q);
   });
 
+  // Build placeholder replacements for preview
+  const placeholderReplacements = useMemo((): Record<string, string> => {
+    if (!selectedDealroom) return {} as Record<string, string>;
+
+    const customer = selectedDealroom.customers;
+    const member = selectedDealroom.team_members;
+    const nameParts = selectedDealroom.client_name.split(' ');
+
+    const anrede = customer?.salutation || '';
+    const vorname = customer?.first_name || nameParts[0] || '';
+    const nachname = customer?.last_name || nameParts.slice(1).join(' ') || '';
+    const firma = customer?.company || selectedDealroom.client_company || '';
+    const dealroomLink = typeof window !== 'undefined'
+      ? `${window.location.origin}/d/${selectedDealroom.slug}`
+      : `/d/${selectedDealroom.slug}`;
+
+    return {
+      '{{anrede}}': anrede,
+      '{{vorname}}': vorname,
+      '{{nachname}}': nachname,
+      '{{firma}}': firma,
+      '{{produkt}}': '',
+      '{{ansprechpartner_name}}': member?.name || adminProfile?.name || '',
+      '{{ansprechpartner_telefon}}': member?.phone || '',
+      '{{ansprechpartner_email}}': member?.email || adminProfile?.email || '',
+      '{{dealroom_link}}': dealroomLink,
+      '{{r}}': anrede === 'Herr' ? 'r' : '',
+    };
+  }, [selectedDealroom, adminProfile]);
+
+  // Live preview text
+  const previewSubject = useMemo(
+    () => emailSubject ? replacePlaceholders(emailSubject, placeholderReplacements) : '',
+    [emailSubject, placeholderReplacements]
+  );
+  const previewBody = useMemo(
+    () => emailBody ? replacePlaceholders(emailBody, placeholderReplacements) : '',
+    [emailBody, placeholderReplacements]
+  );
+
+  // Detect missing variables
+  const missingVariables = useMemo(() => {
+    const combined = previewSubject + previewBody;
+    const remaining = combined.match(/\{\{[a-z_]+\}\}/g) || [];
+    return Array.from(new Set(remaining));
+  }, [previewSubject, previewBody]);
+
   const applyTemplate = (tmpl: typeof emailTemplates[0]) => {
     setEmailSubject(tmpl.subject);
     setEmailBody(tmpl.body);
+    if (tmpl.body) setShowPreview(true);
   };
 
   const insertLabel = (label: string) => {
@@ -209,12 +281,7 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms }: Prop
 
     setSending(true);
     try {
-      let finalBody = emailBody;
-      if (includeLink && selectedDealroom) {
-        const link = `${window.location.origin}/d/${selectedDealroom.slug}`;
-        finalBody = finalBody.replace(/\{\{dealroom_link\}\}/g, link);
-      }
-
+      // Send raw template — server does the placeholder replacement
       const res = await fetch('/api/email-flows/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -222,7 +289,7 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms }: Prop
           dealroomId: selectedDealroomId,
           recipientEmail: selectedDealroom.client_email,
           subject: emailSubject,
-          bodyHtml: finalBody,
+          bodyHtml: emailBody,
         }),
       });
 
@@ -232,6 +299,7 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms }: Prop
         setEmailBody('');
         setSelectedDealroomId('');
         setDealroomSearch('');
+        setShowPreview(false);
         router.refresh();
       } else {
         const data = await res.json();
@@ -423,18 +491,6 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms }: Prop
               onChange={(e) => setEmailSubject(e.target.value)}
               placeholder="Betreff eingeben..."
             />
-            <div className="flex gap-1.5 flex-wrap">
-              <span className="text-xs text-[#6b7280] mr-1">Vorschläge:</span>
-              {['Kurze Rückfrage zu Ihrem Angebot', 'Ihr nächster Schritt'].map(s => (
-                <button
-                  key={s}
-                  onClick={() => setEmailSubject(s)}
-                  className="text-xs px-2 py-0.5 rounded bg-[#f0f5f7] text-[#11485e] hover:bg-[#e7eef1] transition-colors"
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* Body */}
@@ -462,17 +518,6 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms }: Prop
             />
           </div>
 
-          {/* Auto-include link */}
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={includeLink}
-              onChange={(e) => setIncludeLink(e.target.checked)}
-              className="rounded border-[#e5e7eb]"
-            />
-            <span className="text-sm text-[#6b7280]">Angebotsraum-Link automatisch einfügen</span>
-          </label>
-
           {/* Templates */}
           <div className="space-y-2">
             <Label className="flex items-center gap-1">
@@ -495,6 +540,77 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms }: Prop
               ))}
             </div>
           </div>
+
+          {/* Preview Toggle */}
+          {selectedDealroom && emailBody.trim() && (
+            <button
+              onClick={() => setShowPreview(!showPreview)}
+              className="flex items-center gap-2 text-sm text-[#11485e] hover:text-[#0d3648] transition-colors font-medium"
+            >
+              <Eye className="h-4 w-4" />
+              {showPreview ? 'Vorschau ausblenden' : 'Vorschau anzeigen'}
+            </button>
+          )}
+
+          {/* Preview Section */}
+          {showPreview && selectedDealroom && emailBody.trim() && (
+            <div className="space-y-3">
+              <div className="border border-[#e5e7eb] rounded-xl overflow-hidden">
+                <div className="bg-[#f9fafb] px-4 py-2.5 border-b border-[#e5e7eb]">
+                  <p className="text-[11px] font-medium text-[#6b7280] uppercase tracking-wider">
+                    Vorschau
+                  </p>
+                </div>
+                <div className="p-5 bg-white">
+                  {/* Preview Subject */}
+                  <div className="mb-4 pb-4 border-b border-[#f0f0f0]">
+                    <p className="text-[11px] text-[#9ca3af] mb-0.5">Betreff:</p>
+                    <p className="text-sm font-semibold text-[#1a1a1a]">
+                      {previewSubject || '(Kein Betreff)'}
+                    </p>
+                  </div>
+
+                  {/* Preview Body */}
+                  <div className="text-sm text-[#374151] leading-relaxed whitespace-pre-line">
+                    {previewBody}
+                  </div>
+
+                  {/* CTA Button Preview */}
+                  {previewBody.includes(`/d/${selectedDealroom.slug}`) && (
+                    <div className="mt-5 text-center">
+                      <span className="inline-block px-6 py-3 bg-[#11485e] text-white rounded-xl text-sm font-semibold">
+                        Jetzt Angebot ansehen
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Missing Variables Warning */}
+              {missingVariables.length > 0 ? (
+                <div className="flex items-start gap-2.5 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                  <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-amber-800">
+                      Nicht alle Variablen konnten ausgefüllt werden:
+                    </p>
+                    <ul className="mt-1 space-y-0.5">
+                      {missingVariables.map(v => (
+                        <li key={v} className="text-xs text-amber-700">
+                          {v} &mdash; Bitte manuell ersetzen oder Kundendaten ergänzen
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-emerald-600 flex items-center gap-1.5">
+                  <Check className="h-4 w-4" />
+                  Alle Variablen wurden ausgefüllt.
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Send button */}
           <Button

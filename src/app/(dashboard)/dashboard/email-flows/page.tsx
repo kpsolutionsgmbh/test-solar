@@ -43,20 +43,46 @@ export default async function EmailFlowsPage() {
     .order('sent_at', { ascending: false })
     .limit(100);
 
-  // Get dealrooms for the composer
+  // Get dealrooms for the composer (with customer + team member for preview)
   const { data: dealrooms } = await supabase
     .from('dealrooms')
-    .select('id, client_name, client_company, client_email, slug, status')
+    .select(`
+      id, client_name, client_company, client_email, slug, status, assigned_member_id, customer_id,
+      customers:customer_id (salutation, first_name, last_name, company),
+      team_members:assigned_member_id (name, email, phone)
+    `)
     .eq('admin_id', user.id)
     .in('status', ['published', 'draft'])
     .order('updated_at', { ascending: false });
+
+  // Get admin info for preview
+  const { data: adminProfile } = await supabase
+    .from('admin_users')
+    .select('name, email')
+    .eq('id', user.id)
+    .single();
+
+  // Normalize relation data (Supabase may return arrays for FK joins)
+  const normalizedDealrooms = (dealrooms || []).map((d: Record<string, unknown>) => ({
+    id: d.id as string,
+    client_name: d.client_name as string,
+    client_company: d.client_company as string,
+    client_email: d.client_email as string | null,
+    slug: d.slug as string,
+    status: d.status as string,
+    customer_id: d.customer_id as string | null,
+    assigned_member_id: d.assigned_member_id as string | null,
+    customers: Array.isArray(d.customers) ? d.customers[0] || null : d.customers || null,
+    team_members: Array.isArray(d.team_members) ? d.team_members[0] || null : d.team_members || null,
+  }));
 
   return (
     <EmailPageClient
       flows={allFlows}
       lastExecutions={lastExecutions}
       logs={allLogs || []}
-      dealrooms={dealrooms || []}
+      dealrooms={normalizedDealrooms}
+      adminProfile={adminProfile || undefined}
     />
   );
 }

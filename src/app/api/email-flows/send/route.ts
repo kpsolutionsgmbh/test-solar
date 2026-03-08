@@ -7,6 +7,14 @@ function getResend() {
   return new Resend(process.env.RESEND_API_KEY);
 }
 
+function replacePlaceholders(template: string, replacements: Record<string, string>): string {
+  let result = template;
+  for (const [placeholder, value] of Object.entries(replacements)) {
+    result = result.replaceAll(placeholder, value);
+  }
+  return result;
+}
+
 export async function POST(req: NextRequest) {
   try {
     const supabase = createServerSupabaseClient();
@@ -20,21 +28,94 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // Get admin info for "from" field
     const serviceClient = createServiceRoleClient();
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://guk-angebot.com';
+
+    // Get admin info
     const { data: admin } = await serviceClient
       .from('admin_users')
-      .select('name, company_name')
+      .select('name, company_name, email')
       .eq('id', user.id)
       .single();
 
     const fromName = admin?.company_name || admin?.name || 'Gündesli & Kollegen';
     const fromDomain = process.env.RESEND_FROM_DOMAIN || 'onboarding@resend.dev';
 
-    // Add unsubscribe link if we have a dealroom
-    let finalBody = bodyHtml;
+    // Build placeholder data from dealroom + customer + team member
+    const replacements: Record<string, string> = {
+      '{{anrede}}': '',
+      '{{vorname}}': '',
+      '{{nachname}}': '',
+      '{{firma}}': '',
+      '{{produkt}}': '',
+      '{{ansprechpartner_name}}': admin?.name || '',
+      '{{ansprechpartner_telefon}}': '',
+      '{{ansprechpartner_email}}': admin?.email || '',
+      '{{dealroom_link}}': '',
+      '{{r}}': '',
+    };
+
     if (dealroomId) {
-      const unsubLink = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://dealroom.guendesliundkollegen.de'}/api/unsubscribe?id=${dealroomId}`;
+      // Load dealroom with relations
+      const { data: dealroom } = await serviceClient
+        .from('dealrooms')
+        .select('slug, client_name, client_company, customer_id, assigned_member_id')
+        .eq('id', dealroomId)
+        .single();
+
+      if (dealroom) {
+        const dealroomUrl = `${baseUrl}/d/${dealroom.slug}?utm_source=email&utm_medium=dealroom&utm_campaign=${dealroomId}`;
+        replacements['{{dealroom_link}}'] = dealroomUrl;
+        replacements['{{firma}}'] = dealroom.client_company || '';
+
+        // Try to get customer data
+        if (dealroom.customer_id) {
+          const { data: customer } = await serviceClient
+            .from('customers')
+            .select('salutation, first_name, last_name, company')
+            .eq('id', dealroom.customer_id)
+            .single();
+
+          if (customer) {
+            replacements['{{anrede}}'] = customer.salutation || '';
+            replacements['{{vorname}}'] = customer.first_name || '';
+            replacements['{{nachname}}'] = customer.last_name || '';
+            replacements['{{firma}}'] = customer.company || dealroom.client_company || '';
+            replacements['{{r}}'] = customer.salutation === 'Herr' ? 'r' : '';
+          }
+        }
+
+        // Fallback from dealroom.client_name if no customer
+        if (!replacements['{{nachname}}'] && dealroom.client_name) {
+          const nameParts = dealroom.client_name.split(' ');
+          replacements['{{vorname}}'] = nameParts[0] || '';
+          replacements['{{nachname}}'] = nameParts.slice(1).join(' ') || '';
+        }
+
+        // Get assigned team member for phone
+        if (dealroom.assigned_member_id) {
+          const { data: member } = await serviceClient
+            .from('team_members')
+            .select('name, email, phone')
+            .eq('id', dealroom.assigned_member_id)
+            .single();
+
+          if (member) {
+            replacements['{{ansprechpartner_name}}'] = member.name || admin?.name || '';
+            replacements['{{ansprechpartner_email}}'] = member.email || admin?.email || '';
+            replacements['{{ansprechpartner_telefon}}'] = member.phone || '';
+          }
+        }
+      }
+    }
+
+    // Replace placeholders in subject and body
+    const finalSubject = replacePlaceholders(subject, replacements);
+    let finalBody = replacePlaceholders(bodyHtml, replacements);
+
+    // Add unsubscribe link if we have a dealroom
+    if (dealroomId) {
+      const unsubLink = `${baseUrl}/api/unsubscribe?id=${dealroomId}`;
       finalBody += `\n\n---\n<p style="font-size:11px;color:#999;">Falls Sie keine weiteren E-Mails wünschen: <a href="${unsubLink}">Abmelden</a></p>`;
     }
 
@@ -46,22 +127,22 @@ export async function POST(req: NextRequest) {
     const { error: sendError } = await resend.emails.send({
       from: `${fromName} <${fromDomain}>`,
       to: recipientEmail,
-      subject,
+      subject: finalSubject,
       html: finalBody.replace(/\n/g, '<br>'),
     });
 
     if (sendError) {
-      // Log as failed
       await serviceClient.from('email_flow_logs').insert({
         flow_id: null,
         dealroom_id: dealroomId || null,
         recipient_email: recipientEmail,
-        subject,
+        subject: finalSubject,
         status: 'failed',
         skip_reason: sendError.message,
         source: 'manual',
       });
-      return NextResponse.json({ error: sendError.message }, { status: 500 });
+      console.error('Resend error:', sendError);
+      return NextResponse.json({ error: 'E-Mail konnte nicht gesendet werden' }, { status: 500 });
     }
 
     // Log as sent
@@ -69,7 +150,7 @@ export async function POST(req: NextRequest) {
       flow_id: null,
       dealroom_id: dealroomId || null,
       recipient_email: recipientEmail,
-      subject,
+      subject: finalSubject,
       status: 'sent',
       source: 'manual',
     });
