@@ -49,7 +49,7 @@ export default async function EmailFlowsPage() {
 
   // Get last execution time per flow
   const flowIds = allFlows.map(f => f.id);
-  let lastExecutions: Record<string, string> = {};
+  const lastExecutions: Record<string, string> = {};
   if (flowIds.length > 0) {
     const { data: logs } = await supabase
       .from('email_flow_logs')
