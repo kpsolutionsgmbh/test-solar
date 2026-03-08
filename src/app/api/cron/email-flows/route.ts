@@ -166,7 +166,7 @@ export async function GET(req: NextRequest) {
       try {
         if (resend) {
           await resend.emails.send({
-            from: 'Gündesli & Kollegen <onboarding@resend.dev>',
+            from: `Gündesli & Kollegen <${process.env.RESEND_FROM_DOMAIN || 'onboarding@resend.dev'}>`,
             to: dealroom.client_email,
             subject: emailSubject,
             html: htmlBody,

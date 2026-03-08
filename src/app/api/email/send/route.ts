@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       console.log('Would send to:', recipientEmail, 'Subject:', subject);
     } else {
       const { error: sendError } = await resend.emails.send({
-        from: 'Gündesli & Kollegen <onboarding@resend.dev>',
+        from: `Gündesli & Kollegen <${process.env.RESEND_FROM_DOMAIN || 'onboarding@resend.dev'}>`,
         to: recipientEmail,
         subject,
         html: htmlBody,
