@@ -17,7 +17,7 @@ export default async function DashboardPage() {
 
   const { data: dealrooms } = await supabase
     .from('dealrooms')
-    .select('id, slug, client_name, client_company, client_position, status, language, updated_at, published_at')
+    .select('id, slug, client_name, client_company, client_position, status, language, updated_at, published_at, created_at, engagement_score')
     .eq('admin_id', user.id)
     .order('updated_at', { ascending: false });
 
@@ -33,6 +33,11 @@ export default async function DashboardPage() {
   const viewCounts: Record<string, number> = {};
   (trackingCounts || []).forEach((t: { dealroom_id: string }) => {
     viewCounts[t.dealroom_id] = (viewCounts[t.dealroom_id] || 0) + 1;
+  });
+
+  const engagementScores: Record<string, number> = {};
+  allDealrooms.forEach((d: Dealroom & { engagement_score?: number }) => {
+    engagementScores[d.id] = d.engagement_score || 0;
   });
 
   const totalViews = Object.values(viewCounts).reduce((a, b) => a + b, 0);
@@ -117,7 +122,7 @@ export default async function DashboardPage() {
 
       {/* Dealroom List */}
       <h2 className="text-lg font-semibold text-[#1a1a1a] mb-4">Alle Dealrooms</h2>
-      <DealroomList dealrooms={allDealrooms} viewCounts={viewCounts} />
+      <DealroomList dealrooms={allDealrooms} viewCounts={viewCounts} engagementScores={engagementScores} />
     </div>
   );
 }

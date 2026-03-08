@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dealroom, TrackingEvent } from '@/types/database';
-import { Eye, MousePointerClick, Video, FileSignature, TrendingUp, BarChart3, Users } from 'lucide-react';
+import { Eye, MousePointerClick, Video, FileSignature, TrendingUp, BarChart3, Users, Flame } from 'lucide-react';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = { title: 'Analytics' };
@@ -23,7 +23,7 @@ export default async function AnalyticsPage() {
 
   const { data: dealrooms } = await supabase
     .from('dealrooms')
-    .select('id, slug, client_name, client_company, status')
+    .select('id, slug, client_name, client_company, status, engagement_score')
     .eq('admin_id', user.id)
     .order('updated_at', { ascending: false });
 
@@ -52,6 +52,23 @@ export default async function AnalyticsPage() {
   const recentEvents = allEvents.filter(e => new Date(e.created_at).getTime() > sevenDaysAgo);
   const recentViews = recentEvents.filter(e => e.event_type === 'page_view').length;
 
+  // Score distribution
+  const scoreCategories = [
+    { label: 'Kalt (0-20)', min: 0, max: 20, color: 'bg-gray-400' },
+    { label: 'Lauwarm (21-40)', min: 21, max: 40, color: 'bg-blue-400' },
+    { label: 'Warm (41-60)', min: 41, max: 60, color: 'bg-orange-400' },
+    { label: 'Heiß (61-80)', min: 61, max: 80, color: 'bg-red-500' },
+    { label: 'Deal-Ready (81+)', min: 81, max: 100, color: 'bg-emerald-500' },
+  ];
+  const scoreCounts = scoreCategories.map(cat => ({
+    ...cat,
+    count: allDealrooms.filter((d: { engagement_score?: number }) => {
+      const s = d.engagement_score || 0;
+      return s >= cat.min && s <= cat.max;
+    }).length,
+  }));
+  const maxScoreCount = Math.max(...scoreCounts.map(c => c.count), 1);
+
   // Per-dealroom stats
   const perDealroom = allDealrooms.map(dr => {
     const drEvents = allEvents.filter(e => e.dealroom_id === dr.id);
@@ -61,7 +78,8 @@ export default async function AnalyticsPage() {
     const signs = drEvents.filter(e => e.event_type === 'pandadoc_sign').length;
     const sessions = new Set(drEvents.map(e => e.session_id)).size;
     const lastEvent = drEvents[0]?.created_at;
-    return { ...dr, views, videos, ctas, signs, sessions, lastEvent };
+    const score = (dr as Dealroom & { engagement_score?: number }).engagement_score || 0;
+    return { ...dr, views, videos, ctas, signs, sessions, lastEvent, score };
   });
 
   return (
@@ -119,6 +137,32 @@ export default async function AnalyticsPage() {
         </Card>
       </div>
 
+      {/* Engagement Score Distribution */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Flame className="h-4 w-4 text-[#11485e]" />
+            Engagement Score Verteilung
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {scoreCounts.map((cat) => (
+              <div key={cat.label} className="flex items-center gap-3">
+                <span className="text-xs text-[#6b7280] w-32 shrink-0">{cat.label}</span>
+                <div className="flex-1 h-5 bg-[#f3f4f6] rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full ${cat.color} transition-all duration-500`}
+                    style={{ width: `${(cat.count / maxScoreCount) * 100}%`, minWidth: cat.count > 0 ? '20px' : '0' }}
+                  />
+                </div>
+                <span className="text-xs font-semibold text-[#1a1a1a] w-6 text-right tabular-nums">{cat.count}</span>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Per-Dealroom Table */}
       <Card>
         <CardHeader>
@@ -136,6 +180,7 @@ export default async function AnalyticsPage() {
                 <thead>
                   <tr className="border-b text-left">
                     <th className="pb-2 font-medium text-[#6b7280]">Dealroom</th>
+                    <th className="pb-2 font-medium text-[#6b7280] text-center">Score</th>
                     <th className="pb-2 font-medium text-[#6b7280] text-center">Status</th>
                     <th className="pb-2 font-medium text-[#6b7280] text-center">Views</th>
                     <th className="pb-2 font-medium text-[#6b7280] text-center">Sessions</th>
@@ -162,6 +207,14 @@ export default async function AnalyticsPage() {
                             <p className="font-medium text-[#1a1a1a]">{dr.client_company}</p>
                             <p className="text-xs text-[#6b7280]">{dr.client_name}</p>
                           </Link>
+                        </td>
+                        <td className="py-3 text-center">
+                          <span className={`tabular-nums text-xs font-semibold ${
+                            dr.score >= 81 ? 'text-emerald-600' :
+                            dr.score >= 61 ? 'text-red-500' :
+                            dr.score >= 41 ? 'text-orange-500' :
+                            dr.score >= 21 ? 'text-blue-500' : 'text-gray-400'
+                          }`}>{dr.score}</span>
                         </td>
                         <td className="py-3 text-center">
                           <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium ${statusColors[dr.status]}`}>

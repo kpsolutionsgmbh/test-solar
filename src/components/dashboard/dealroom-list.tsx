@@ -13,7 +13,9 @@ import {
   PlusCircle,
   Search,
   Building2,
+  ArrowDownUp,
 } from 'lucide-react';
+import { EngagementScore } from '@/components/dashboard/engagement-score';
 
 const statusConfig: Record<string, { label: string; color: string; dotColor: string }> = {
   draft: { label: 'Entwurf', color: 'bg-[#fafafa] text-[#6b7280] border-[#e5e7eb]', dotColor: 'bg-[#6b7280]' },
@@ -47,14 +49,24 @@ function formatRelativeTime(dateStr: string): string {
   return date.toLocaleDateString('de-DE');
 }
 
+type SortOption = 'updated_at' | 'engagement_score' | 'created_at';
+
+const sortOptions: { value: SortOption; label: string }[] = [
+  { value: 'updated_at', label: 'Letzte Aktivität' },
+  { value: 'engagement_score', label: 'Engagement Score' },
+  { value: 'created_at', label: 'Erstelldatum' },
+];
+
 interface Props {
   dealrooms: Dealroom[];
   viewCounts: Record<string, number>;
+  engagementScores?: Record<string, number>;
 }
 
-export function DealroomList({ dealrooms, viewCounts }: Props) {
+export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [sortBy, setSortBy] = useState<SortOption>('updated_at');
 
   const filtered = dealrooms.filter((dr) => {
     const matchesSearch = !searchQuery ||
@@ -65,6 +77,16 @@ export function DealroomList({ dealrooms, viewCounts }: Props) {
     const matchesStatus = statusFilter === 'all' || dr.status === statusFilter;
 
     return matchesSearch && matchesStatus;
+  });
+
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortBy === 'engagement_score') {
+      return (engagementScores[b.id] || 0) - (engagementScores[a.id] || 0);
+    }
+    if (sortBy === 'created_at') {
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    }
+    return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
   });
 
   if (dealrooms.length === 0) {
@@ -117,13 +139,25 @@ export function DealroomList({ dealrooms, viewCounts }: Props) {
             </button>
           ))}
         </div>
-        <span className="text-[11px] text-[#9ca3af] ml-auto shrink-0">
-          {filtered.length} von {dealrooms.length}
-        </span>
+        <div className="flex items-center gap-2 ml-auto shrink-0">
+          <ArrowDownUp size={13} className="text-[#9ca3af]" />
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as SortOption)}
+            className="text-[11px] font-semibold text-[#6b7280] bg-transparent border-none outline-none cursor-pointer"
+          >
+            {sortOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+          <span className="text-[11px] text-[#9ca3af]">
+            {filtered.length} von {dealrooms.length}
+          </span>
+        </div>
       </div>
 
       {/* Dealroom Cards */}
-      {filtered.length === 0 ? (
+      {sorted.length === 0 ? (
         <div className="text-center py-12 text-[#6b7280]">
           <Search className="h-8 w-8 mx-auto mb-3 text-[#d1d5db]" />
           <p className="text-[15px] font-semibold text-[#1a1a1a]">Keine Dealrooms gefunden</p>
@@ -131,9 +165,10 @@ export function DealroomList({ dealrooms, viewCounts }: Props) {
         </div>
       ) : (
         <div className="space-y-3">
-          {filtered.map((dealroom, i) => {
+          {sorted.map((dealroom, i) => {
             const config = statusConfig[dealroom.status] || statusConfig.draft;
             const views = viewCounts[dealroom.id] || 0;
+            const score = engagementScores[dealroom.id] || 0;
             return (
               <Link
                 key={dealroom.id}
@@ -164,6 +199,9 @@ export function DealroomList({ dealrooms, viewCounts }: Props) {
                       </div>
                     </div>
                     <div className="flex items-center gap-5 text-[13px] text-[#6b7280] shrink-0 ml-4">
+                      <div className="w-24" title="Engagement Score">
+                        <EngagementScore score={score} compact />
+                      </div>
                       <div className="flex items-center gap-1.5" title="Interaktionen">
                         <Eye size={14} strokeWidth={1.75} />
                         <span className="tabular-nums">{views}</span>

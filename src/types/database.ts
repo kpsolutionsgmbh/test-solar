@@ -45,6 +45,8 @@ export interface Dealroom {
   language: 'de' | 'en';
   assigned_member_id: string | null;
   customer_id: string | null;
+  engagement_score: number;
+  email_unsubscribed: boolean;
 }
 
 export interface Customer {
@@ -151,6 +153,44 @@ export type TrackingEventType =
   | 'session_end'
   | 'document_download'
   | 'email_sent';
+
+export type EmailFlowTriggerType =
+  | 'manual'
+  | 'not_opened'
+  | 'opened_not_offer'
+  | 'offer_not_signed'
+  | 'inactive';
+
+export type EmailFlowLogStatus = 'sent' | 'delivered' | 'opened' | 'clicked' | 'failed' | 'skipped';
+
+export interface EmailFlow {
+  id: string;
+  admin_id: string;
+  name: string;
+  description: string | null;
+  trigger_type: EmailFlowTriggerType;
+  trigger_days: number;
+  subject_template: string;
+  body_template: string;
+  is_active: boolean;
+  max_sends: number;
+  skip_weekends: boolean;
+  skip_if_signed: boolean;
+  skip_if_inactive: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EmailFlowLog {
+  id: string;
+  flow_id: string;
+  dealroom_id: string;
+  recipient_email: string;
+  subject: string;
+  status: EmailFlowLogStatus;
+  skip_reason: string | null;
+  sent_at: string;
+}
 
 export interface Reference {
   id: string;

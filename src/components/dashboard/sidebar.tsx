@@ -12,6 +12,7 @@ import {
   BarChart3,
   Users,
   FileStack,
+  Mail,
 } from 'lucide-react';
 
 const mainNavItems = [
@@ -21,6 +22,7 @@ const mainNavItems = [
   { href: '/dashboard/references', label: 'Referenzen', icon: Award },
   { href: '/dashboard/templates', label: 'Templates', icon: FileStack },
   { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3 },
+  { href: '/dashboard/email-flows', label: 'E-Mail Flows', icon: Mail },
 ];
 
 interface SidebarProps {
