@@ -184,7 +184,7 @@ export default function CustomersPage() {
           {filtered.map((customer) => {
             const counts = dealroomCounts[customer.id] || { total: 0, signed: 0 };
             return (
-              <Link key={customer.id} href={`/dashboard/customers/${customer.id}`}>
+              <Link key={customer.id} href={`/dashboard/customers/${customer.id}`} className="block">
                 <Card className="hover:border-[#11485e]/30 hover:shadow-sm transition-all cursor-pointer">
                   <CardContent className="py-4 px-5 flex items-center justify-between">
                     <div className="flex items-center gap-4">
