@@ -91,32 +91,27 @@ function CollapsibleSection({
     <div className="border border-[#e5e7eb] rounded-xl overflow-hidden bg-white">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-4 hover:bg-[#fafafa] transition-colors"
+        className="w-full flex items-center justify-between p-4 hover:bg-[#fafafa] transition-colors gap-4"
       >
-        <div className="flex items-center gap-3 min-w-0">
+        <div className="flex items-center gap-2 shrink-0">
           <ChevronRight
             size={16}
             className={`text-[#6b7280] transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-90' : ''}`}
           />
           <Icon size={16} className={`${iconColor} shrink-0`} />
-          <span className="text-[14px] font-semibold text-[#1a1a1a]">{title}</span>
+          <span className="text-[14px] font-semibold text-[#1a1a1a] whitespace-nowrap">{title}</span>
           {status && (
-            <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium shrink-0 ${
+            <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium shrink-0 whitespace-nowrap ${
               status === 'complete' ? 'bg-emerald-50 text-emerald-700' :
               status === 'warning' ? 'bg-amber-50 text-amber-700' :
               'bg-gray-100 text-[#6b7280]'
             }`}>
-              {status === 'complete' ? 'Vollständig' :
-               status === 'warning' ? 'Unvollständig' :
-               summary}
+              {status === 'complete' ? 'Vollständig' : 'Unvollständig'}
             </span>
           )}
         </div>
-        {summary && !status && (
-          <span className="text-[11px] text-[#6b7280] truncate ml-3">{summary}</span>
-        )}
-        {status && summary && (
-          <span className="text-[11px] text-[#6b7280] truncate ml-3">{summary}</span>
+        {summary && (
+          <span className="text-[11px] text-[#6b7280] truncate hidden sm:block">{summary}</span>
         )}
       </button>
       <div className={`transition-all duration-200 ease-out ${
