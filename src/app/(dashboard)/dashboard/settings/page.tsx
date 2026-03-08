@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { AdminUser, TeamMember } from '@/types/database';
-import { Save, Loader2, Upload, Plus, Pencil, Trash2, Users, User2 } from 'lucide-react';
+import { Save, Loader2, Upload, Plus, Pencil, Trash2, Users, User2, Lock } from 'lucide-react';
 import { uploadFile } from '@/lib/upload';
 import { ImageCropper } from '@/components/ui/image-cropper';
 
@@ -26,6 +26,7 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<'profile' | 'team' | 'password'>('profile');
 
   const [name, setName] = useState('');
   const [companyName, setCompanyName] = useState('');
@@ -215,13 +216,38 @@ export default function SettingsPage() {
     return <div className="flex items-center justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-[#6b7280]" /></div>;
   }
 
+  const settingsTabs = [
+    { key: 'profile' as const, label: 'Profil & Firma', icon: User2 },
+    { key: 'team' as const, label: 'Team', icon: Users },
+    { key: 'password' as const, label: 'Passwort', icon: Lock },
+  ];
+
   return (
     <div>
       <h1 className="text-2xl font-semibold text-[#1a1a1a] mb-2">Einstellungen</h1>
-      <p className="text-sm text-[#6b7280] mb-8">Verwalten Sie Ihr Profil, Branding und Team</p>
+      <p className="text-sm text-[#6b7280] mb-6">Verwalten Sie Ihr Profil, Branding und Team</p>
 
-      <div className="space-y-6 max-w-3xl">
+      {/* Tabs */}
+      <div className="flex gap-1 mb-6 border-b border-[#e5e7eb]">
+        {settingsTabs.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`flex items-center gap-2 px-4 py-2.5 text-[13px] font-semibold transition-colors border-b-2 -mb-px ${
+              activeTab === tab.key
+                ? 'border-[#11485e] text-[#11485e]'
+                : 'border-transparent text-[#6b7280] hover:text-[#1a1a1a]'
+            }`}
+          >
+            <tab.icon size={15} />
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="max-w-3xl">
         {/* Profile & Branding */}
+        {activeTab === 'profile' && (
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
@@ -229,8 +255,8 @@ export default function SettingsPage() {
               Profil & Branding
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <CardContent className="space-y-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div className="space-y-1.5">
                 <Label>Name</Label>
                 <Input value={name} onChange={(e) => setName(e.target.value)} />
@@ -287,8 +313,10 @@ export default function SettingsPage() {
             </div>
           </CardContent>
         </Card>
+        )}
 
         {/* Team Members */}
+        {activeTab === 'team' && (
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -309,7 +337,7 @@ export default function SettingsPage() {
                       {editingMember ? 'Teammitglied bearbeiten' : 'Neues Teammitglied'}
                     </DialogTitle>
                   </DialogHeader>
-                  <div className="space-y-4 pt-2">
+                  <div className="space-y-5 pt-2">
                     <div className="space-y-1.5">
                       <Label>Name *</Label>
                       <Input value={memberName} onChange={(e) => setMemberName(e.target.value)} placeholder="Max Mustermann" />
@@ -407,8 +435,10 @@ export default function SettingsPage() {
             )}
           </CardContent>
         </Card>
+        )}
 
         {/* Password */}
+        {activeTab === 'password' && (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Passwort ändern</CardTitle>
@@ -443,6 +473,7 @@ export default function SettingsPage() {
             </Button>
           </CardContent>
         </Card>
+        )}
       </div>
 
       {/* Avatar Cropper */}

@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Select,
@@ -57,6 +57,7 @@ import {
   FileUp,
   File,
   X,
+  ChevronRight,
 } from 'lucide-react';
 
 const statusConfig: Record<string, { label: string; color: string; dotColor: string }> = {
@@ -66,6 +67,68 @@ const statusConfig: Record<string, { label: string; color: string; dotColor: str
   inactive: { label: 'Inaktiv', color: 'bg-orange-100 text-orange-700', dotColor: 'bg-orange-400' },
   archived: { label: 'Archiviert', color: 'bg-gray-100 text-gray-500', dotColor: 'bg-gray-400' },
 };
+
+function CollapsibleSection({
+  title,
+  icon: Icon,
+  iconColor = 'text-[#11485e]',
+  status,
+  summary,
+  defaultOpen = false,
+  children,
+}: {
+  title: string;
+  icon: React.ElementType;
+  iconColor?: string;
+  status?: 'complete' | 'warning' | 'info';
+  summary?: string;
+  defaultOpen?: boolean;
+  children: React.ReactNode;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  return (
+    <div className="border border-[#e5e7eb] rounded-xl overflow-hidden bg-white">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-4 hover:bg-[#fafafa] transition-colors"
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <ChevronRight
+            size={16}
+            className={`text-[#6b7280] transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-90' : ''}`}
+          />
+          <Icon size={16} className={`${iconColor} shrink-0`} />
+          <span className="text-[14px] font-semibold text-[#1a1a1a]">{title}</span>
+          {status && (
+            <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium shrink-0 ${
+              status === 'complete' ? 'bg-emerald-50 text-emerald-700' :
+              status === 'warning' ? 'bg-amber-50 text-amber-700' :
+              'bg-gray-100 text-[#6b7280]'
+            }`}>
+              {status === 'complete' ? 'Vollständig' :
+               status === 'warning' ? 'Unvollständig' :
+               summary}
+            </span>
+          )}
+        </div>
+        {summary && !status && (
+          <span className="text-[11px] text-[#6b7280] truncate ml-3">{summary}</span>
+        )}
+        {status && summary && (
+          <span className="text-[11px] text-[#6b7280] truncate ml-3">{summary}</span>
+        )}
+      </button>
+      <div className={`transition-all duration-200 ease-out ${
+        isOpen ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
+      }`}>
+        <div className="px-5 pb-5 pt-2 border-t border-[#e5e7eb]">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function EditDealroomPage() {
   const router = useRouter();
@@ -474,36 +537,36 @@ export default function EditDealroomPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left column */}
         <div className="space-y-5">
-          {/* Client Data Card */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2 text-[#11485e]">
-                <User2 className="h-4 w-4" />
-                Kundendaten
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="space-y-1">
+          {/* Client Data */}
+          <CollapsibleSection
+            title="Kundendaten"
+            icon={User2}
+            defaultOpen={true}
+            status={clientName && clientCompany && clientEmail ? 'complete' : 'warning'}
+            summary={clientName ? `${clientName}${clientCompany ? ` · ${clientCompany}` : ''}` : undefined}
+          >
+            <div className="space-y-4">
+              <div className="space-y-1.5">
                 <Label className="text-xs">Name</Label>
                 <Input value={clientName} onChange={(e) => setClientName(e.target.value)} className="h-9" />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label className="text-xs">Firma</Label>
                 <Input value={clientCompany} onChange={(e) => setClientCompany(e.target.value)} className="h-9" />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label className="text-xs">Position</Label>
                 <Input value={clientPosition} onChange={(e) => setClientPosition(e.target.value)} className="h-9" />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label className="text-xs">E-Mail</Label>
                 <Input value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} className="h-9" />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label className="text-xs">Telefon</Label>
                 <Input value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} className="h-9" />
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label className="text-xs flex items-center gap-1">
                   <ImageIcon className="h-3 w-3" />
                   Kundenlogo
@@ -533,19 +596,18 @@ export default function EditDealroomPage() {
                   )}
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </CollapsibleSection>
 
-          {/* Settings Card */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2 text-[#11485e]">
-                <Building2 className="h-4 w-4" />
-                Einstellungen
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="space-y-1">
+          {/* Settings */}
+          <CollapsibleSection
+            title="Einstellungen"
+            icon={Building2}
+            status="complete"
+            summary={`${statusConfig[status]?.label || status} · ${language === 'de' ? 'DE' : 'EN'}`}
+          >
+            <div className="space-y-4">
+              <div className="space-y-1.5">
                 <Label className="text-xs">Status</Label>
                 <Select value={status} onValueChange={(v) => setStatus(v as Dealroom['status'])}>
                   <SelectTrigger className="h-9">
@@ -560,7 +622,7 @@ export default function EditDealroomPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <Label className="text-xs flex items-center gap-1">
                   <Globe className="h-3 w-3" />
                   Sprache
@@ -576,7 +638,7 @@ export default function EditDealroomPage() {
                 </Select>
               </div>
               {teamMembers.length > 0 && (
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <Label className="text-xs flex items-center gap-1">
                     <Users className="h-3 w-3" />
                     Ansprechpartner
@@ -596,18 +658,17 @@ export default function EditDealroomPage() {
                   </Select>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </CollapsibleSection>
 
-          {/* Media Card */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2 text-[#11485e]">
-                <Video className="h-4 w-4" />
-                Medien & Dokumente
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
+          {/* Media & Documents */}
+          <CollapsibleSection
+            title="Medien & Dokumente"
+            icon={Video}
+            status={videoUrl || pandadocUrl ? 'complete' : 'warning'}
+            summary={[videoUrl ? 'Video' : null, pandadocUrl ? 'PandaDoc' : null, documents.length > 0 ? `${documents.length} Dok.` : null].filter(Boolean).join(' · ') || 'Keine Medien'}
+          >
+            <div className="space-y-4">
               <div className="space-y-1">
                 <Label className="text-xs">Video-URL (Loom/YouTube)</Label>
                 <Input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} className="h-9" placeholder="https://..." />
@@ -682,19 +743,16 @@ export default function EditDealroomPage() {
                   </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </CollapsibleSection>
 
-          {/* Internal Notes Card */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2 text-[#11485e]">
-                <StickyNote className="h-4 w-4" />
-                Interne Notizen
-                <span className="text-xs font-normal text-[#9ca3af] ml-auto">Nur Admin</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
+          {/* Internal Notes */}
+          <CollapsibleSection
+            title="Interne Notizen"
+            icon={StickyNote}
+            summary={internalNotes.length > 0 ? `${internalNotes.length} Notiz${internalNotes.length !== 1 ? 'en' : ''}` : 'Keine Notizen'}
+          >
+            <div className="space-y-3">
               <div className="flex gap-2">
                 <Input value={newNote} onChange={(e) => setNewNote(e.target.value)} placeholder="Notiz schreiben..." className="h-9" />
                 <Button size="sm" onClick={addNote} disabled={!newNote.trim()}>Hinzufügen</Button>
@@ -713,8 +771,8 @@ export default function EditDealroomPage() {
                   </p>
                 </div>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </CollapsibleSection>
         </div>
 
         {/* Right column: Content editor as card blocks */}
@@ -722,40 +780,39 @@ export default function EditDealroomPage() {
           {content ? (
             <>
               {/* Hero */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-[#11485e]">
-                    <Rocket className="h-4 w-4" />
-                    Hero-Bereich
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="space-y-1">
+              <CollapsibleSection
+                title="Hero-Bereich"
+                icon={Rocket}
+                defaultOpen={true}
+                status={content.hero_title && content.hero_subtitle ? 'complete' : 'warning'}
+                summary={content.hero_title ? content.hero_title.substring(0, 50) : undefined}
+              >
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
                     <Label className="text-xs">Titel</Label>
                     <Input
                       value={content.hero_title}
                       onChange={(e) => setContent({ ...content, hero_title: e.target.value })}
                     />
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     <Label className="text-xs">Untertitel</Label>
                     <Input
                       value={content.hero_subtitle}
                       onChange={(e) => setContent({ ...content, hero_subtitle: e.target.value })}
                     />
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </CollapsibleSection>
 
               {/* Situation Points */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-[#11485e]">
-                    <AlertTriangle className="h-4 w-4" />
-                    Ausgangslage / Schmerzpunkte
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
+              <CollapsibleSection
+                title="Ausgangslage / Schmerzpunkte"
+                icon={AlertTriangle}
+                status={content.situation_points?.length > 0 ? 'complete' : 'warning'}
+                summary={`${content.situation_points?.length || 0} Punkte`}
+              >
+                <div className="space-y-2">
                   {content.situation_points.map((point, i) => (
                     <div key={i} className="flex items-center gap-2">
                       <div className="shrink-0 h-8 w-8 rounded-lg bg-[#11485e]/10 flex items-center justify-center">
@@ -771,26 +828,25 @@ export default function EditDealroomPage() {
                       />
                     </div>
                   ))}
-                </CardContent>
-              </Card>
+                </div>
+              </CollapsibleSection>
 
               {/* Goal + Approach */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-[#11485e]">
-                    <Target className="h-4 w-4" />
-                    Ziel & Ansatz
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="space-y-1">
+              <CollapsibleSection
+                title="Ziel & Ansatz"
+                icon={Target}
+                status={content.goal && content.approach ? 'complete' : 'warning'}
+                summary={content.goal ? content.goal.substring(0, 50) : undefined}
+              >
+                <div className="space-y-4">
+                  <div className="space-y-1.5">
                     <Label className="text-xs">Ziel</Label>
                     <Input
                       value={content.goal}
                       onChange={(e) => setContent({ ...content, goal: e.target.value })}
                     />
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     <Label className="text-xs">Ansatz</Label>
                     <Textarea
                       value={content.approach}
@@ -798,18 +854,18 @@ export default function EditDealroomPage() {
                       rows={3}
                     />
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </CollapsibleSection>
 
               {/* Cost of Inaction */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-red-600">
-                    <AlertTriangle className="h-4 w-4" />
-                    Kosten der Untätigkeit
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
+              <CollapsibleSection
+                title="Kosten der Untätigkeit"
+                icon={AlertTriangle}
+                iconColor="text-red-600"
+                status={content.cost_of_inaction?.consequences?.length > 0 ? 'complete' : 'warning'}
+                summary={`${content.cost_of_inaction?.consequences?.length || 0} Konsequenzen`}
+              >
+                <div className="space-y-2">
                   <Input
                     value={content.cost_of_inaction.headline}
                     onChange={(e) =>
@@ -838,18 +894,17 @@ export default function EditDealroomPage() {
                       />
                     </div>
                   ))}
-                </CardContent>
-              </Card>
+                </div>
+              </CollapsibleSection>
 
               {/* Outcome Vision */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-[#11485e]">
-                    <Lightbulb className="h-4 w-4" />
-                    Ergebnis-Vision
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
+              <CollapsibleSection
+                title="Ergebnis-Vision"
+                icon={Lightbulb}
+                status={content.outcome_vision?.length > 0 ? 'complete' : 'warning'}
+                summary={`${content.outcome_vision?.length || 0} Ergebnisse`}
+              >
+                <div className="space-y-2">
                   {content.outcome_vision.map((outcome, i) => (
                     <Input
                       key={i}
@@ -861,18 +916,17 @@ export default function EditDealroomPage() {
                       }}
                     />
                   ))}
-                </CardContent>
-              </Card>
+                </div>
+              </CollapsibleSection>
 
               {/* Process Steps */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-[#11485e]">
-                    <ListChecks className="h-4 w-4" />
-                    Prozess-Schritte
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
+              <CollapsibleSection
+                title="Prozess-Schritte"
+                icon={ListChecks}
+                status={content.process_steps?.length > 0 ? 'complete' : 'warning'}
+                summary={`${content.process_steps?.length || 0} Schritte`}
+              >
+                <div className="space-y-3">
                   {content.process_steps.map((step, i) => (
                     <div key={i} className="bg-[#f8fafb] border border-[#e7eef1] p-3 rounded-lg space-y-2">
                       <div className="flex items-center gap-2">
@@ -925,29 +979,24 @@ export default function EditDealroomPage() {
                       </div>
                     </div>
                   ))}
-                </CardContent>
-              </Card>
+                </div>
+              </CollapsibleSection>
 
               {/* CTA */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm font-semibold flex items-center gap-2 text-[#11485e]">
-                    <MousePointerClick className="h-4 w-4" />
-                    Call-to-Action
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="space-y-1">
-                    <Label className="text-xs flex items-center gap-1">
-                      CTA-Text
-                    </Label>
-                    <Input
-                      value={content.cta_text}
-                      onChange={(e) => setContent({ ...content, cta_text: e.target.value })}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+              <CollapsibleSection
+                title="Call-to-Action"
+                icon={MousePointerClick}
+                status={content.cta_text ? 'complete' : 'warning'}
+                summary={content.cta_text || undefined}
+              >
+                <div className="space-y-1.5">
+                  <Label className="text-xs">CTA-Text</Label>
+                  <Input
+                    value={content.cta_text}
+                    onChange={(e) => setContent({ ...content, cta_text: e.target.value })}
+                  />
+                </div>
+              </CollapsibleSection>
             </>
           ) : (
             <Card className="border-dashed border-2">

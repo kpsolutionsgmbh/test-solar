@@ -52,6 +52,14 @@ function getOutcomeVisual(outcome: string | { text: string; visual_type?: Visual
   return { visual_type: outcome.visual_type, visual_data: outcome.visual_data };
 }
 
+function SectionDivider() {
+  return (
+    <div className="flex items-center justify-center py-2">
+      <div className="h-px w-16 bg-[#e5e7eb]" />
+    </div>
+  );
+}
+
 // Team images for marquee
 const teamImages = [
   { src: '/images/team/team-lg.jpeg', alt: 'Team Gündesli & Kollegen' },
@@ -699,6 +707,8 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                 </div>
               </section>
 
+              <SectionDivider />
+
               {/* ===== 3. DREAM OUTCOME - Green Gradient Card (LOUD) ===== */}
               <section className="bg-white">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
@@ -923,6 +933,8 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                 </div>
               </section>
 
+              <SectionDivider />
+
               {/* ===== 8. ABOUT US with Marquee (quiet) ===== */}
               <section className="bg-white">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
@@ -975,6 +987,8 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                   </ScrollReveal>
                 </div>
               </section>
+
+              <SectionDivider />
 
               {/* ===== 9. PARTNER LOGOS (quiet) ===== */}
               <section>

@@ -122,6 +122,7 @@ export default function NewDealroomPage() {
 
   // Content review expanded
   const [showContentReview, setShowContentReview] = useState(false);
+  const [contentTab, setContentTab] = useState<'headline' | 'pains' | 'goal' | 'outcomes' | 'cta'>('headline');
 
   // Fetch team members and customers on mount
   useEffect(() => {
@@ -542,7 +543,7 @@ export default function NewDealroomPage() {
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="space-y-2">
                     <Label>Firma *</Label>
                     <Input
@@ -591,7 +592,7 @@ export default function NewDealroomPage() {
                 </div>
               </>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div className="space-y-2">
                   <Label>Name *</Label>
                   <Input
@@ -945,7 +946,7 @@ export default function NewDealroomPage() {
               </div>
             </div>
 
-            {/* Content review (collapsible) */}
+            {/* Content review (tabbed) */}
             {generatedContent && (
               <div className="border border-[#e5e7eb] rounded-xl overflow-hidden">
                 <button
@@ -956,74 +957,118 @@ export default function NewDealroomPage() {
                   {showContentReview ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </button>
                 {showContentReview && (
-                  <div className="px-4 pb-4 space-y-4 border-t border-[#e5e7eb]">
-                    <div className="space-y-2 pt-4">
-                      <Label>Hero-Titel</Label>
-                      <Input
-                        value={generatedContent.hero_title}
-                        onChange={(e) => setGeneratedContent({ ...generatedContent, hero_title: e.target.value })}
-                      />
+                  <div className="border-t border-[#e5e7eb]">
+                    {/* Mini-tabs */}
+                    <div className="flex gap-1 px-4 pt-3 pb-0 overflow-x-auto">
+                      {([
+                        { key: 'headline' as const, label: 'Headline' },
+                        { key: 'pains' as const, label: 'Schmerzpunkte' },
+                        { key: 'goal' as const, label: 'Ziel & Ansatz' },
+                        { key: 'outcomes' as const, label: 'Ergebnisse' },
+                        { key: 'cta' as const, label: 'CTA' },
+                      ]).map((tab) => (
+                        <button
+                          key={tab.key}
+                          onClick={() => setContentTab(tab.key)}
+                          className={`px-3 py-1.5 rounded-md text-[12px] font-semibold transition-colors whitespace-nowrap ${
+                            contentTab === tab.key
+                              ? 'bg-[#11485e] text-white'
+                              : 'text-[#6b7280] hover:bg-[#fafafa] hover:text-[#1a1a1a]'
+                          }`}
+                        >
+                          {tab.label}
+                        </button>
+                      ))}
                     </div>
-                    <div className="space-y-2">
-                      <Label>Hero-Untertitel</Label>
-                      <Input
-                        value={generatedContent.hero_subtitle}
-                        onChange={(e) => setGeneratedContent({ ...generatedContent, hero_subtitle: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Ausgangslage (Schmerzpunkte)</Label>
-                      {generatedContent.situation_points.map((point, i) => (
-                        <div key={i} className="flex items-center gap-2">
-                          <div className="shrink-0 h-8 w-8 rounded-lg bg-[#11485e]/10 flex items-center justify-center">
-                            <DynamicIcon name={point.icon} className="h-4 w-4 text-[#11485e]" />
+
+                    {/* Tab content */}
+                    <div className="px-4 pb-4 pt-4 space-y-4">
+                      {contentTab === 'headline' && (
+                        <>
+                          <div className="space-y-1.5">
+                            <Label>Hero-Titel</Label>
+                            <Input
+                              value={generatedContent.hero_title}
+                              onChange={(e) => setGeneratedContent({ ...generatedContent, hero_title: e.target.value })}
+                            />
                           </div>
+                          <div className="space-y-1.5">
+                            <Label>Hero-Untertitel</Label>
+                            <Input
+                              value={generatedContent.hero_subtitle}
+                              onChange={(e) => setGeneratedContent({ ...generatedContent, hero_subtitle: e.target.value })}
+                            />
+                          </div>
+                        </>
+                      )}
+
+                      {contentTab === 'pains' && (
+                        <div className="space-y-2">
+                          <Label>Ausgangslage (Schmerzpunkte)</Label>
+                          {generatedContent.situation_points.map((point, i) => (
+                            <div key={i} className="flex items-center gap-2">
+                              <div className="shrink-0 h-8 w-8 rounded-lg bg-[#11485e]/10 flex items-center justify-center">
+                                <DynamicIcon name={point.icon} className="h-4 w-4 text-[#11485e]" />
+                              </div>
+                              <Input
+                                value={point.text}
+                                onChange={(e) => {
+                                  const updated = [...generatedContent.situation_points];
+                                  updated[i] = { ...updated[i], text: e.target.value };
+                                  setGeneratedContent({ ...generatedContent, situation_points: updated });
+                                }}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {contentTab === 'goal' && (
+                        <>
+                          <div className="space-y-1.5">
+                            <Label>Ziel</Label>
+                            <Input
+                              value={generatedContent.goal}
+                              onChange={(e) => setGeneratedContent({ ...generatedContent, goal: e.target.value })}
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label>Ansatz</Label>
+                            <Textarea
+                              value={generatedContent.approach}
+                              onChange={(e) => setGeneratedContent({ ...generatedContent, approach: e.target.value })}
+                              rows={3}
+                            />
+                          </div>
+                        </>
+                      )}
+
+                      {contentTab === 'outcomes' && (
+                        <div className="space-y-2">
+                          <Label>Ergebnis-Vision</Label>
+                          {generatedContent.outcome_vision.map((outcome, i) => (
+                            <Input
+                              key={i}
+                              value={typeof outcome === 'string' ? outcome : outcome.text}
+                              onChange={(e) => {
+                                const updated = [...generatedContent.outcome_vision];
+                                updated[i] = e.target.value;
+                                setGeneratedContent({ ...generatedContent, outcome_vision: updated });
+                              }}
+                            />
+                          ))}
+                        </div>
+                      )}
+
+                      {contentTab === 'cta' && (
+                        <div className="space-y-1.5">
+                          <Label>CTA-Text</Label>
                           <Input
-                            value={point.text}
-                            onChange={(e) => {
-                              const updated = [...generatedContent.situation_points];
-                              updated[i] = { ...updated[i], text: e.target.value };
-                              setGeneratedContent({ ...generatedContent, situation_points: updated });
-                            }}
+                            value={generatedContent.cta_text}
+                            onChange={(e) => setGeneratedContent({ ...generatedContent, cta_text: e.target.value })}
                           />
                         </div>
-                      ))}
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Ziel</Label>
-                      <Input
-                        value={generatedContent.goal}
-                        onChange={(e) => setGeneratedContent({ ...generatedContent, goal: e.target.value })}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Ansatz</Label>
-                      <Textarea
-                        value={generatedContent.approach}
-                        onChange={(e) => setGeneratedContent({ ...generatedContent, approach: e.target.value })}
-                        rows={3}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Ergebnis-Vision</Label>
-                      {generatedContent.outcome_vision.map((outcome, i) => (
-                        <Input
-                          key={i}
-                          value={typeof outcome === 'string' ? outcome : outcome.text}
-                          onChange={(e) => {
-                            const updated = [...generatedContent.outcome_vision];
-                            updated[i] = e.target.value;
-                            setGeneratedContent({ ...generatedContent, outcome_vision: updated });
-                          }}
-                        />
-                      ))}
-                    </div>
-                    <div className="space-y-2">
-                      <Label>CTA-Text</Label>
-                      <Input
-                        value={generatedContent.cta_text}
-                        onChange={(e) => setGeneratedContent({ ...generatedContent, cta_text: e.target.value })}
-                      />
+                      )}
                     </div>
                   </div>
                 )}

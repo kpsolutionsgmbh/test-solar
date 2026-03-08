@@ -97,19 +97,19 @@ export function SaveTemplateModal({ open, onClose, content, videoUrl, language }
             Als Template speichern
           </DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="space-y-5">
           <p className="text-sm text-[#6b7280]">
             Der aktuelle Content wird als wiederverwendbares Template gespeichert. Kundendaten werden nicht übernommen.
           </p>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label className="text-xs">Template-Name *</Label>
             <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="z.B. BAV – Standard" className="h-9" />
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label className="text-xs">Beschreibung</Label>
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Wofür wird dieses Template verwendet?" rows={2} />
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label className="text-xs">Produkttyp</Label>
             <Select value={productType} onValueChange={setProductType}>
               <SelectTrigger className="h-9">

@@ -24,7 +24,7 @@ export function ConfirmDialog({
 }: ConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-sm">
         <div className="text-center">
           {variant === 'destructive' && (
             <div className="h-12 w-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">

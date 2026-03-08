@@ -114,16 +114,16 @@ Gündesli & Kollegen`);
             E-Mail senden
           </DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
-          <div className="space-y-1">
+        <div className="space-y-5">
+          <div className="space-y-1.5">
             <Label className="text-xs">An</Label>
             <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="kunde@firma.de" className="h-9" />
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label className="text-xs">Betreff</Label>
             <Input value={subject} onChange={(e) => setSubject(e.target.value)} className="h-9" />
           </div>
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label className="text-xs">Nachricht</Label>
             <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={10} className="text-sm" />
             <p className="text-[10px] text-[#9ca3af]">[LINK] wird automatisch durch den Dealroom-Link ersetzt.</p>

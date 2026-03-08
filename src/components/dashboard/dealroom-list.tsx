@@ -14,6 +14,8 @@ import {
   Search,
   Building2,
   ArrowDownUp,
+  LayoutGrid,
+  List,
 } from 'lucide-react';
 import { EngagementScore } from '@/components/dashboard/engagement-score';
 
@@ -67,6 +69,12 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState<SortOption>('updated_at');
+  const [viewMode, setViewMode] = useState<'cards' | 'list'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('dealroom-view-mode') as 'cards' | 'list') || (dealrooms.length >= 6 ? 'list' : 'cards');
+    }
+    return dealrooms.length >= 6 ? 'list' : 'cards';
+  });
 
   const filtered = dealrooms.filter((dr) => {
     const matchesSearch = !searchQuery ||
@@ -140,6 +148,23 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
           ))}
         </div>
         <div className="flex items-center gap-2 ml-auto shrink-0">
+          <div className="flex items-center gap-0.5 border border-[#e5e7eb] rounded-lg p-0.5">
+            <button
+              onClick={() => { setViewMode('cards'); localStorage.setItem('dealroom-view-mode', 'cards'); }}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-[#e7eef1] text-[#11485e]' : 'text-[#9ca3af] hover:text-[#6b7280]'}`}
+              title="Karten-Ansicht"
+            >
+              <LayoutGrid size={14} />
+            </button>
+            <button
+              onClick={() => { setViewMode('list'); localStorage.setItem('dealroom-view-mode', 'list'); }}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-[#e7eef1] text-[#11485e]' : 'text-[#9ca3af] hover:text-[#6b7280]'}`}
+              title="Listen-Ansicht"
+            >
+              <List size={14} />
+            </button>
+          </div>
+          <div className="w-px h-4 bg-[#e5e7eb]" />
           <ArrowDownUp size={13} className="text-[#9ca3af]" />
           <select
             value={sortBy}
@@ -184,6 +209,7 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
           )}
         </div>
       ) : (
+        viewMode === 'cards' ? (
         <div className="space-y-3">
           {sorted.map((dealroom, i) => {
             const config = statusConfig[dealroom.status] || statusConfig.draft;
@@ -238,6 +264,46 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
             );
           })}
         </div>
+        ) : (
+        /* List View */
+        <div className="border border-[#e5e7eb] rounded-xl overflow-hidden bg-white">
+          <div className="grid grid-cols-[1fr_1fr_80px_90px_40px] gap-3 px-4 py-2.5 bg-[#fafafa] border-b border-[#e5e7eb] text-[11px] font-semibold text-[#6b7280] uppercase tracking-wide">
+            <span>Firma</span>
+            <span>Kunde</span>
+            <span>Score</span>
+            <span>Status</span>
+            <span />
+          </div>
+          {sorted.map((dealroom) => {
+            const config = statusConfig[dealroom.status] || statusConfig.draft;
+            const score = engagementScores[dealroom.id] || 0;
+            return (
+              <Link
+                key={dealroom.id}
+                href={`/dashboard/dealrooms/${dealroom.id}`}
+                className="block"
+              >
+                <div className="group grid grid-cols-[1fr_1fr_80px_90px_40px] gap-3 px-4 py-3 border-b border-[#f0f0f0] last:border-b-0 hover:bg-[#fafafa] transition-colors items-center">
+                  <span className="text-[13px] font-semibold text-[#1a1a1a] truncate group-hover:text-[#11485e] transition-colors">
+                    {dealroom.client_company}
+                  </span>
+                  <span className="text-[13px] text-[#6b7280] truncate">
+                    {dealroom.client_name}
+                  </span>
+                  <div className="w-16">
+                    <EngagementScore score={score} compact />
+                  </div>
+                  <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold border w-fit ${config.color}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${config.dotColor}`} />
+                    {config.label}
+                  </span>
+                  <ArrowUpRight size={14} className="text-[#d1d5db] group-hover:text-[#11485e] transition-colors justify-self-end" />
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+        )
       )}
     </div>
   );

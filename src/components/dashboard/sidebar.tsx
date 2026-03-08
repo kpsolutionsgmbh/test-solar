@@ -78,7 +78,7 @@ export function DashboardSidebar({ userName, companyName }: SidebarProps) {
               href={item.href}
               prefetch={true}
               className={`
-                group flex items-center gap-3
+                relative group flex items-center gap-3
                 px-3 py-[7px]
                 rounded-md
                 text-[13px]
@@ -90,6 +90,9 @@ export function DashboardSidebar({ userName, companyName }: SidebarProps) {
                 }
               `}
             >
+              {isActive(item.href) && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-full bg-[#11485e]" />
+              )}
               <item.icon
                 size={16}
                 strokeWidth={1.75}
@@ -106,7 +109,7 @@ export function DashboardSidebar({ userName, companyName }: SidebarProps) {
             href="/dashboard/settings"
             prefetch={true}
             className={`
-              group flex items-center gap-3
+              relative group flex items-center gap-3
               px-3 py-[7px]
               rounded-md
               text-[13px]
@@ -118,6 +121,9 @@ export function DashboardSidebar({ userName, companyName }: SidebarProps) {
               }
             `}
           >
+            {isActive('/dashboard/settings') && (
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-full bg-[#11485e]" />
+            )}
             <Settings
               size={16}
               strokeWidth={1.75}
