@@ -151,7 +151,7 @@ export default function CustomersPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-bold text-[#1a1a1a]">Kunden</h1>
-          <p className="text-sm text-[#6b7280] mt-1">Verwalte deine Kundendatenbank</p>
+          <p className="text-sm text-[#6b7280] mt-1">Ihre Kundendatenbank &ndash; alle Kontakte an einem Ort.</p>
         </div>
         <Button onClick={() => setDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
@@ -206,7 +206,7 @@ export default function CustomersPage() {
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-right text-xs text-[#6b7280]">
-                        <p>{counts.total} Dealroom{counts.total !== 1 ? 's' : ''}</p>
+                        <p>{counts.total} Angebot{counts.total !== 1 ? 'e' : ''}</p>
                         {counts.signed > 0 && <p className="text-emerald-600">{counts.signed} Signiert</p>}
                       </div>
                       <ArrowRight className="h-4 w-4 text-[#d1d5db]" />

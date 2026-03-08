@@ -23,13 +23,13 @@ interface CommandItem {
 }
 
 const commands: CommandItem[] = [
-  { label: 'Zum Dashboard', icon: <LayoutDashboard className="h-4 w-4" />, href: '/dashboard', group: 'Navigation' },
-  { label: 'Neuer Angebotsraum', icon: <Plus className="h-4 w-4" />, href: '/dashboard/new', group: 'Navigation' },
+  { label: 'Übersicht', icon: <LayoutDashboard className="h-4 w-4" />, href: '/dashboard', group: 'Navigation' },
+  { label: 'Neues Angebot', icon: <Plus className="h-4 w-4" />, href: '/dashboard/new', group: 'Navigation' },
   { label: 'Kunden', icon: <Users className="h-4 w-4" />, href: '/dashboard/customers', group: 'Navigation' },
   { label: 'Vorlagen', icon: <FileStack className="h-4 w-4" />, href: '/dashboard/templates', group: 'Navigation' },
-  { label: 'E-Mail Flows', icon: <Mail className="h-4 w-4" />, href: '/dashboard/email-flows', group: 'Navigation' },
+  { label: 'E-Mails', icon: <Mail className="h-4 w-4" />, href: '/dashboard/email-flows', group: 'Navigation' },
   { label: 'Einstellungen', icon: <Settings className="h-4 w-4" />, href: '/dashboard/settings', group: 'Navigation' },
-  { label: 'Auswertungen', icon: <BarChart3 className="h-4 w-4" />, href: '/dashboard/analytics', group: 'Navigation' },
+  { label: 'Auswertung', icon: <BarChart3 className="h-4 w-4" />, href: '/dashboard/analytics', group: 'Navigation' },
   { label: 'Team verwalten', icon: <Users className="h-4 w-4" />, href: '/dashboard/settings/team', group: 'Aktionen' },
 ];
 

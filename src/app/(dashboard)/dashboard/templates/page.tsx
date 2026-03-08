@@ -160,8 +160,8 @@ export default function TemplatesPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-[#1a1a1a]">Templates</h1>
-          <p className="text-sm text-[#6b7280] mt-1">Vorlagen für schnellere Dealroom-Erstellung</p>
+          <h1 className="text-2xl font-semibold text-[#1a1a1a]">Vorlagen</h1>
+          <p className="text-sm text-[#6b7280] mt-1">Vorgefertigte Angebote für wiederkehrende Produkte.</p>
         </div>
         <div title="Templates werden aus bestehenden Dealrooms erstellt">
           <Button size="sm" disabled>

@@ -49,7 +49,7 @@ export async function PUT(request: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const body = await request.json();
-    const { id, ...updates } = body;
+    const { id, selected_dealroom_ids, ...updates } = body;
     if (!id) return NextResponse.json({ error: 'Missing flow id' }, { status: 400 });
 
     const serviceClient = createServiceRoleClient();
@@ -73,6 +73,17 @@ export async function PUT(request: NextRequest) {
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    // Update selected dealrooms if provided
+    if (Array.isArray(selected_dealroom_ids)) {
+      await serviceClient.from('email_flow_dealrooms').delete().eq('flow_id', id);
+      if (selected_dealroom_ids.length > 0) {
+        await serviceClient.from('email_flow_dealrooms').insert(
+          selected_dealroom_ids.map((dealroom_id: string) => ({ flow_id: id, dealroom_id }))
+        );
+      }
+    }
+
     return NextResponse.json(data);
   } catch {
     return NextResponse.json({ error: 'Internal error' }, { status: 500 });

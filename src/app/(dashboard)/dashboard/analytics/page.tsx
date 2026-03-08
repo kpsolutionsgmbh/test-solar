@@ -85,9 +85,9 @@ export default async function AnalyticsPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-[#1a1a1a]">Analytics</h1>
+        <h1 className="text-2xl font-semibold text-[#1a1a1a]">Auswertungen</h1>
         <p className="text-sm text-[#6b7280] mt-1">
-          Überblick über alle Dealroom-Interaktionen
+          Wie Ihre Kunden mit den Angebotsräumen interagieren.
         </p>
       </div>
 
@@ -168,7 +168,7 @@ export default async function AnalyticsPage() {
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-[#11485e]" />
-            Dealroom-Übersicht
+            Angebotsraum-Übersicht
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -179,7 +179,7 @@ export default async function AnalyticsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b text-left">
-                    <th className="pb-2 font-medium text-[#6b7280]">Dealroom</th>
+                    <th className="pb-2 font-medium text-[#6b7280]">Angebotsraum</th>
                     <th className="pb-2 font-medium text-[#6b7280] text-center">Score</th>
                     <th className="pb-2 font-medium text-[#6b7280] text-center">Status</th>
                     <th className="pb-2 font-medium text-[#6b7280] text-center">Views</th>

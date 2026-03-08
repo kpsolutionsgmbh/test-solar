@@ -49,9 +49,9 @@ export default async function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#1a1a1a]">Dashboard</h1>
+          <h1 className="text-2xl font-semibold text-[#1a1a1a]">Übersicht</h1>
           <p className="text-sm text-[#6b7280] mt-1">
-            Verwalten Sie Ihre Angebotsräume und Kundeninteraktionen
+            Alle Ihre Angebotsräume auf einen Blick.
           </p>
         </div>
         <Button asChild size="lg" className="shadow-sm">

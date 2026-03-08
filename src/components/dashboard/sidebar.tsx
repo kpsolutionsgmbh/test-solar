@@ -19,13 +19,13 @@ import {
 import { useState } from 'react';
 
 const mainNavItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/new', label: 'Neuer Angebotsraum', icon: Plus },
+  { href: '/dashboard', label: 'Übersicht', icon: LayoutDashboard },
+  { href: '/dashboard/new', label: 'Neues Angebot', icon: Plus },
   { href: '/dashboard/customers', label: 'Kunden', icon: Users },
-  { href: '/dashboard/references', label: 'Referenzen', icon: Award },
+  { href: '/dashboard/references', label: 'Kundenstimmen', icon: Award },
   { href: '/dashboard/templates', label: 'Vorlagen', icon: FileStack },
-  { href: '/dashboard/analytics', label: 'Auswertungen', icon: BarChart3 },
-  { href: '/dashboard/email-flows', label: 'E-Mail Flows', icon: Mail },
+  { href: '/dashboard/analytics', label: 'Auswertung', icon: BarChart3 },
+  { href: '/dashboard/email-flows', label: 'E-Mails', icon: Mail },
 ];
 
 // Bottom nav items for mobile (subset)

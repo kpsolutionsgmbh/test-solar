@@ -266,9 +266,9 @@ export default function ReferencesPage() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#1a1a1a]">Referenzen</h1>
+          <h1 className="text-2xl font-semibold text-[#1a1a1a]">Kundenstimmen</h1>
           <p className="text-sm text-[#6b7280] mt-1">
-            Verwalten Sie Ihre Kundenreferenzen und Testimonials
+            Referenzen die in Ihren Angebotsräumen angezeigt werden.
           </p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
@@ -423,7 +423,7 @@ export default function ReferencesPage() {
             items={references.map((r) => r.id)}
             strategy={verticalListSortingStrategy}
           >
-            <div className="space-y-2">
+            <div className="space-y-3">
               {references.map((ref) => (
                 <SortableReferenceItem
                   key={ref.id}

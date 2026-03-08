@@ -17,6 +17,7 @@ import {
   XCircle,
   SkipForward,
   AlertCircle,
+  Search,
 } from 'lucide-react';
 
 const triggerOptions = [
@@ -71,8 +72,17 @@ export default function FlowEditorPage() {
   const [skipIfSigned, setSkipIfSigned] = useState(true);
   const [skipIfInactive, setSkipIfInactive] = useState(true);
 
+  // Audience filter
+  const [appliesTo, setAppliesTo] = useState<'all' | 'selected'>('all');
+  const [selectedDealroomIds, setSelectedDealroomIds] = useState<string[]>([]);
+  const [dealrooms, setDealrooms] = useState<{ id: string; client_name: string; client_company: string }[]>([]);
+  const [dealroomSearch, setDealroomSearch] = useState('');
+
   const loadFlow = useCallback(async () => {
-    const [{ data: flowData }, { data: logData }] = await Promise.all([
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const [{ data: flowData }, { data: logData }, { data: drData }, { data: selectedDrData }] = await Promise.all([
       supabase.from('email_flows').select('*').eq('id', params.id).single(),
       supabase
         .from('email_flow_logs')
@@ -80,6 +90,15 @@ export default function FlowEditorPage() {
         .eq('flow_id', params.id)
         .order('sent_at', { ascending: false })
         .limit(50),
+      supabase
+        .from('dealrooms')
+        .select('id, client_name, client_company')
+        .eq('admin_id', user.id)
+        .order('client_company', { ascending: true }),
+      supabase
+        .from('email_flow_dealrooms')
+        .select('dealroom_id')
+        .eq('flow_id', params.id as string),
     ]);
 
     if (flowData) {
@@ -94,7 +113,10 @@ export default function FlowEditorPage() {
       setSkipWeekends(f.skip_weekends);
       setSkipIfSigned(f.skip_if_signed);
       setSkipIfInactive(f.skip_if_inactive);
+      setAppliesTo((f as EmailFlow & { applies_to?: string }).applies_to === 'selected' ? 'selected' : 'all');
     }
+    setDealrooms(drData || []);
+    setSelectedDealroomIds((selectedDrData || []).map((r: { dealroom_id: string }) => r.dealroom_id));
     setLogs((logData as EmailFlowLog[]) || []);
     setLoading(false);
   }, [supabase, params.id]);
@@ -138,6 +160,8 @@ export default function FlowEditorPage() {
           skip_weekends: skipWeekends,
           skip_if_signed: skipIfSigned,
           skip_if_inactive: skipIfInactive,
+          applies_to: appliesTo,
+          selected_dealroom_ids: appliesTo === 'selected' ? selectedDealroomIds : [],
         }),
       });
 
@@ -264,11 +288,92 @@ export default function FlowEditorPage() {
             </CardContent>
           </Card>
 
-          {/* 2. CONTENT */}
+          {/* 2. AUDIENCE */}
           <Card>
             <CardContent className="p-6">
               <h2 className="text-sm font-semibold text-[#1a1a1a] uppercase tracking-wide mb-4">
-                2. Was (E-Mail-Inhalt)
+                2. An wen (Empfänger)
+              </h2>
+
+              <div className="space-y-3">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="appliesTo"
+                    checked={appliesTo === 'all'}
+                    onChange={() => setAppliesTo('all')}
+                    className="text-[#11485e] focus:ring-[#11485e]"
+                  />
+                  <span className="text-sm text-[#374151]">An alle Kunden mit dieser Bedingung</span>
+                </label>
+
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="appliesTo"
+                    checked={appliesTo === 'selected'}
+                    onChange={() => setAppliesTo('selected')}
+                    className="text-[#11485e] focus:ring-[#11485e]"
+                  />
+                  <span className="text-sm text-[#374151]">Nur an bestimmte Angebotsräume</span>
+                </label>
+
+                {appliesTo === 'selected' && (
+                  <div className="ml-6 mt-2 space-y-2">
+                    <div className="relative">
+                      <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-[#9ca3af]" />
+                      <Input
+                        value={dealroomSearch}
+                        onChange={(e) => setDealroomSearch(e.target.value)}
+                        placeholder="Angebotsraum suchen..."
+                        className="pl-8 h-9 text-sm"
+                      />
+                    </div>
+                    <div className="max-h-48 overflow-y-auto border border-[#e5e7eb] rounded-md divide-y divide-[#f3f4f6]">
+                      {dealrooms
+                        .filter(dr => {
+                          if (!dealroomSearch) return true;
+                          const q = dealroomSearch.toLowerCase();
+                          return dr.client_company?.toLowerCase().includes(q) || dr.client_name?.toLowerCase().includes(q);
+                        })
+                        .map(dr => (
+                          <label key={dr.id} className="flex items-center gap-3 px-3 py-2 hover:bg-[#fafafa] cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={selectedDealroomIds.includes(dr.id)}
+                              onChange={(e) => {
+                                if (e.target.checked) {
+                                  setSelectedDealroomIds(prev => [...prev, dr.id]);
+                                } else {
+                                  setSelectedDealroomIds(prev => prev.filter(id => id !== dr.id));
+                                }
+                              }}
+                              className="rounded border-[#d1d5db] text-[#11485e] focus:ring-[#11485e]"
+                            />
+                            <div className="min-w-0">
+                              <p className="text-sm text-[#1a1a1a] truncate">{dr.client_company}</p>
+                              <p className="text-xs text-[#9ca3af] truncate">{dr.client_name}</p>
+                            </div>
+                          </label>
+                        ))}
+                      {dealrooms.length === 0 && (
+                        <p className="text-xs text-[#9ca3af] py-4 text-center">Keine Angebotsräume vorhanden</p>
+                      )}
+                    </div>
+                    {selectedDealroomIds.length > 0 && (
+                      <p className="text-xs text-[#6b7280]">{selectedDealroomIds.length} ausgewählt</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 3. CONTENT */}
+          <Card>
+            <CardContent className="p-6">
+              <h2 className="text-sm font-semibold text-[#1a1a1a] uppercase tracking-wide mb-4">
+                3. Was (E-Mail-Inhalt)
               </h2>
 
               <div className="space-y-4">
@@ -319,7 +424,7 @@ export default function FlowEditorPage() {
           <Card>
             <CardContent className="p-6">
               <h2 className="text-sm font-semibold text-[#1a1a1a] uppercase tracking-wide mb-4">
-                3. Regeln
+                4. Regeln
               </h2>
 
               <div className="space-y-3">
