@@ -8,8 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import {
   Select,
@@ -40,9 +39,7 @@ import {
   Type,
   Loader2,
   Sparkles,
-  Eye,
   Send,
-  Globe,
   Users,
   Upload,
   ImageIcon,
@@ -50,19 +47,31 @@ import {
   FileUp,
   X,
   File,
+  Lightbulb,
+  Check,
+  Copy,
+  PartyPopper,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { uploadFile } from '@/lib/upload';
 
-type Step = 'client' | 'language' | 'input' | 'review' | 'media' | 'publish';
+type Step = 'client' | 'input' | 'finish';
 
-const steps: { key: Step; label: string }[] = [
-  { key: 'client', label: 'Kundendaten' },
-  { key: 'language', label: 'Sprache' },
-  { key: 'input', label: 'Beschreibung' },
-  { key: 'review', label: 'Content Review' },
-  { key: 'media', label: 'Video & Angebot' },
-  { key: 'publish', label: 'Veröffentlichen' },
+const steps: { key: Step; label: string; description: string }[] = [
+  { key: 'client', label: 'Für wen?', description: 'Kundendaten eingeben' },
+  { key: 'input', label: 'Was erzählen?', description: 'Situation beschreiben' },
+  { key: 'finish', label: 'Fertigstellen', description: 'Prüfen & veröffentlichen' },
 ];
+
+function HelpText({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="flex items-start gap-1.5 text-[12px] text-[#6b7280] mt-1">
+      <Lightbulb className="h-3.5 w-3.5 shrink-0 mt-0.5 text-amber-500" />
+      <span>{children}</span>
+    </p>
+  );
+}
 
 export default function NewDealroomPage() {
   const router = useRouter();
@@ -73,6 +82,7 @@ export default function NewDealroomPage() {
 
   const [currentStep, setCurrentStep] = useState<Step>('client');
   const [loading, setLoading] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [inputMethod, setInputMethod] = useState<'text' | 'audio'>('text');
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [assignedMemberId, setAssignedMemberId] = useState<string>('');
@@ -104,6 +114,14 @@ export default function NewDealroomPage() {
   const [pandadocUrl, setPandadocUrl] = useState('');
   const [pendingDocuments, setPendingDocuments] = useState<Array<{name: string; file_url: string; file_type: string; file_size: number}>>([]);
   const [uploadingDoc, setUploadingDoc] = useState(false);
+
+  // Success state
+  const [published, setPublished] = useState(false);
+  const [publishedUrl, setPublishedUrl] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  // Content review expanded
+  const [showContentReview, setShowContentReview] = useState(false);
 
   // Fetch team members and customers on mount
   useEffect(() => {
@@ -168,7 +186,6 @@ export default function NewDealroomPage() {
       setClientPhone(cust.phone || '');
       setClientAddress(cust.address || '');
       setClientLogoUrl(cust.logo_url || '');
-      // Inherit assigned member from customer (can be overridden)
       if (cust.assigned_member_id) {
         setAssignedMemberId(cust.assigned_member_id);
       }
@@ -176,6 +193,7 @@ export default function NewDealroomPage() {
   };
 
   const currentStepIndex = steps.findIndex((s) => s.key === currentStep);
+  const progressPercent = Math.round(((currentStepIndex + 1) / steps.length) * 100);
 
   const goNext = () => {
     const nextIndex = currentStepIndex + 1;
@@ -198,7 +216,6 @@ export default function NewDealroomPage() {
     setGeneratedContent(tmpl.content);
     if (tmpl.video_url) setVideoUrl(tmpl.video_url);
     if (tmpl.language === 'en') setLanguage('en');
-    // Increment usage count
     supabase.rpc('increment_template_usage', { template_id: templateId }).then(() => {});
   };
 
@@ -207,7 +224,7 @@ export default function NewDealroomPage() {
       toast({ title: 'Fehler', description: 'Bitte geben Sie eine Beschreibung ein.', variant: 'destructive' });
       return;
     }
-    setLoading(true);
+    setGenerating(true);
     try {
       const res = await fetch('/api/ai/generate', {
         method: 'POST',
@@ -225,9 +242,9 @@ export default function NewDealroomPage() {
       goNext();
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Unbekannter Fehler';
-      toast({ title: 'Fehler', description: `Content-Generierung fehlgeschlagen: ${msg}`, variant: 'destructive' });
+      toast({ title: 'Fehler', description: `Generierung fehlgeschlagen: ${msg}`, variant: 'destructive' });
     } finally {
-      setLoading(false);
+      setGenerating(false);
     }
   };
 
@@ -242,7 +259,6 @@ export default function NewDealroomPage() {
       if (customerSource === 'existing' && selectedCustomerId) {
         customerId = selectedCustomerId;
       } else if (customerSource === 'new' && clientFirstName && clientLastName) {
-        // Auto-save new customer to customers table
         const { data: newCustomer, error: custError } = await supabase
           .from('customers')
           .insert({
@@ -292,7 +308,6 @@ export default function NewDealroomPage() {
 
       if (error) throw error;
 
-      // Save pending documents (already uploaded to storage)
       if (pendingDocuments.length > 0 && newDealroom?.id) {
         await supabase.from('dealroom_documents').insert(
           pendingDocuments.map((doc, i) => ({
@@ -308,20 +323,16 @@ export default function NewDealroomPage() {
 
       const dealroomUrl = `${window.location.origin}/d/${slug}`;
 
-      if (!asDraft) {
-        // Auto-copy link to clipboard
+      if (asDraft) {
+        toast({ title: 'Entwurf gespeichert', description: 'Der Angebotsraum wurde als Entwurf gespeichert.' });
+        router.push('/dashboard');
+        router.refresh();
+      } else {
+        // Show success celebration
+        setPublishedUrl(dealroomUrl);
+        setPublished(true);
         navigator.clipboard.writeText(dealroomUrl).catch(() => {});
       }
-
-      toast({
-        title: asDraft ? 'Entwurf gespeichert' : 'Dealroom veröffentlicht!',
-        description: asDraft
-          ? 'Der Dealroom wurde als Entwurf gespeichert.'
-          : `Link wurde in die Zwischenablage kopiert: ${dealroomUrl}`,
-      });
-
-      router.push('/dashboard');
-      router.refresh();
     } catch (err) {
       console.error(err);
       toast({ title: 'Fehler', description: 'Speichern fehlgeschlagen.', variant: 'destructive' });
@@ -330,8 +341,55 @@ export default function NewDealroomPage() {
     }
   };
 
+  const copyLink = () => {
+    navigator.clipboard.writeText(publishedUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Success celebration screen
+  if (published) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+        <div className="mb-6">
+          <div className="h-20 w-20 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-4">
+            <PartyPopper className="h-10 w-10 text-emerald-600" />
+          </div>
+          <h1 className="text-2xl font-semibold text-[#1a1a1a] mb-2">
+            Angebotsraum veröffentlicht!
+          </h1>
+          <p className="text-[#6b7280] max-w-md">
+            Der Angebotsraum für <span className="font-medium text-[#1a1a1a]">{clientName}</span> ({clientCompany}) ist jetzt live.
+          </p>
+        </div>
+
+        <div className="bg-[#f0f5f7] rounded-xl p-4 mb-6 max-w-lg w-full">
+          <p className="text-xs text-[#6b7280] mb-2">Link zum Angebotsraum:</p>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 text-sm text-[#11485e] bg-white rounded-lg px-3 py-2 border border-[#e5e7eb] truncate">
+              {publishedUrl}
+            </code>
+            <Button size="sm" variant="outline" onClick={copyLink}>
+              {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
+            </Button>
+          </div>
+          <p className="text-xs text-[#9ca3af] mt-2">Link wurde automatisch in die Zwischenablage kopiert</p>
+        </div>
+
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={() => { router.push('/dashboard'); router.refresh(); }}>
+            Zum Dashboard
+          </Button>
+          <Button onClick={() => { router.push('/dashboard/new'); router.refresh(); }}>
+            Weiteren Angebotsraum erstellen
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div>
+    <div className="max-w-2xl">
       <button
         onClick={() => router.back()}
         className="flex items-center gap-1 text-sm text-[#6b7280] hover:text-[#1a1a1a] mb-6 transition-colors"
@@ -340,48 +398,71 @@ export default function NewDealroomPage() {
         Zurück
       </button>
 
-      <h1 className="text-2xl font-semibold text-[#1a1a1a] mb-2">
-        Neuer Dealroom
+      <h1 className="text-2xl font-semibold text-[#1a1a1a] mb-1">
+        Neuer Angebotsraum
       </h1>
+      <p className="text-sm text-[#6b7280] mb-6">
+        In 3 Schritten zum fertigen Angebotsraum
+      </p>
 
-      {/* Step indicator */}
-      <div className="flex items-center gap-2 mb-8">
-        {steps.map((step, i) => (
-          <div key={step.key} className="flex items-center gap-2">
-            <div
-              className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-medium ${
-                i <= currentStepIndex
-                  ? 'bg-primary text-white'
-                  : 'bg-[#e7eef1] text-[#6b7280]'
-              }`}
-            >
-              {i + 1}
+      {/* Progress bar */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-2">
+          {steps.map((step, i) => (
+            <div key={step.key} className="flex items-center gap-2">
+              <div
+                className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${
+                  i < currentStepIndex
+                    ? 'bg-emerald-500 text-white'
+                    : i === currentStepIndex
+                    ? 'bg-[#11485e] text-white'
+                    : 'bg-[#e7eef1] text-[#6b7280]'
+                }`}
+              >
+                {i < currentStepIndex ? <Check className="h-4 w-4" /> : i + 1}
+              </div>
+              <div className="hidden sm:block">
+                <p className={`text-sm font-medium ${i === currentStepIndex ? 'text-[#1a1a1a]' : 'text-[#6b7280]'}`}>
+                  {step.label}
+                </p>
+              </div>
+              {i < steps.length - 1 && <div className="w-8 sm:w-12 h-px bg-[#e5e7eb] mx-1" />}
             </div>
-            <span
-              className={`text-sm hidden sm:inline ${
-                i === currentStepIndex ? 'text-[#1a1a1a] font-medium' : 'text-[#6b7280]'
-              }`}
-            >
-              {step.label}
-            </span>
-            {i < steps.length - 1 && (
-              <div className="w-6 h-px bg-[#e5e7eb]" />
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
+        <div className="w-full bg-[#e7eef1] rounded-full h-1.5">
+          <div
+            className="bg-[#11485e] h-1.5 rounded-full transition-all duration-300"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+        <p className="text-[11px] text-[#9ca3af] mt-1 text-right">{progressPercent}%</p>
       </div>
 
-      {/* Step: Client Data */}
+      {/* Generating overlay */}
+      {generating && (
+        <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="h-10 w-10 text-[#11485e] animate-spin mx-auto mb-4" />
+            <h2 className="text-lg font-semibold text-[#1a1a1a] mb-1">Angebot wird erstellt...</h2>
+            <p className="text-sm text-[#6b7280]">Die KI erstellt den Inhalt für Ihren Angebotsraum. Das dauert ca. 15 Sekunden.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Step 1: Für wen? */}
       {currentStep === 'client' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Kundendaten</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <Card className="border-[#e5e7eb] shadow-sm">
+          <CardContent className="p-6 space-y-5">
+            <div>
+              <h2 className="text-lg font-semibold text-[#1a1a1a] mb-1">Für wen ist der Angebotsraum?</h2>
+              <HelpText>Geben Sie die Daten Ihres Kunden ein. Diese werden im Angebotsraum angezeigt.</HelpText>
+            </div>
+
             {customers.length > 0 && (
               <div className="space-y-3">
                 <div className="flex gap-2">
-                  {([['new', 'Neuen Kunden anlegen'], ['existing', 'Vorhandenen Kunden wählen']] as const).map(([val, label]) => (
+                  {([['new', 'Neuer Kunde'], ['existing', 'Bestehender Kunde']] as const).map(([val, label]) => (
                     <button
                       key={val}
                       type="button"
@@ -406,21 +487,25 @@ export default function NewDealroomPage() {
                   ))}
                 </div>
                 {customerSource === 'existing' && (
-                  <Select value={selectedCustomerId} onValueChange={handleSelectCustomer}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Kunde auswählen..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {customers.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>
-                          {c.company} – {c.first_name} {c.last_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div>
+                    <Select value={selectedCustomerId} onValueChange={handleSelectCustomer}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Kunde auswählen..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {customers.map((c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            {c.company} – {c.first_name} {c.last_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <HelpText>Wählen Sie einen bereits angelegten Kunden aus Ihrer Kundenliste.</HelpText>
+                  </div>
                 )}
               </div>
             )}
+
             {customerSource === 'new' ? (
               <>
                 <div className="grid grid-cols-[100px_1fr_1fr] gap-4">
@@ -459,18 +544,18 @@ export default function NewDealroomPage() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="clientCompany">Firma *</Label>
+                    <Label>Firma *</Label>
                     <Input
-                      id="clientCompany"
                       value={clientCompany}
                       onChange={(e) => setClientCompany(e.target.value)}
                       placeholder="Musterfirma GmbH"
                     />
+                    <HelpText>Der Firmenname erscheint im Titel des Angebotsraums.</HelpText>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="clientPosition">Position</Label>
+                    <Label>Position</Label>
                     <Select value={clientPosition || 'Geschäftsführer'} onValueChange={setClientPosition}>
-                      <SelectTrigger id="clientPosition"><SelectValue /></SelectTrigger>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="Geschäftsführer">Geschäftsführer</SelectItem>
                         <SelectItem value="Angestellter">Angestellter</SelectItem>
@@ -478,28 +563,26 @@ export default function NewDealroomPage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="clientEmail">E-Mail</Label>
+                    <Label>E-Mail</Label>
                     <Input
-                      id="clientEmail"
                       type="email"
                       value={clientEmail}
                       onChange={(e) => setClientEmail(e.target.value)}
                       placeholder="max@musterfirma.de"
                     />
+                    <HelpText>Wird für automatische E-Mail-Benachrichtigungen verwendet.</HelpText>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="clientPhone">Telefon</Label>
+                    <Label>Telefon</Label>
                     <Input
-                      id="clientPhone"
                       value={clientPhone}
                       onChange={(e) => setClientPhone(e.target.value)}
                       placeholder="+49 ..."
                     />
                   </div>
                   <div className="space-y-2 sm:col-span-2">
-                    <Label htmlFor="clientAddress">Adresse</Label>
+                    <Label>Adresse</Label>
                     <Input
-                      id="clientAddress"
                       value={clientAddress}
                       onChange={(e) => setClientAddress(e.target.value)}
                       placeholder="Straße, PLZ Ort"
@@ -510,36 +593,32 @@ export default function NewDealroomPage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="clientName">Name *</Label>
+                  <Label>Name *</Label>
                   <Input
-                    id="clientName"
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
                     placeholder="Max Mustermann"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="clientCompany">Firma *</Label>
+                  <Label>Firma *</Label>
                   <Input
-                    id="clientCompany"
                     value={clientCompany}
                     onChange={(e) => setClientCompany(e.target.value)}
                     placeholder="Musterfirma GmbH"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="clientPosition">Position</Label>
+                  <Label>Position</Label>
                   <Input
-                    id="clientPosition"
                     value={clientPosition}
                     onChange={(e) => setClientPosition(e.target.value)}
                     placeholder="Geschäftsführer"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="clientEmail">E-Mail</Label>
+                  <Label>E-Mail</Label>
                   <Input
-                    id="clientEmail"
                     type="email"
                     value={clientEmail}
                     onChange={(e) => setClientEmail(e.target.value)}
@@ -547,18 +626,16 @@ export default function NewDealroomPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="clientPhone">Telefon</Label>
+                  <Label>Telefon</Label>
                   <Input
-                    id="clientPhone"
                     value={clientPhone}
                     onChange={(e) => setClientPhone(e.target.value)}
                     placeholder="+49 ..."
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="clientAddress">Adresse</Label>
+                  <Label>Adresse</Label>
                   <Input
-                    id="clientAddress"
                     value={clientAddress}
                     onChange={(e) => setClientAddress(e.target.value)}
                     placeholder="Straße, PLZ Ort"
@@ -567,7 +644,7 @@ export default function NewDealroomPage() {
               </div>
             )}
 
-            <div className="space-y-2 pt-2">
+            <div className="space-y-2">
               <Label className="flex items-center gap-1.5">
                 <ImageIcon className="h-4 w-4" />
                 Kundenlogo (optional)
@@ -602,10 +679,11 @@ export default function NewDealroomPage() {
                   </Button>
                 )}
               </div>
+              <HelpText>Das Logo wird oben im Angebotsraum neben Ihrem Firmenlogo angezeigt.</HelpText>
             </div>
 
             {teamMembers.length > 0 && (
-              <div className="space-y-2 pt-2">
+              <div className="space-y-2">
                 <Label className="flex items-center gap-1.5">
                   <Users className="h-4 w-4" />
                   Ansprechpartner zuweisen
@@ -623,6 +701,7 @@ export default function NewDealroomPage() {
                     ))}
                   </SelectContent>
                 </Select>
+                <HelpText>Ihr Kunde sieht diesen Ansprechpartner als Kontaktperson im Angebotsraum.</HelpText>
               </div>
             )}
 
@@ -643,67 +722,44 @@ export default function NewDealroomPage() {
         </Card>
       )}
 
-      {/* Step: Language */}
-      {currentStep === 'language' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Globe className="h-5 w-5" />
-              Sprache des Dealrooms
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-4 max-w-md">
-              <button
-                onClick={() => setLanguage('de')}
-                className={`p-6 rounded-xl border-2 text-center transition-all ${
-                  language === 'de'
-                    ? 'border-primary bg-[#e7eef1]'
-                    : 'border-[#e5e7eb] hover:border-[#cfdde3]'
-                }`}
-              >
-                <span className="text-2xl mb-2 block">🇩🇪</span>
-                <span className="font-medium">Deutsch</span>
-              </button>
-              <button
-                onClick={() => setLanguage('en')}
-                className={`p-6 rounded-xl border-2 text-center transition-all ${
-                  language === 'en'
-                    ? 'border-primary bg-[#e7eef1]'
-                    : 'border-[#e5e7eb] hover:border-[#cfdde3]'
-                }`}
-              >
-                <span className="text-2xl mb-2 block">🇬🇧</span>
-                <span className="font-medium">English</span>
-              </button>
-            </div>
-            <div className="flex justify-between pt-6">
-              <Button variant="outline" onClick={goBack}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Zurück
-              </Button>
-              <Button onClick={goNext}>
-                Weiter
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Step: Input */}
+      {/* Step 2: Was erzählen? */}
       {currentStep === 'input' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Kundensituation beschreiben</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+        <Card className="border-[#e5e7eb] shadow-sm">
+          <CardContent className="p-6 space-y-5">
+            <div>
+              <h2 className="text-lg font-semibold text-[#1a1a1a] mb-1">Was möchten Sie dem Kunden erzählen?</h2>
+              <HelpText>Beschreiben Sie die Situation des Kunden. Die KI erstellt daraus einen professionellen Angebotsraum.</HelpText>
+            </div>
+
+            {/* Inline language toggle */}
+            <div className="flex items-center gap-3">
+              <Label className="text-sm text-[#6b7280] shrink-0">Sprache:</Label>
+              <div className="flex gap-1">
+                <button
+                  onClick={() => setLanguage('de')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    language === 'de' ? 'bg-[#11485e] text-white' : 'bg-[#f0f5f7] text-[#6b7280] hover:text-[#1a1a1a]'
+                  }`}
+                >
+                  Deutsch
+                </button>
+                <button
+                  onClick={() => setLanguage('en')}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    language === 'en' ? 'bg-[#11485e] text-white' : 'bg-[#f0f5f7] text-[#6b7280] hover:text-[#1a1a1a]'
+                  }`}
+                >
+                  English
+                </button>
+              </div>
+            </div>
+
             {/* Template Selection */}
             {templates.length > 0 && (
               <div className="space-y-2 pb-4 border-b border-[#e5e7eb]">
                 <Label className="flex items-center gap-1.5 text-sm font-medium">
                   <FileStack className="h-4 w-4" />
-                  Oder Template verwenden
+                  Vorlage verwenden
                 </Label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {templates.map((tmpl) => (
@@ -711,8 +767,7 @@ export default function NewDealroomPage() {
                       key={tmpl.id}
                       onClick={() => {
                         applyTemplate(tmpl.id);
-                        // Skip to review since we already have content
-                        setCurrentStep('review');
+                        setCurrentStep('finish');
                       }}
                       className={`text-left p-3 rounded-lg border transition-colors hover:border-[#11485e] hover:bg-[#11485e]/5 ${
                         selectedTemplateId === tmpl.id
@@ -728,16 +783,16 @@ export default function NewDealroomPage() {
                         {tmpl.product_type && (
                           <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#11485e]/10 text-[#11485e] font-medium">{tmpl.product_type}</span>
                         )}
-                        <span className="text-[10px] text-[#9ca3af]">{tmpl.usage_count}× verwendet</span>
+                        <span className="text-[10px] text-[#9ca3af]">{tmpl.usage_count}x verwendet</span>
                       </div>
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-[#9ca3af]">Template-Content wird direkt übernommen. Kundendaten werden automatisch angepasst.</p>
+                <HelpText>Vorlagen überspringen die KI-Generierung und verwenden vorbereitete Inhalte.</HelpText>
               </div>
             )}
 
-            <div className="flex gap-2 mb-4">
+            <div className="flex gap-2">
               <Button
                 variant={inputMethod === 'text' ? 'default' : 'outline'}
                 size="sm"
@@ -752,15 +807,12 @@ export default function NewDealroomPage() {
                 onClick={() => setInputMethod('audio')}
               >
                 <Mic className="h-4 w-4 mr-1" />
-                Audio
+                Spracheingabe
               </Button>
             </div>
 
             {inputMethod === 'text' ? (
               <div className="space-y-2">
-                <Label>
-                  Beschreiben Sie die Kundensituation: Ist-Zustand, Probleme, Ziele, Motivation
-                </Label>
                 <Textarea
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
@@ -771,9 +823,6 @@ export default function NewDealroomPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                <p className="text-sm text-[#6b7280]">
-                  Sprechen Sie die Kundensituation ein. Beschreiben Sie Ist-Zustand, Probleme, Ziele und Motivation.
-                </p>
                 <div className="flex items-center gap-4">
                   {!audioRecorder.isRecording && !audioRecorder.audioUrl ? (
                     <Button onClick={audioRecorder.startRecording} size="lg">
@@ -789,10 +838,7 @@ export default function NewDealroomPage() {
                             Aufnahme: {Math.floor(audioRecorder.duration / 60)}:{(audioRecorder.duration % 60).toString().padStart(2, '0')}
                           </span>
                         </div>
-                        <Button
-                          variant="destructive"
-                          onClick={audioRecorder.stopRecording}
-                        >
+                        <Button variant="destructive" onClick={audioRecorder.stopRecording}>
                           <MicOff className="h-4 w-4 mr-2" />
                           Stoppen
                         </Button>
@@ -806,33 +852,19 @@ export default function NewDealroomPage() {
                     </div>
                   ) : (
                     <div className="space-y-3 w-full">
-                      <audio
-                        controls
-                        src={audioRecorder.audioUrl || undefined}
-                        className="w-full"
-                      />
+                      <audio controls src={audioRecorder.audioUrl || undefined} className="w-full" />
                       <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={audioRecorder.resetRecording}
-                        >
+                        <Button variant="outline" size="sm" onClick={audioRecorder.resetRecording}>
                           Neue Aufnahme
                         </Button>
                       </div>
                       <div className="space-y-2">
-                        <Label>Transkription / Zusätzliche Notizen</Label>
                         <Textarea
                           value={inputText}
                           onChange={(e) => setInputText(e.target.value)}
-                          placeholder="Die Live-Transkription wird hier automatisch eingefügt. Sie können den Text bearbeiten oder ergänzen..."
+                          placeholder="Die Transkription wird hier automatisch eingefügt..."
                           rows={6}
                         />
-                        {inputText && (
-                          <p className="text-xs text-[#6b7280]">
-                            {inputText.split(/\s+/).filter(Boolean).length} Wörter – Sie können den Text vor der Content-Generierung noch bearbeiten.
-                          </p>
-                        )}
                       </div>
                     </div>
                   )}
@@ -840,116 +872,27 @@ export default function NewDealroomPage() {
               </div>
             )}
 
-            <div className="flex justify-between pt-4">
-              <Button variant="outline" onClick={goBack}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Zurück
-              </Button>
-              <Button onClick={generateContent} disabled={loading || !inputText.trim()}>
-                {loading ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Sparkles className="h-4 w-4 mr-2" />
-                )}
-                {loading ? 'Generiere Content...' : 'Content generieren'}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Step: Review */}
-      {currentStep === 'review' && generatedContent && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Eye className="h-5 w-5" />
-              Content Review
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label>Hero-Titel</Label>
-              <Input
-                value={generatedContent.hero_title}
-                onChange={(e) =>
-                  setGeneratedContent({ ...generatedContent, hero_title: e.target.value })
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Hero-Untertitel</Label>
-              <Input
-                value={generatedContent.hero_subtitle}
-                onChange={(e) =>
-                  setGeneratedContent({ ...generatedContent, hero_subtitle: e.target.value })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Ausgangslage (Schmerzpunkte)</Label>
-              {generatedContent.situation_points.map((point, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <div className="shrink-0 h-8 w-8 rounded-lg bg-[#11485e]/10 flex items-center justify-center">
-                    <DynamicIcon name={point.icon} className="h-4 w-4 text-[#11485e]" />
-                  </div>
-                  <Input
-                    value={point.text}
-                    onChange={(e) => {
-                      const updated = [...generatedContent.situation_points];
-                      updated[i] = { ...updated[i], text: e.target.value };
-                      setGeneratedContent({ ...generatedContent, situation_points: updated });
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-
-            <div className="space-y-2">
-              <Label>Ziel</Label>
-              <Input
-                value={generatedContent.goal}
-                onChange={(e) =>
-                  setGeneratedContent({ ...generatedContent, goal: e.target.value })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Ansatz</Label>
-              <Textarea
-                value={generatedContent.approach}
-                onChange={(e) =>
-                  setGeneratedContent({ ...generatedContent, approach: e.target.value })
-                }
-                rows={3}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Ergebnis-Vision</Label>
-              {generatedContent.outcome_vision.map((outcome, i) => (
-                <Input
-                  key={i}
-                  value={typeof outcome === 'string' ? outcome : outcome.text}
-                  onChange={(e) => {
-                    const updated = [...generatedContent.outcome_vision];
-                    updated[i] = e.target.value;
-                    setGeneratedContent({ ...generatedContent, outcome_vision: updated });
-                  }}
-                />
-              ))}
-            </div>
-
-            <div className="space-y-2">
-              <Label>CTA-Text</Label>
-              <Input
-                value={generatedContent.cta_text}
-                onChange={(e) =>
-                  setGeneratedContent({ ...generatedContent, cta_text: e.target.value })
-                }
-              />
+            {/* Help questions - always visible */}
+            <div className="bg-[#f9fafb] rounded-lg p-4 border border-[#e5e7eb]">
+              <p className="text-xs font-medium text-[#6b7280] mb-2">Diese Fragen helfen Ihnen:</p>
+              <ul className="space-y-1.5 text-xs text-[#6b7280]">
+                <li className="flex items-start gap-1.5">
+                  <span className="text-[#11485e] mt-0.5">•</span>
+                  Was ist die aktuelle Situation des Kunden? (Ist-Zustand)
+                </li>
+                <li className="flex items-start gap-1.5">
+                  <span className="text-[#11485e] mt-0.5">•</span>
+                  Welche Probleme oder Risiken hat der Kunde? (Schmerzpunkte)
+                </li>
+                <li className="flex items-start gap-1.5">
+                  <span className="text-[#11485e] mt-0.5">•</span>
+                  Was möchte der Kunde erreichen? (Ziele)
+                </li>
+                <li className="flex items-start gap-1.5">
+                  <span className="text-[#11485e] mt-0.5">•</span>
+                  Welche Lösung bieten Sie an? (Ihr Ansatz)
+                </li>
+              </ul>
             </div>
 
             <div className="flex justify-between pt-4">
@@ -957,141 +900,28 @@ export default function NewDealroomPage() {
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Zurück
               </Button>
-              <Button onClick={goNext}>
-                Weiter
-                <ArrowRight className="h-4 w-4 ml-2" />
+              <Button onClick={generateContent} disabled={generating || !inputText.trim()}>
+                <Sparkles className="h-4 w-4 mr-2" />
+                Angebot erstellen
               </Button>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Step: Media */}
-      {currentStep === 'media' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Video & Angebot einbinden</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="videoUrl">Video-URL (Loom oder YouTube)</Label>
-              <Input
-                id="videoUrl"
-                value={videoUrl}
-                onChange={(e) => setVideoUrl(e.target.value)}
-                placeholder="https://www.loom.com/share/... oder https://youtube.com/watch?v=..."
-              />
-              <p className="text-xs text-[#6b7280]">
-                Optional: Persönliche Videonachricht für den Kunden
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="pandadocUrl">PandaDoc Embed-URL</Label>
-              <Input
-                id="pandadocUrl"
-                value={pandadocUrl}
-                onChange={(e) => setPandadocUrl(e.target.value)}
-                placeholder="https://app.pandadoc.com/s/..."
-              />
-              <p className="text-xs text-[#6b7280]">
-                Optional: Das Angebotsdokument zum Unterschreiben
-              </p>
+      {/* Step 3: Fertigstellen */}
+      {currentStep === 'finish' && (
+        <Card className="border-[#e5e7eb] shadow-sm">
+          <CardContent className="p-6 space-y-5">
+            <div>
+              <h2 className="text-lg font-semibold text-[#1a1a1a] mb-1">Angebotsraum fertigstellen</h2>
+              <HelpText>Prüfen Sie den generierten Inhalt und fügen Sie optional ein Video oder Dokument hinzu.</HelpText>
             </div>
 
-            {/* Documents Upload */}
-            <div className="space-y-2 border-t border-[#e5e7eb] pt-4">
-              <Label className="flex items-center gap-1.5">
-                <FileUp className="h-4 w-4" />
-                Dokumente (optional)
-              </Label>
-              <p className="text-xs text-[#6b7280]">
-                PDFs, Broschüren oder andere Dateien für den Kunden zum Download
-              </p>
-              {uploadingDoc ? (
-                <div className="flex items-center justify-center gap-2 border-2 border-dashed border-[#11485e] rounded-lg py-6 bg-[#11485e]/5">
-                  <Loader2 className="h-5 w-5 text-[#11485e] animate-spin" />
-                  <span className="text-sm text-[#11485e]">Wird hochgeladen...</span>
-                </div>
-              ) : (
-                <label className="flex items-center justify-center gap-2 border-2 border-dashed border-[#e5e7eb] rounded-lg py-6 cursor-pointer hover:border-[#11485e] hover:bg-[#11485e]/5 transition-colors">
-                  <Upload className="h-5 w-5 text-[#6b7280]" />
-                  <span className="text-sm text-[#6b7280]">{pendingDocuments.length > 0 ? 'Weitere Dateien hinzufügen' : 'Dateien auswählen'}</span>
-                  <input
-                    type="file"
-                    multiple
-                    className="hidden"
-                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg"
-                    onChange={async (e) => {
-                      if (!e.target.files?.length) return;
-                      setUploadingDoc(true);
-                      const files = Array.from(e.target.files);
-                      for (const file of files) {
-                        const fileUrl = await uploadFile(file, 'documents');
-                        if (fileUrl) {
-                          setPendingDocuments(prev => [...prev, {
-                            name: file.name,
-                            file_url: fileUrl,
-                            file_type: file.type || 'application/octet-stream',
-                            file_size: file.size,
-                          }]);
-                        } else {
-                          toast({ title: 'Fehler', description: `"${file.name}" konnte nicht hochgeladen werden.`, variant: 'destructive' });
-                        }
-                      }
-                      setUploadingDoc(false);
-                      toast({ title: `${files.length} Dokument${files.length !== 1 ? 'e' : ''} hochgeladen` });
-                      e.target.value = '';
-                    }}
-                  />
-                </label>
-              )}
-              {pendingDocuments.length > 0 && (
-                <div className="space-y-1.5 mt-2">
-                  {pendingDocuments.map((doc, i) => (
-                    <div key={i} className="flex items-center gap-2 bg-[#fafafa] rounded-lg px-3 py-2">
-                      <File className="h-4 w-4 text-[#6b7280] shrink-0" />
-                      <span className="text-sm text-[#1a1a1a] truncate flex-1">{doc.name}</span>
-                      <span className="text-xs text-[#9ca3af] shrink-0">{(doc.file_size / 1024).toFixed(0)} KB</span>
-                      <button
-                        type="button"
-                        onClick={() => setPendingDocuments(prev => prev.filter((_, j) => j !== i))}
-                        className="text-[#6b7280] hover:text-red-500 shrink-0"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="flex justify-between pt-4">
-              <Button variant="outline" onClick={goBack}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Zurück
-              </Button>
-              <Button onClick={goNext}>
-                Weiter
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Step: Publish */}
-      {currentStep === 'publish' && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Send className="h-5 w-5" />
-              Dealroom veröffentlichen
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="bg-[#fafafa] rounded-xl p-6 space-y-3 mb-6">
-              <h3 className="font-medium text-[#1a1a1a]">Zusammenfassung</h3>
-              <div className="grid grid-cols-2 gap-3 text-sm">
+            {/* Summary */}
+            <div className="bg-[#f9fafb] rounded-xl p-4 space-y-2">
+              <h3 className="text-sm font-medium text-[#1a1a1a]">Zusammenfassung</h3>
+              <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
                   <span className="text-[#6b7280]">Kunde:</span>{' '}
                   <span className="font-medium">{clientName}</span>
@@ -1102,22 +932,8 @@ export default function NewDealroomPage() {
                 </div>
                 <div>
                   <span className="text-[#6b7280]">Sprache:</span>{' '}
-                  <Badge variant="outline">{language === 'de' ? 'Deutsch' : 'English'}</Badge>
+                  <span className="font-medium">{language === 'de' ? 'Deutsch' : 'English'}</span>
                 </div>
-                <div>
-                  <span className="text-[#6b7280]">Video:</span>{' '}
-                  <span className="font-medium">{videoUrl ? 'Ja' : 'Nein'}</span>
-                </div>
-                <div>
-                  <span className="text-[#6b7280]">PandaDoc:</span>{' '}
-                  <span className="font-medium">{pandadocUrl ? 'Ja' : 'Nein'}</span>
-                </div>
-                {pendingDocuments.length > 0 && (
-                  <div>
-                    <span className="text-[#6b7280]">Dokumente:</span>{' '}
-                    <span className="font-medium">{pendingDocuments.length} Datei{pendingDocuments.length !== 1 ? 'en' : ''}</span>
-                  </div>
-                )}
                 {assignedMemberId && assignedMemberId !== 'none' && (
                   <div>
                     <span className="text-[#6b7280]">Ansprechpartner:</span>{' '}
@@ -1129,7 +945,182 @@ export default function NewDealroomPage() {
               </div>
             </div>
 
-            <div className="flex justify-between">
+            {/* Content review (collapsible) */}
+            {generatedContent && (
+              <div className="border border-[#e5e7eb] rounded-xl overflow-hidden">
+                <button
+                  onClick={() => setShowContentReview(!showContentReview)}
+                  className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-[#1a1a1a] hover:bg-[#f9fafb] transition-colors"
+                >
+                  <span>Generierter Inhalt bearbeiten</span>
+                  {showContentReview ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </button>
+                {showContentReview && (
+                  <div className="px-4 pb-4 space-y-4 border-t border-[#e5e7eb]">
+                    <div className="space-y-2 pt-4">
+                      <Label>Hero-Titel</Label>
+                      <Input
+                        value={generatedContent.hero_title}
+                        onChange={(e) => setGeneratedContent({ ...generatedContent, hero_title: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Hero-Untertitel</Label>
+                      <Input
+                        value={generatedContent.hero_subtitle}
+                        onChange={(e) => setGeneratedContent({ ...generatedContent, hero_subtitle: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Ausgangslage (Schmerzpunkte)</Label>
+                      {generatedContent.situation_points.map((point, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <div className="shrink-0 h-8 w-8 rounded-lg bg-[#11485e]/10 flex items-center justify-center">
+                            <DynamicIcon name={point.icon} className="h-4 w-4 text-[#11485e]" />
+                          </div>
+                          <Input
+                            value={point.text}
+                            onChange={(e) => {
+                              const updated = [...generatedContent.situation_points];
+                              updated[i] = { ...updated[i], text: e.target.value };
+                              setGeneratedContent({ ...generatedContent, situation_points: updated });
+                            }}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Ziel</Label>
+                      <Input
+                        value={generatedContent.goal}
+                        onChange={(e) => setGeneratedContent({ ...generatedContent, goal: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Ansatz</Label>
+                      <Textarea
+                        value={generatedContent.approach}
+                        onChange={(e) => setGeneratedContent({ ...generatedContent, approach: e.target.value })}
+                        rows={3}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Ergebnis-Vision</Label>
+                      {generatedContent.outcome_vision.map((outcome, i) => (
+                        <Input
+                          key={i}
+                          value={typeof outcome === 'string' ? outcome : outcome.text}
+                          onChange={(e) => {
+                            const updated = [...generatedContent.outcome_vision];
+                            updated[i] = e.target.value;
+                            setGeneratedContent({ ...generatedContent, outcome_vision: updated });
+                          }}
+                        />
+                      ))}
+                    </div>
+                    <div className="space-y-2">
+                      <Label>CTA-Text</Label>
+                      <Input
+                        value={generatedContent.cta_text}
+                        onChange={(e) => setGeneratedContent({ ...generatedContent, cta_text: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Video & PandaDoc (optional extras) */}
+            <div className="space-y-4 border-t border-[#e5e7eb] pt-5">
+              <h3 className="text-sm font-medium text-[#1a1a1a]">Optionale Extras</h3>
+
+              <div className="space-y-2">
+                <Label>Video-URL (Loom oder YouTube)</Label>
+                <Input
+                  value={videoUrl}
+                  onChange={(e) => setVideoUrl(e.target.value)}
+                  placeholder="https://www.loom.com/share/... oder https://youtube.com/watch?v=..."
+                />
+                <HelpText>Eine persönliche Videonachricht erhöht die Abschlussquote um bis zu 30%.</HelpText>
+              </div>
+
+              <div className="space-y-2">
+                <Label>PandaDoc Embed-URL</Label>
+                <Input
+                  value={pandadocUrl}
+                  onChange={(e) => setPandadocUrl(e.target.value)}
+                  placeholder="https://app.pandadoc.com/s/..."
+                />
+                <HelpText>Der Kunde kann das Angebot direkt im Angebotsraum unterschreiben.</HelpText>
+              </div>
+
+              {/* Documents Upload */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1.5">
+                  <FileUp className="h-4 w-4" />
+                  Dokumente (optional)
+                </Label>
+                {uploadingDoc ? (
+                  <div className="flex items-center justify-center gap-2 border-2 border-dashed border-[#11485e] rounded-lg py-6 bg-[#11485e]/5">
+                    <Loader2 className="h-5 w-5 text-[#11485e] animate-spin" />
+                    <span className="text-sm text-[#11485e]">Wird hochgeladen...</span>
+                  </div>
+                ) : (
+                  <label className="flex items-center justify-center gap-2 border-2 border-dashed border-[#e5e7eb] rounded-lg py-6 cursor-pointer hover:border-[#11485e] hover:bg-[#11485e]/5 transition-colors">
+                    <Upload className="h-5 w-5 text-[#6b7280]" />
+                    <span className="text-sm text-[#6b7280]">{pendingDocuments.length > 0 ? 'Weitere Dateien hinzufügen' : 'Dateien auswählen'}</span>
+                    <input
+                      type="file"
+                      multiple
+                      className="hidden"
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg"
+                      onChange={async (e) => {
+                        if (!e.target.files?.length) return;
+                        setUploadingDoc(true);
+                        const files = Array.from(e.target.files);
+                        for (const file of files) {
+                          const fileUrl = await uploadFile(file, 'documents');
+                          if (fileUrl) {
+                            setPendingDocuments(prev => [...prev, {
+                              name: file.name,
+                              file_url: fileUrl,
+                              file_type: file.type || 'application/octet-stream',
+                              file_size: file.size,
+                            }]);
+                          } else {
+                            toast({ title: 'Fehler', description: `"${file.name}" konnte nicht hochgeladen werden.`, variant: 'destructive' });
+                          }
+                        }
+                        setUploadingDoc(false);
+                        toast({ title: `${files.length} Dokument${files.length !== 1 ? 'e' : ''} hochgeladen` });
+                        e.target.value = '';
+                      }}
+                    />
+                  </label>
+                )}
+                {pendingDocuments.length > 0 && (
+                  <div className="space-y-1.5 mt-2">
+                    {pendingDocuments.map((doc, i) => (
+                      <div key={i} className="flex items-center gap-2 bg-[#fafafa] rounded-lg px-3 py-2">
+                        <File className="h-4 w-4 text-[#6b7280] shrink-0" />
+                        <span className="text-sm text-[#1a1a1a] truncate flex-1">{doc.name}</span>
+                        <span className="text-xs text-[#9ca3af] shrink-0">{(doc.file_size / 1024).toFixed(0)} KB</span>
+                        <button
+                          type="button"
+                          onClick={() => setPendingDocuments(prev => prev.filter((_, j) => j !== i))}
+                          className="text-[#6b7280] hover:text-red-500 shrink-0"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <HelpText>PDFs, Broschüren oder andere Dateien die Ihr Kunde herunterladen kann.</HelpText>
+              </div>
+            </div>
+
+            <div className="flex justify-between pt-4">
               <Button variant="outline" onClick={goBack}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Zurück

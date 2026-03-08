@@ -158,10 +158,30 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
 
       {/* Dealroom Cards */}
       {sorted.length === 0 ? (
-        <div className="text-center py-12 text-[#6b7280]">
-          <Search className="h-8 w-8 mx-auto mb-3 text-[#d1d5db]" />
-          <p className="text-[15px] font-semibold text-[#1a1a1a]">Keine Dealrooms gefunden</p>
-          <p className="text-[13px] text-[#6b7280] mt-1">Passen Sie Ihre Suche oder Filter an</p>
+        <div className="text-center py-16 text-[#6b7280]">
+          {dealrooms.length === 0 ? (
+            <>
+              <div className="h-12 w-12 rounded-xl bg-[#f0f5f7] flex items-center justify-center mx-auto mb-4">
+                <PlusCircle className="h-6 w-6 text-[#11485e]" />
+              </div>
+              <p className="text-[15px] font-semibold text-[#1a1a1a]">Noch keine Angebotsräume</p>
+              <p className="text-[13px] text-[#6b7280] mt-1 max-w-[320px] mx-auto">
+                Erstellen Sie Ihren ersten Angebotsraum, um Ihrem Kunden ein professionelles Angebot zu präsentieren.
+              </p>
+              <Link href="/dashboard/new">
+                <Button size="sm" className="mt-4">
+                  <PlusCircle className="h-4 w-4 mr-1.5" />
+                  Ersten Angebotsraum erstellen
+                </Button>
+              </Link>
+            </>
+          ) : (
+            <>
+              <Search className="h-8 w-8 mx-auto mb-3 text-[#d1d5db]" />
+              <p className="text-[15px] font-semibold text-[#1a1a1a]">Keine Angebotsräume gefunden</p>
+              <p className="text-[13px] text-[#6b7280] mt-1">Passen Sie Ihre Suche oder Filter an</p>
+            </>
+          )}
         </div>
       ) : (
         <div className="space-y-3">

@@ -6,6 +6,7 @@ export interface AdminUser {
   company_name: string;
   company_logo_url: string | null;
   brand_color: string;
+  has_completed_onboarding: boolean;
   created_at: string;
 }
 

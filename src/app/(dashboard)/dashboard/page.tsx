@@ -51,13 +51,13 @@ export default async function DashboardPage() {
         <div>
           <h1 className="text-2xl font-semibold text-[#1a1a1a]">Dashboard</h1>
           <p className="text-sm text-[#6b7280] mt-1">
-            Verwalten Sie Ihre Dealrooms und Kundeninteraktionen
+            Verwalten Sie Ihre Angebotsräume und Kundeninteraktionen
           </p>
         </div>
         <Button asChild size="lg" className="shadow-sm">
           <Link href="/dashboard/new">
             <Plus className="h-4 w-4 mr-2" />
-            Neuer Dealroom
+            Neuer Angebotsraum
           </Link>
         </Button>
       </div>
@@ -121,7 +121,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Dealroom List */}
-      <h2 className="text-lg font-semibold text-[#1a1a1a] mb-4">Alle Dealrooms</h2>
+      <h2 className="text-lg font-semibold text-[#1a1a1a] mb-4">Alle Angebotsräume</h2>
       <DealroomList dealrooms={allDealrooms} viewCounts={viewCounts} engagementScores={engagementScores} />
     </div>
   );
