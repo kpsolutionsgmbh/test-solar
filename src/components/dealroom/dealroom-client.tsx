@@ -28,6 +28,11 @@ import {
   ShieldCheck,
   Users,
 } from 'lucide-react';
+import { NumberTicker } from '@/components/magicui/number-ticker';
+import { Marquee } from '@/components/magicui/marquee';
+import { ShimmerButton } from '@/components/magicui/shimmer-button';
+import { DotPattern } from '@/components/magicui/dot-pattern';
+import { fireConfetti } from '@/components/magicui/confetti';
 
 function getVideoEmbedUrl(url: string): string | null {
   if (!url) return null;
@@ -95,14 +100,13 @@ function ScrollReveal({ children, delay = 0, className = '' }: { children: React
 }
 
 function AnimatedCounter({ from = 0, to, prefix = '', suffix = '', color = 'brand', brandColor }: { from?: number; to: number; prefix?: string; suffix?: string; color?: string; brandColor?: string }) {
-  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.5 });
   const textColor = color === 'red' ? 'text-red-400' : color === 'green' ? 'text-emerald-400' : '';
 
   return (
-    <div ref={ref} className="text-center">
+    <div className="text-center">
       <p className={`text-4xl sm:text-5xl font-bold ${textColor}`} style={!textColor ? { color: brandColor || '#11485e' } : undefined}>
         {prefix}
-        {inView ? <CountUp start={from} end={to} duration={2} separator="." /> : from}
+        <NumberTicker value={to} startValue={from} className={textColor} />
         {suffix}
       </p>
     </div>
@@ -302,6 +306,18 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
     return cleanup;
   }, [dealroom.id]);
 
+  // PandaDoc signing confetti celebration
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.event === 'session_view.document.completed' || event.data?.type === 'session_view.document.completed') {
+        fireConfetti();
+        trackEvent(dealroom.id, 'pandadoc_sign');
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [dealroom.id]);
+
   // Scroll progress indicator
   useEffect(() => {
     const handleScroll = () => {
@@ -374,14 +390,15 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
   // Reusable CTA block with social proof
   const CtaBlock = ({ derisking, ctaName, className = '' }: { derisking: string; ctaName: string; className?: string }) => (
     <div className={`text-center py-6 ${className}`}>
-      <button
+      <ShimmerButton
         onClick={() => handleCta(ctaName)}
-        className="inline-flex items-center gap-3 px-8 sm:px-10 py-4 rounded-2xl text-white font-semibold text-base sm:text-lg shadow-lg transition-all hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] min-h-[48px]"
-        style={{ backgroundColor: brandColor }}
+        background={brandColor}
+        shimmerColor="rgba(255,255,255,0.3)"
+        className="inline-flex items-center gap-3 min-h-[48px] mx-auto"
       >
         {dealroom.language === 'de' ? 'Jetzt Angebot ansehen' : 'View Proposal'}
         <ArrowRight className="h-5 w-5" />
-      </button>
+      </ShimmerButton>
       <p className="text-sm text-[#9ca3af] mt-3">{derisking}</p>
       <SocialProof />
     </div>
@@ -578,8 +595,14 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
               </section>
 
               {/* ===== "So einfach geht's" – 3 steps ===== */}
-              <section className="bg-[#fafafa]">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+              <section className="bg-[#fafafa] relative">
+                <DotPattern
+                  width={24}
+                  height={24}
+                  cr={0.8}
+                  className="fill-neutral-300/30 [mask-image:radial-gradient(ellipse_at_center,white,transparent_70%)]"
+                />
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 relative z-10">
                   <ScrollReveal>
                     <h2 className="text-[22px] sm:text-[28px] font-bold text-[#1a1a1a] text-center">
                       {dealroom.language === 'de' ? "So einfach geht's" : 'How it works'}
@@ -990,25 +1013,25 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
 
               <SectionDivider />
 
-              {/* ===== 9. PARTNER LOGOS (quiet) ===== */}
+              {/* ===== 9. PARTNER LOGOS (Marquee) ===== */}
               <section>
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
                   <ScrollReveal>
-                    <div className="rounded-2xl py-8 px-6 sm:px-10" style={{ backgroundColor: '#11485e' }}>
+                    <div className="rounded-2xl py-8 px-6 sm:px-10 overflow-hidden" style={{ backgroundColor: '#11485e' }}>
                       <p className="text-center text-xs sm:text-sm font-medium text-white/60 uppercase tracking-wider mb-6">
                         {tr.sections.partnersTitle}
                       </p>
-                      <div className="flex items-center justify-center gap-8 sm:gap-12 flex-wrap">
+                      <Marquee pauseOnHover className="[--duration:25s]">
                         {partnerLogos.map((logo, i) => (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
                             key={i}
                             src={logo.src}
                             alt={logo.alt}
-                            className="h-16 sm:h-20 object-contain opacity-70 hover:opacity-100 transition-opacity duration-300 brightness-0 invert"
+                            className="h-16 sm:h-20 object-contain opacity-70 hover:opacity-100 transition-opacity duration-300 brightness-0 invert mx-6"
                           />
                         ))}
-                      </div>
+                      </Marquee>
                     </div>
                   </ScrollReveal>
                 </div>
@@ -1022,6 +1045,12 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                       className="rounded-2xl sm:rounded-3xl p-6 sm:p-10 lg:p-12 text-center relative overflow-hidden"
                       style={{ backgroundColor: brandColor }}
                     >
+                      <DotPattern
+                        width={20}
+                        height={20}
+                        cr={1.2}
+                        className="fill-white/10 [mask-image:radial-gradient(ellipse_at_center,white,transparent_80%)]"
+                      />
                       <div className="relative z-10">
                         <h2 className="text-[22px] sm:text-[28px] lg:text-[32px] font-bold text-white mb-3">
                           {tr.sections.finalCtaTitle}
@@ -1214,19 +1243,19 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
               </div>
             </div>
 
-            {/* 5. Partner Logos */}
+            {/* 5. Partner Logos (Marquee) */}
             {partnerLogos.length > 0 && (
               <div className="fade-in-up mt-12">
-                <div className="rounded-2xl py-8 px-6 sm:px-10" style={{ backgroundColor: '#11485e' }}>
+                <div className="rounded-2xl py-8 px-6 sm:px-10 overflow-hidden" style={{ backgroundColor: '#11485e' }}>
                   <p className="text-center text-xs sm:text-sm font-medium text-white/60 uppercase tracking-wider mb-6">
                     {tr.sections.partnersTitle}
                   </p>
-                  <div className="flex items-center justify-center gap-8 sm:gap-12 flex-wrap">
+                  <Marquee pauseOnHover className="[--duration:25s]">
                     {partnerLogos.map((logo, i) => (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img key={i} src={logo.src} alt={logo.alt} className="h-16 sm:h-20 object-contain opacity-70 hover:opacity-100 transition-opacity duration-300 brightness-0 invert" />
+                      <img key={i} src={logo.src} alt={logo.alt} className="h-16 sm:h-20 object-contain opacity-70 hover:opacity-100 transition-opacity duration-300 brightness-0 invert mx-6" />
                     ))}
-                  </div>
+                  </Marquee>
                 </div>
               </div>
             )}
