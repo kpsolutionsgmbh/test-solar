@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       .eq('id', user.id)
       .single();
 
-    const fromName = admin?.company_name || admin?.name || 'Glow&Growth';
+    const fromName = admin?.company_name || admin?.name || 'Gündesli & Kollegen';
     const fromDomain = process.env.RESEND_FROM_DOMAIN || 'onboarding@resend.dev';
 
     // Add unsubscribe link if we have a dealroom

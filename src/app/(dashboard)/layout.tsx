@@ -7,8 +7,8 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | Glow&Growth',
-    default: 'Dashboard | Glow&Growth',
+    template: '%s | Gündesli & Kollegen',
+    default: 'Dashboard | Gündesli & Kollegen',
   },
 };
 

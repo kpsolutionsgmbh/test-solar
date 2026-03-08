@@ -29,7 +29,7 @@ export function OnboardingModal({ open, onClose }: OnboardingModalProps) {
               <Rocket className="h-7 w-7 text-[#11485e]" />
             </div>
             <h2 className="text-xl font-semibold text-[#1a1a1a] mb-2">
-              Willkommen bei Glow&Growth
+              Willkommen bei Gündesli & Kollegen
             </h2>
             <p className="text-sm text-[#6b7280] leading-relaxed mb-8">
               Ihr neues Tool, um professionelle Angebotsräume für Ihre Kunden
@@ -55,7 +55,7 @@ export function OnboardingModal({ open, onClose }: OnboardingModalProps) {
               Ihr erster Angebotsraum
             </h2>
             <p className="text-sm text-[#6b7280] leading-relaxed mb-3">
-              Mit Glow&Growth erstellen Sie individuelle Angebotsräume für
+              Mit Gündesli & Kollegen erstellen Sie individuelle Angebotsräume für
               Ihre Kunden. So funktioniert es:
             </p>
             <ul className="text-sm text-[#6b7280] text-left space-y-2 mb-8 w-full">
