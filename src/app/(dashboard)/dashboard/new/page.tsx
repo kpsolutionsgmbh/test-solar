@@ -261,15 +261,15 @@ export default function NewDealroomPage() {
           .from('customers')
           .insert({
             admin_id: null,
-            salutation: clientSalutation,
+            salutation: customerType === 'commercial' ? clientSalutation : 'Herr',
             first_name: clientFirstName,
             last_name: clientLastName,
-            company: clientCompany,
-            position: clientPosition || null,
+            company: customerType === 'commercial' ? clientCompany : `${clientFirstName} ${clientLastName}`.trim(),
+            position: customerType === 'commercial' ? (clientPosition || null) : null,
             email: clientEmail || null,
             phone: clientPhone || null,
             address: clientAddress || null,
-            logo_url: clientLogoUrl || null,
+            logo_url: customerType === 'commercial' ? (clientLogoUrl || null) : null,
           })
           .select()
           .single();
@@ -287,12 +287,12 @@ export default function NewDealroomPage() {
         slug,
         status: asDraft ? 'draft' : 'published',
         client_name: clientName,
-        client_company: clientCompany,
-        client_position: clientPosition || null,
+        client_company: customerType === 'commercial' ? clientCompany : clientName,
+        client_position: customerType === 'commercial' ? (clientPosition || null) : null,
         client_email: clientEmail || null,
         client_phone: clientPhone || null,
         client_address: clientAddress || null,
-        client_logo_url: clientLogoUrl || null,
+        client_logo_url: customerType === 'commercial' ? (clientLogoUrl || null) : null,
         customer_id: customerId,
         video_url: videoUrl || null,
         pandadoc_embed_url: pandadocUrl || null,
@@ -536,87 +536,146 @@ export default function NewDealroomPage() {
 
             {customerSource === 'new' ? (
               <>
-                <div className="grid grid-cols-[100px_1fr_1fr] gap-4">
-                  <div className="space-y-2">
-                    <Label>Anrede</Label>
-                    <Select value={clientSalutation} onValueChange={(v) => setClientSalutation(v as 'Herr' | 'Frau')}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Herr">Herr</SelectItem>
-                        <SelectItem value="Frau">Frau</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Vorname *</Label>
-                    <Input
-                      value={clientFirstName}
-                      onChange={(e) => {
-                        setClientFirstName(e.target.value);
-                        setClientName(`${e.target.value} ${clientLastName}`.trim());
-                      }}
-                      placeholder="Max"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Nachname *</Label>
-                    <Input
-                      value={clientLastName}
-                      onChange={(e) => {
-                        setClientLastName(e.target.value);
-                        setClientName(`${clientFirstName} ${e.target.value}`.trim());
-                      }}
-                      placeholder="Mustermann"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div className="space-y-2">
-                    <Label>Firma *</Label>
-                    <Input
-                      value={clientCompany}
-                      onChange={(e) => setClientCompany(e.target.value)}
-                      placeholder="Musterfirma GmbH"
-                    />
-                    <HelpText>Der Firmenname erscheint im Titel des Angebotsraums.</HelpText>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Position</Label>
-                    <Select value={clientPosition || 'Geschäftsführer'} onValueChange={setClientPosition}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Geschäftsführer">Geschäftsführer</SelectItem>
-                        <SelectItem value="Angestellter">Angestellter</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>E-Mail</Label>
-                    <Input
-                      type="email"
-                      value={clientEmail}
-                      onChange={(e) => setClientEmail(e.target.value)}
-                      placeholder="max@musterfirma.de"
-                    />
-                    <HelpText>Wird für automatische E-Mail-Benachrichtigungen verwendet.</HelpText>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Telefon</Label>
-                    <Input
-                      value={clientPhone}
-                      onChange={(e) => setClientPhone(e.target.value)}
-                      placeholder="+49 ..."
-                    />
-                  </div>
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label>Adresse</Label>
-                    <Input
-                      value={clientAddress}
-                      onChange={(e) => setClientAddress(e.target.value)}
-                      placeholder="Straße, PLZ Ort"
-                    />
-                  </div>
-                </div>
+                {customerType === 'commercial' ? (
+                  <>
+                    <div className="grid grid-cols-[100px_1fr_1fr] gap-4">
+                      <div className="space-y-2">
+                        <Label>Anrede</Label>
+                        <Select value={clientSalutation} onValueChange={(v) => setClientSalutation(v as 'Herr' | 'Frau')}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Herr">Herr</SelectItem>
+                            <SelectItem value="Frau">Frau</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Vorname *</Label>
+                        <Input
+                          value={clientFirstName}
+                          onChange={(e) => {
+                            setClientFirstName(e.target.value);
+                            setClientName(`${e.target.value} ${clientLastName}`.trim());
+                          }}
+                          placeholder="Max"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Nachname *</Label>
+                        <Input
+                          value={clientLastName}
+                          onChange={(e) => {
+                            setClientLastName(e.target.value);
+                            setClientName(`${clientFirstName} ${e.target.value}`.trim());
+                          }}
+                          placeholder="Mustermann"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <div className="space-y-2">
+                        <Label>Firma *</Label>
+                        <Input
+                          value={clientCompany}
+                          onChange={(e) => setClientCompany(e.target.value)}
+                          placeholder="Musterfirma GmbH"
+                        />
+                        <HelpText>Der Firmenname erscheint im Titel des Angebotsraums.</HelpText>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Position</Label>
+                        <Select value={clientPosition || 'Geschäftsführer'} onValueChange={setClientPosition}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Geschäftsführer">Geschäftsführer</SelectItem>
+                            <SelectItem value="Angestellter">Angestellter</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>E-Mail</Label>
+                        <Input
+                          type="email"
+                          value={clientEmail}
+                          onChange={(e) => setClientEmail(e.target.value)}
+                          placeholder="max@musterfirma.de"
+                        />
+                        <HelpText>Wird für automatische E-Mail-Benachrichtigungen verwendet.</HelpText>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Telefon</Label>
+                        <Input
+                          value={clientPhone}
+                          onChange={(e) => setClientPhone(e.target.value)}
+                          placeholder="+49 ..."
+                        />
+                      </div>
+                      <div className="space-y-2 sm:col-span-2">
+                        <Label>Adresse</Label>
+                        <Input
+                          value={clientAddress}
+                          onChange={(e) => setClientAddress(e.target.value)}
+                          placeholder="Straße, PLZ Ort"
+                        />
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Vorname *</Label>
+                        <Input
+                          value={clientFirstName}
+                          onChange={(e) => {
+                            setClientFirstName(e.target.value);
+                            setClientName(`${e.target.value} ${clientLastName}`.trim());
+                          }}
+                          placeholder="Max"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Nachname *</Label>
+                        <Input
+                          value={clientLastName}
+                          onChange={(e) => {
+                            setClientLastName(e.target.value);
+                            setClientName(`${clientFirstName} ${e.target.value}`.trim());
+                          }}
+                          placeholder="Mustermann"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <div className="space-y-2">
+                        <Label>E-Mail</Label>
+                        <Input
+                          type="email"
+                          value={clientEmail}
+                          onChange={(e) => setClientEmail(e.target.value)}
+                          placeholder="max@mustermann.de"
+                        />
+                        <HelpText>Wird für automatische E-Mail-Benachrichtigungen verwendet.</HelpText>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Telefon</Label>
+                        <Input
+                          value={clientPhone}
+                          onChange={(e) => setClientPhone(e.target.value)}
+                          placeholder="+49 ..."
+                        />
+                      </div>
+                      <div className="space-y-2 sm:col-span-2">
+                        <Label>Adresse</Label>
+                        <Input
+                          value={clientAddress}
+                          onChange={(e) => setClientAddress(e.target.value)}
+                          placeholder="Straße, PLZ Ort"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
               </>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -672,43 +731,45 @@ export default function NewDealroomPage() {
               </div>
             )}
 
-            <div className="space-y-2">
-              <Label className="flex items-center gap-1.5">
-                <ImageIcon className="h-4 w-4" />
-                Kundenlogo (optional)
-              </Label>
-              <div className="flex items-center gap-3">
-                {clientLogoUrl && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={clientLogoUrl} alt="Kundenlogo" className="h-10 object-contain rounded" />
-                )}
-                <label className="cursor-pointer">
-                  <Button variant="outline" size="sm" asChild>
-                    <span>
-                      <Upload className="h-3.5 w-3.5 mr-1" />
-                      {clientLogoUrl ? 'Ändern' : 'Logo hochladen'}
-                    </span>
-                  </Button>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      const url = await uploadFile(file, 'logos');
-                      if (url) setClientLogoUrl(url);
-                    }}
-                    className="hidden"
-                  />
-                </label>
-                {clientLogoUrl && (
-                  <Button variant="ghost" size="sm" onClick={() => setClientLogoUrl('')} className="text-xs text-red-500">
-                    Entfernen
-                  </Button>
-                )}
+            {customerType === 'commercial' && (
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1.5">
+                  <ImageIcon className="h-4 w-4" />
+                  Kundenlogo (optional)
+                </Label>
+                <div className="flex items-center gap-3">
+                  {clientLogoUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={clientLogoUrl} alt="Kundenlogo" className="h-10 object-contain rounded" />
+                  )}
+                  <label className="cursor-pointer">
+                    <Button variant="outline" size="sm" asChild>
+                      <span>
+                        <Upload className="h-3.5 w-3.5 mr-1" />
+                        {clientLogoUrl ? 'Ändern' : 'Logo hochladen'}
+                      </span>
+                    </Button>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const url = await uploadFile(file, 'logos');
+                        if (url) setClientLogoUrl(url);
+                      }}
+                      className="hidden"
+                    />
+                  </label>
+                  {clientLogoUrl && (
+                    <Button variant="ghost" size="sm" onClick={() => setClientLogoUrl('')} className="text-xs text-red-500">
+                      Entfernen
+                    </Button>
+                  )}
+                </div>
+                <HelpText>Das Logo wird oben im Angebotsraum neben Ihrem Firmenlogo angezeigt.</HelpText>
               </div>
-              <HelpText>Das Logo wird oben im Angebotsraum neben Ihrem Firmenlogo angezeigt.</HelpText>
-            </div>
+            )}
 
             {teamMembers.length > 0 && (
               <div className="space-y-2">
