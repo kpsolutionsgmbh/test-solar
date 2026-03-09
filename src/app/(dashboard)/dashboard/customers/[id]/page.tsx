@@ -61,7 +61,6 @@ export default function CustomerDetailPage() {
   const [assignedMemberId, setAssignedMemberId] = useState('');
 
   const fetchData = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
     const [{ data: c }, { data: d }, { data: members }] = await Promise.all([
       supabase.from('customers').select('*').eq('id', params.id).single(),
       supabase.from('dealrooms').select('*').eq('customer_id', params.id).order('created_at', { ascending: false }),
