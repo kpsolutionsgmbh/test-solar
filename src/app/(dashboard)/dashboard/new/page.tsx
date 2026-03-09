@@ -357,7 +357,7 @@ export default function NewDealroomPage() {
             Angebotsraum veröffentlicht!
           </h1>
           <p className="text-[#6b7280] max-w-md">
-            Der Angebotsraum für <span className="font-medium text-[#1a1a1a]">{clientName}</span> ({clientCompany}) ist jetzt live.
+            Der Angebotsraum für <span className="font-medium text-[#1a1a1a]">{clientName}</span>{clientCompany && clientCompany !== clientName ? ` (${clientCompany})` : ''} ist jetzt live.
           </p>
         </div>
 
@@ -799,8 +799,8 @@ export default function NewDealroomPage() {
                 onClick={goNext}
                 disabled={
                   customerSource === 'new'
-                    ? !clientFirstName || !clientLastName || !clientCompany
-                    : !clientName || !clientCompany
+                    ? !clientFirstName || !clientLastName || (customerType === 'commercial' && !clientCompany)
+                    : !clientName || (customerType === 'commercial' && !clientCompany)
                 }
               >
                 Weiter
@@ -1015,10 +1015,12 @@ export default function NewDealroomPage() {
                   <span className="text-[#6b7280]">Kunde:</span>{' '}
                   <span className="font-medium">{clientName}</span>
                 </div>
-                <div>
-                  <span className="text-[#6b7280]">Firma:</span>{' '}
-                  <span className="font-medium">{clientCompany}</span>
-                </div>
+                {customerType === 'commercial' && clientCompany && (
+                  <div>
+                    <span className="text-[#6b7280]">Firma:</span>{' '}
+                    <span className="font-medium">{clientCompany}</span>
+                  </div>
+                )}
                 <div>
                   <span className="text-[#6b7280]">Sprache:</span>{' '}
                   <span className="font-medium">{language === 'de' ? 'Deutsch' : 'English'}</span>
