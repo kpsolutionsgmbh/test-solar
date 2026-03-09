@@ -60,9 +60,9 @@ export default function CustomersPage() {
     if (!user) return;
 
     const [{ data }, { data: dealrooms }, { data: members }] = await Promise.all([
-      supabase.from('customers').select('*').eq('admin_id', user.id).order('company'),
-      supabase.from('dealrooms').select('customer_id, status').eq('admin_id', user.id).not('customer_id', 'is', null),
-      supabase.from('team_members').select('*').eq('admin_id', user.id).eq('is_active', true).order('name'),
+      supabase.from('customers').select('*').order('company'),
+      supabase.from('dealrooms').select('customer_id, status').not('customer_id', 'is', null),
+      supabase.from('team_members').select('*').eq('is_active', true).order('name'),
     ]);
 
     setCustomers((data as Customer[]) || []);

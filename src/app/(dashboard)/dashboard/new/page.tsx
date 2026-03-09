@@ -130,9 +130,9 @@ export default function NewDealroomPage() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       const [{ data: members }, { data: custs }, { data: tmpls }] = await Promise.all([
-        supabase.from('team_members').select('*').eq('admin_id', user.id).eq('is_active', true).order('name'),
-        supabase.from('customers').select('*').eq('admin_id', user.id).order('company'),
-        supabase.from('templates').select('*').eq('admin_id', user.id).eq('is_active', true).order('usage_count', { ascending: false }),
+        supabase.from('team_members').select('*').eq('is_active', true).order('name'),
+        supabase.from('customers').select('*').order('company'),
+        supabase.from('templates').select('*').eq('is_active', true).order('usage_count', { ascending: false }),
       ]);
       setTeamMembers((members as TeamMember[]) || []);
       setCustomers((custs as Customer[]) || []);

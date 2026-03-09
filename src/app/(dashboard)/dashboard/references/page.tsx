@@ -159,7 +159,6 @@ export default function ReferencesPage() {
     const { data } = await supabase
       .from('references')
       .select('*')
-      .eq('admin_id', user.id)
       .order('sort_order');
     setReferences((data as Reference[]) || []);
     setLoading(false);

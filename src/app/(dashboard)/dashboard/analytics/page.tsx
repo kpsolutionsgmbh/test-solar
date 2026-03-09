@@ -25,7 +25,6 @@ export default async function AnalyticsPage() {
   const { data: dealrooms } = await supabase
     .from('dealrooms')
     .select('id, slug, client_name, client_company, status, engagement_score')
-    .eq('admin_id', user.id)
     .order('updated_at', { ascending: false });
 
   const allDealrooms = (dealrooms || []) as Dealroom[];

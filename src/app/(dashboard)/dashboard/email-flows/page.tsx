@@ -14,7 +14,6 @@ export default async function EmailFlowsPage() {
   const { data: flows } = await supabase
     .from('email_flows')
     .select('*')
-    .eq('admin_id', user.id)
     .order('created_at', { ascending: true });
 
   const allFlows = (flows || []) as EmailFlow[];
@@ -51,7 +50,6 @@ export default async function EmailFlowsPage() {
       customers:customer_id (salutation, first_name, last_name, company),
       team_members:assigned_member_id (name, email, phone)
     `)
-    .eq('admin_id', user.id)
     .in('status', ['published', 'draft'])
     .order('updated_at', { ascending: false });
 

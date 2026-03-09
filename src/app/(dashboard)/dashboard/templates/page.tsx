@@ -76,7 +76,6 @@ export default function TemplatesPage() {
     const { data, error } = await supabase
       .from('templates')
       .select('*')
-      .eq('admin_id', user.id)
       .order('created_at', { ascending: false });
 
     if (error) {

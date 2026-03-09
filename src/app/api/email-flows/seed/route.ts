@@ -107,11 +107,10 @@ export async function POST() {
 
     const serviceClient = createServiceRoleClient();
 
-    // Check if flows already exist for this admin
+    // Check if flows already exist
     const { count } = await serviceClient
       .from('email_flows')
-      .select('id', { count: 'exact', head: true })
-      .eq('admin_id', user.id);
+      .select('id', { count: 'exact', head: true });
 
     if ((count || 0) > 0) {
       return NextResponse.json({ message: 'Flows already exist', count });

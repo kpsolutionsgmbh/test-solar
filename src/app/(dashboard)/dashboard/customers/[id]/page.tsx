@@ -65,7 +65,7 @@ export default function CustomerDetailPage() {
     const [{ data: c }, { data: d }, { data: members }] = await Promise.all([
       supabase.from('customers').select('*').eq('id', params.id).single(),
       supabase.from('dealrooms').select('*').eq('customer_id', params.id).order('created_at', { ascending: false }),
-      supabase.from('team_members').select('*').eq('admin_id', user?.id || '').eq('is_active', true).order('name'),
+      supabase.from('team_members').select('*').eq('is_active', true).order('name'),
     ]);
 
     if (c) {

@@ -58,7 +58,7 @@ export default function SettingsPage() {
 
     const [{ data: adminData }, { data: membersData }] = await Promise.all([
       supabase.from('admin_users').select('*').eq('id', user.id).single(),
-      supabase.from('team_members').select('*').eq('admin_id', user.id).order('name'),
+      supabase.from('team_members').select('*').order('name'),
     ]);
 
     if (adminData) {

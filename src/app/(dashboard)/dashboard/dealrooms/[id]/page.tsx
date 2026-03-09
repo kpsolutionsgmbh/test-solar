@@ -178,7 +178,7 @@ export default function EditDealroomPage() {
 
       const [{ data }, { data: members }, { data: adminUser }, { data: docs }] = await Promise.all([
         supabase.from('dealrooms').select('*').eq('id', params.id).single(),
-        supabase.from('team_members').select('*').eq('admin_id', user.id).eq('is_active', true).order('name'),
+        supabase.from('team_members').select('*').eq('is_active', true).order('name'),
         supabase.from('admin_users').select('name').eq('id', user.id).single(),
         supabase.from('dealroom_documents').select('*').eq('dealroom_id', params.id).order('sort_order'),
       ]);

@@ -18,7 +18,6 @@ export default async function DashboardPage() {
   const { data: dealrooms } = await supabase
     .from('dealrooms')
     .select('id, slug, client_name, client_company, client_position, status, language, updated_at, published_at, created_at, engagement_score')
-    .eq('admin_id', user.id)
     .order('updated_at', { ascending: false });
 
   const allDealrooms = (dealrooms || []) as Dealroom[];

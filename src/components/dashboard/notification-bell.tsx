@@ -54,8 +54,7 @@ export function NotificationBell() {
     // Get recent tracking events for this admin's dealrooms
     const { data: dealrooms } = await supabase
       .from('dealrooms')
-      .select('id, client_company, client_name')
-      .eq('admin_id', user.id);
+      .select('id, client_company, client_name');
 
     if (!dealrooms?.length) return;
 

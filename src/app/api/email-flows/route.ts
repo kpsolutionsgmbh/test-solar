@@ -11,7 +11,6 @@ export async function GET() {
     const { data, error } = await serviceClient
       .from('email_flows')
       .select('*')
-      .eq('admin_id', user.id)
       .order('created_at', { ascending: true });
 
     if (error) {
@@ -60,14 +59,14 @@ export async function PUT(request: NextRequest) {
 
     const serviceClient = createServiceRoleClient();
 
-    // Verify ownership
+    // Verify flow exists
     const { data: existing } = await serviceClient
       .from('email_flows')
-      .select('admin_id')
+      .select('id')
       .eq('id', id)
       .single();
 
-    if (!existing || existing.admin_id !== user.id) {
+    if (!existing) {
       return NextResponse.json({ error: 'Not found' }, { status: 404 });
     }
 

@@ -93,7 +93,6 @@ export default function FlowEditorPage() {
       supabase
         .from('dealrooms')
         .select('id, client_name, client_company')
-        .eq('admin_id', user.id)
         .order('client_company', { ascending: true }),
       supabase
         .from('email_flow_dealrooms')
