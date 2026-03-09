@@ -83,7 +83,7 @@ export function EditableImage({
                 className={`w-full h-full object-cover ${shape === 'circle' ? 'rounded-full' : 'rounded-lg'}`}
               />
             ) : (
-              <div className={`w-full h-full bg-[#e7eef1] flex items-center justify-center text-[#6b7280] text-sm font-semibold ${shape === 'circle' ? 'rounded-full' : 'rounded-lg'}`}>
+              <div className={`w-full h-full bg-[#FEF3E2] flex items-center justify-center text-[#6b7280] text-sm font-semibold ${shape === 'circle' ? 'rounded-full' : 'rounded-lg'}`}>
                 {placeholderText}
               </div>
             )}

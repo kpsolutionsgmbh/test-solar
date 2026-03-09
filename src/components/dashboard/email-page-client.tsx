@@ -340,14 +340,14 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-[#f0f5f7] rounded-lg p-1 mb-6">
+      <div className="flex gap-1 bg-[#FFF8F0] rounded-lg p-1 mb-6">
         {tabs.map(tab => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               activeTab === tab.key
-                ? 'bg-white text-[#11485e] shadow-sm'
+                ? 'bg-white text-[#E97E1C] shadow-sm'
                 : 'text-[#6b7280] hover:text-[#1a1a1a]'
             }`}
           >
@@ -381,12 +381,12 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
                       <CardContent className="p-5">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3 min-w-0 flex-1">
-                            <div className="h-9 w-9 rounded-lg bg-[#e7eef1] flex items-center justify-center shrink-0">
-                              <Mail size={16} className="text-[#11485e]" />
+                            <div className="h-9 w-9 rounded-lg bg-[#FEF3E2] flex items-center justify-center shrink-0">
+                              <Mail size={16} className="text-[#E97E1C]" />
                             </div>
                             <div className="min-w-0">
                               <div className="flex items-center gap-2.5">
-                                <h3 className="text-[14px] font-semibold text-[#1a1a1a] truncate group-hover:text-[#11485e] transition-colors duration-75">
+                                <h3 className="text-[14px] font-semibold text-[#1a1a1a] truncate group-hover:text-[#E97E1C] transition-colors duration-75">
                                   {flow.name}
                                 </h3>
                                 <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold border shrink-0 ${
@@ -415,7 +415,7 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
               </div>
 
               <Link href="/dashboard/email-flows/new" className="block mt-4">
-                <button className="w-full flex items-center justify-center gap-2 py-3 rounded-lg border-2 border-dashed border-[#e5e7eb] text-sm text-[#6b7280] hover:border-[#11485e] hover:text-[#11485e] hover:bg-[#11485e]/5 transition-colors">
+                <button className="w-full flex items-center justify-center gap-2 py-3 rounded-lg border-2 border-dashed border-[#e5e7eb] text-sm text-[#6b7280] hover:border-[#E97E1C] hover:text-[#E97E1C] hover:bg-[#E97E1C]/5 transition-colors">
                   <Plus className="h-4 w-4" />
                   Neue automatische E-Mail erstellen
                 </button>
@@ -471,7 +471,7 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-between bg-[#f0f5f7] rounded-lg px-4 py-3">
+              <div className="flex items-center justify-between bg-[#FFF8F0] rounded-lg px-4 py-3">
                 <div>
                   <p className="text-sm font-medium text-[#1a1a1a]">{selectedDealroom?.client_name}</p>
                   <p className="text-xs text-[#6b7280]">{selectedDealroom?.client_email || 'Keine E-Mail hinterlegt'}</p>
@@ -501,7 +501,7 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
                 <button
                   key={p.label}
                   onClick={() => insertLabel(p.label)}
-                  className="text-[11px] px-2 py-1 rounded border border-[#e5e7eb] text-[#11485e] hover:bg-[#11485e]/5 transition-colors"
+                  className="text-[11px] px-2 py-1 rounded border border-[#e5e7eb] text-[#E97E1C] hover:bg-[#E97E1C]/5 transition-colors"
                   title={p.desc}
                 >
                   {p.label}
@@ -531,8 +531,8 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
                   onClick={() => applyTemplate(tmpl)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
                     emailSubject === tmpl.subject && emailBody === tmpl.body
-                      ? 'border-[#11485e] bg-[#11485e]/5 text-[#11485e]'
-                      : 'border-[#e5e7eb] text-[#6b7280] hover:border-[#11485e] hover:text-[#11485e]'
+                      ? 'border-[#E97E1C] bg-[#E97E1C]/5 text-[#E97E1C]'
+                      : 'border-[#e5e7eb] text-[#6b7280] hover:border-[#E97E1C] hover:text-[#E97E1C]'
                   }`}
                 >
                   {tmpl.name}
@@ -545,7 +545,7 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
           {selectedDealroom && emailBody.trim() && (
             <button
               onClick={() => setShowPreview(!showPreview)}
-              className="flex items-center gap-2 text-sm text-[#11485e] hover:text-[#0d3648] transition-colors font-medium"
+              className="flex items-center gap-2 text-sm text-[#E97E1C] hover:text-[#C45A08] transition-colors font-medium"
             >
               <Eye className="h-4 w-4" />
               {showPreview ? 'Vorschau ausblenden' : 'Vorschau anzeigen'}
@@ -578,7 +578,7 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
                   {/* CTA Button Preview */}
                   {previewBody.includes(`/d/${selectedDealroom.slug}`) && (
                     <div className="mt-5 text-center">
-                      <span className="inline-block px-6 py-3 bg-[#11485e] text-white rounded-xl text-sm font-semibold">
+                      <span className="inline-block px-6 py-3 bg-[#E97E1C] text-white rounded-xl text-sm font-semibold">
                         Jetzt Angebot ansehen
                       </span>
                     </div>
@@ -655,8 +655,8 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
                   onClick={() => setHistoryFilter(val)}
                   className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                     historyFilter === val
-                      ? 'bg-[#11485e] text-white'
-                      : 'bg-[#f0f5f7] text-[#6b7280] hover:text-[#1a1a1a]'
+                      ? 'bg-[#E97E1C] text-white'
+                      : 'bg-[#FFF8F0] text-[#6b7280] hover:text-[#1a1a1a]'
                   }`}
                 >
                   {label}
@@ -729,7 +729,7 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
                               </span>
                             )}
                             {log.clicked_at && (
-                              <span className="flex items-center gap-1 text-[11px] text-[#11485e]">
+                              <span className="flex items-center gap-1 text-[11px] text-[#E97E1C]">
                                 <MousePointerClick className="h-3 w-3" /> Geklickt
                               </span>
                             )}

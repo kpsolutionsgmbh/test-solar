@@ -39,11 +39,11 @@ interface Template {
 }
 
 const PRODUCT_TYPES = [
-  'BAV',
-  'bKV',
-  'Gewerbeversicherung',
-  'Betriebshaftpflicht',
-  'Sachversicherung',
+  'PV-Anlage',
+  'Speicher',
+  'Wallbox',
+  'Wärmepumpe',
+  'Komplettsystem',
   'Sonstige',
 ];
 
@@ -70,9 +70,6 @@ export default function TemplatesPage() {
   const [deleteTemplateId, setDeleteTemplateId] = useState<string | null>(null);
 
   const fetchTemplates = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
     const { data, error } = await supabase
       .from('templates')
       .select('*')
@@ -204,7 +201,7 @@ export default function TemplatesPage() {
                     )}
                     <div className="flex items-center gap-3 mt-2 text-xs text-[#9ca3af]">
                       {t.product_type && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded bg-[#11485e]/10 text-[#11485e] font-medium">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded bg-[#E97E1C]/10 text-[#E97E1C] font-medium">
                           {t.product_type}
                         </span>
                       )}

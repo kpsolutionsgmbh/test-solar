@@ -28,9 +28,10 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'team' | 'password'>('profile');
 
+  const [adminId, setAdminId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [companyName, setCompanyName] = useState('');
-  const [brandColor, setBrandColor] = useState('#11485e');
+  const [brandColor, setBrandColor] = useState('#E97E1C');
   const [logoUrl, setLogoUrl] = useState('');
 
   // Password change
@@ -53,16 +54,14 @@ export default function SettingsPage() {
   const [cropperImage, setCropperImage] = useState('');
 
   const fetchData = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
     const [{ data: adminData }, { data: membersData }] = await Promise.all([
-      supabase.from('admin_users').select('*').eq('id', user.id).single(),
+      supabase.from('admin_users').select('*').limit(1).single(),
       supabase.from('team_members').select('*').order('name'),
     ]);
 
     if (adminData) {
       const admin = adminData as AdminUser;
+      setAdminId(admin.id);
       setName(admin.name);
       setCompanyName(admin.company_name);
       setBrandColor(admin.brand_color);
@@ -76,9 +75,8 @@ export default function SettingsPage() {
   useEffect(() => { fetchData(); }, []);
 
   const handleSave = async () => {
+    if (!adminId) return;
     setSaving(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
 
     const { error } = await supabase
       .from('admin_users')
@@ -88,7 +86,7 @@ export default function SettingsPage() {
         brand_color: brandColor,
         company_logo_url: logoUrl || null,
       })
-      .eq('id', user.id);
+      .eq('id', adminId);
 
     setSaving(false);
     if (error) {
@@ -153,9 +151,6 @@ export default function SettingsPage() {
   };
 
   const handleSaveMember = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
     if (editingMember) {
       await supabase.from('team_members').update({
         name: memberName,
@@ -167,7 +162,7 @@ export default function SettingsPage() {
       toast({ title: 'Teammitglied aktualisiert' });
     } else {
       await supabase.from('team_members').insert({
-        admin_id: user.id,
+        admin_id: adminId,
         name: memberName,
         position: memberPosition || null,
         email: memberEmail,
@@ -235,7 +230,7 @@ export default function SettingsPage() {
             onClick={() => setActiveTab(tab.key)}
             className={`flex items-center gap-2 px-4 py-2.5 text-[13px] font-semibold transition-colors border-b-2 -mb-px ${
               activeTab === tab.key
-                ? 'border-[#11485e] text-[#11485e]'
+                ? 'border-[#E97E1C] text-[#E97E1C]'
                 : 'border-transparent text-[#6b7280] hover:text-[#1a1a1a]'
             }`}
           >
@@ -251,7 +246,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <User2 className="h-4 w-4 text-[#11485e]" />
+              <User2 className="h-4 w-4 text-[#E97E1C]" />
               Profil & Branding
             </CardTitle>
           </CardHeader>
@@ -279,7 +274,7 @@ export default function SettingsPage() {
                   value={brandColor}
                   onChange={(e) => setBrandColor(e.target.value)}
                   className="max-w-[140px]"
-                  placeholder="#11485e"
+                  placeholder="#E97E1C"
                 />
               </div>
             </div>
@@ -321,7 +316,7 @@ export default function SettingsPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
-                <Users className="h-4 w-4 text-[#11485e]" />
+                <Users className="h-4 w-4 text-[#E97E1C]" />
                 Team / Ansprechpartner
               </CardTitle>
               <Dialog open={memberDialogOpen} onOpenChange={(open) => { setMemberDialogOpen(open); if (!open) resetMemberForm(); }}>
@@ -409,7 +404,7 @@ export default function SettingsPage() {
                       {m.avatar_url ? (
                         <img src={m.avatar_url} alt="" className="h-9 w-9 rounded-full object-cover shrink-0" />
                       ) : (
-                        <div className="h-9 w-9 rounded-full bg-[#11485e]/10 flex items-center justify-center text-[#11485e] text-sm font-semibold shrink-0">
+                        <div className="h-9 w-9 rounded-full bg-[#E97E1C]/10 flex items-center justify-center text-[#E97E1C] text-sm font-semibold shrink-0">
                           {m.name.charAt(0)}
                         </div>
                       )}

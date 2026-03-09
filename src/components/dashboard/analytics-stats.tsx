@@ -20,12 +20,12 @@ function AnalyticsStat({
   return (
     <Card
       className={`border-none shadow-sm ${
-        highlight ? "bg-gradient-to-br from-[#11485e]/5 to-[#11485e]/10" : ""
+        highlight ? "bg-gradient-to-br from-[#E97E1C]/5 to-[#E97E1C]/10" : ""
       }`}
     >
       <CardContent className="pt-4 pb-3 text-center">
         {icon}
-        <div className={`text-2xl font-bold ${highlight ? "text-[#11485e]" : "text-[#1a1a1a]"}`}>
+        <div className={`text-2xl font-bold ${highlight ? "text-[#E97E1C]" : "text-[#1a1a1a]"}`}>
           <NumberTicker value={value} />
         </div>
         <p className="text-[10px] text-[#6b7280] uppercase tracking-wide">
@@ -56,7 +56,7 @@ export function AnalyticsStatsGrid({
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
       <AnalyticsStat
-        icon={<svg className="h-5 w-5 text-[#11485e] mx-auto mb-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>}
+        icon={<svg className="h-5 w-5 text-[#E97E1C] mx-auto mb-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>}
         value={totalViews}
         label="Seitenaufrufe"
       />
@@ -81,7 +81,7 @@ export function AnalyticsStatsGrid({
         label="Unterschriften"
       />
       <AnalyticsStat
-        icon={<svg className="h-5 w-5 text-[#11485e] mx-auto mb-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>}
+        icon={<svg className="h-5 w-5 text-[#E97E1C] mx-auto mb-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>}
         value={recentViews}
         label="Letzte 7 Tage"
         highlight

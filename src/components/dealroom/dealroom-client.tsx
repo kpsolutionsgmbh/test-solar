@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { Dealroom, DealroomContent, Reference, TeamMember, VisualType, VisualData } from '@/types/database';
+import { Dealroom, DealroomContent, TeamMember, VisualType, VisualData } from '@/types/database';
+import { SolarCalculator } from '@/components/dealroom/solar-calculator';
+import { OfferPackages } from '@/components/dealroom/offer-packages';
 import { Translations } from '@/lib/i18n';
 import { initDealroomTracking, trackEvent } from '@/lib/tracking';
 import { motion } from 'framer-motion';
@@ -10,7 +12,6 @@ import { useInView } from 'react-intersection-observer';
 import {
   AlertTriangle,
   CheckCircle2,
-  Shield,
   ArrowRight,
   Phone,
   Mail,
@@ -21,7 +22,6 @@ import {
   Cookie,
   FileText,
   Download,
-  Lightbulb,
   ChevronDown,
   PenLine,
   Rocket,
@@ -29,7 +29,6 @@ import {
   Users,
 } from 'lucide-react';
 import { NumberTicker } from '@/components/magicui/number-ticker';
-import { Marquee } from '@/components/magicui/marquee';
 import { ShimmerButton } from '@/components/magicui/shimmer-button';
 import { DotPattern } from '@/components/magicui/dot-pattern';
 import { fireConfetti } from '@/components/magicui/confetti';
@@ -65,22 +64,6 @@ function SectionDivider() {
   );
 }
 
-// Team images for marquee
-const teamImages = [
-  { src: '/images/team/team-lg.jpeg', alt: 'Team Gündesli & Kollegen' },
-  { src: '/images/team/team-md.jpeg', alt: 'Büro Gündesli & Kollegen' },
-  { src: '/images/team/team-lg-1.jpeg', alt: 'Team bei der Arbeit' },
-  { src: '/images/team/team-lg-2.jpeg', alt: 'Teammeeting' },
-];
-
-// Partner logos (white logos for dark background)
-const partnerLogos = [
-  { src: '/images/partners/citydriver.png', alt: 'CityDriver' },
-  { src: '/images/partners/netzwerk.png', alt: 'Netzwerk' },
-  { src: '/images/partners/vfl-gummersbach.svg', alt: 'VfL Gummersbach' },
-  { src: '/images/partners/partner-invert.png', alt: 'Partner' },
-];
-
 // ==================== Animation Components ====================
 
 function ScrollReveal({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
@@ -104,7 +87,7 @@ function AnimatedCounter({ from = 0, to, prefix = '', suffix = '', color = 'bran
 
   return (
     <div className="text-center">
-      <p className={`text-4xl sm:text-5xl font-bold ${textColor}`} style={!textColor ? { color: brandColor || '#11485e' } : undefined}>
+      <p className={`text-4xl sm:text-5xl font-bold ${textColor}`} style={!textColor ? { color: brandColor || '#E97E1C' } : undefined}>
         {prefix}
         <NumberTicker value={to} startValue={from} className={textColor} />
         {suffix}
@@ -276,14 +259,13 @@ interface Props {
   content: DealroomContent | null;
   admin: { name: string; avatar_url: string | null; company_name: string; company_logo_url: string | null; brand_color: string } | null;
   assignedMember: TeamMember | null;
-  references: Reference[];
   documents: DealroomDocument[];
   translations: Translations;
 }
 
-type TabKey = 'overview' | 'offer' | 'references';
+type TabKey = 'overview' | 'offer';
 
-export function DealroomClient({ dealroom, content, admin, assignedMember, references, documents, translations: tr }: Props) {
+export function DealroomClient({ dealroom, content, admin, assignedMember, documents, translations: tr }: Props) {
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
   const [showCookieBanner, setShowCookieBanner] = useState(true);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -293,8 +275,8 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
   const contact = assignedMember || (admin ? {
     name: admin.name,
     position: 'Geschäftsführer',
-    email: 'info@guendesliundkollegen.de',
-    phone: '02261/5016320',
+    email: 'info@solarheld.de',
+    phone: '',
     avatar_url: admin.avatar_url,
   } : null);
 
@@ -362,7 +344,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
     setShowCookieBanner(false);
   };
 
-  const brandColor = admin?.brand_color || '#11485e';
+  const brandColor = admin?.brand_color || '#E97E1C';
 
   // Social proof element (reusable under CTAs)
   const SocialProof = () => (
@@ -431,7 +413,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                 {dealroom.language === 'de' ? 'Akzeptieren' : 'Accept'}
               </button>
               <a
-                href="https://guendesliundkollegen.de/datenschutz"
+                href="https://solarheld.de/datenschutz"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-4 py-2 text-sm font-medium border rounded-lg text-[#6b7280] hover:bg-[#fafafa] transition-colors min-h-[44px] flex items-center"
@@ -448,10 +430,10 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
         <div className="max-w-5xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-center py-3 border-b border-[#f0f0f0]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/logo-blue.svg" alt="Gündesli & Kollegen" className="h-6 object-contain" />
+            <img src="/images/logo-blue.svg" alt="Solarheld" className="h-6 object-contain" />
           </div>
           <nav className="flex items-center justify-center overflow-x-auto">
-            {(['overview', 'offer', 'references'] as TabKey[]).map((tab) => (
+            {(['overview', 'offer'] as TabKey[]).map((tab) => (
               <button
                 key={tab}
                 onClick={() => switchTab(tab)}
@@ -808,6 +790,152 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                 </div>
               </section>
 
+              {/* ===== SOLAR PRODUCT OVERVIEW ===== */}
+              <section className="bg-[#fafafa]">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+                  <ScrollReveal>
+                    <div className="text-center mb-8">
+                      <h2 className="text-[22px] sm:text-[28px] font-bold text-[#1a1a1a]">
+                        {dealroom.language === 'de' ? 'Unsere Produkte' : 'Our Products'}
+                      </h2>
+                      <p className="text-base text-[#6b7280] mt-2">
+                        {dealroom.language === 'de'
+                          ? 'Finden Sie das passende Solar-Paket für Ihr Zuhause'
+                          : 'Find the right solar package for your home'}
+                      </p>
+                    </div>
+                  </ScrollReveal>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {[
+                      {
+                        emoji: '\u2600\uFE0F',
+                        name: 'Basis',
+                        price: '6.900',
+                        systemSize: '5 kWp',
+                        storage: '5 kWh',
+                        savings: '~1.300 €/Jahr',
+                        benefits: [
+                          dealroom.language === 'de' ? 'Hocheffiziente Solarmodule' : 'High-efficiency solar panels',
+                          dealroom.language === 'de' ? 'Wechselrichter inkl.' : 'Inverter included',
+                          dealroom.language === 'de' ? 'Montage & Installation' : 'Assembly & installation',
+                          dealroom.language === 'de' ? '25 Jahre Garantie' : '25-year warranty',
+                        ],
+                        highlighted: false,
+                      },
+                      {
+                        emoji: '\u26A1',
+                        name: 'Comfort',
+                        price: '11.500',
+                        systemSize: '10 kWp',
+                        storage: '10 kWh',
+                        savings: '~2.000 €/Jahr',
+                        badge: dealroom.language === 'de' ? 'Beliebt' : 'Popular',
+                        benefits: [
+                          dealroom.language === 'de' ? 'Premium Solarmodule' : 'Premium solar panels',
+                          dealroom.language === 'de' ? 'Hybrid-Wechselrichter' : 'Hybrid inverter',
+                          dealroom.language === 'de' ? 'Batteriespeicher 10 kWh' : '10 kWh battery storage',
+                          dealroom.language === 'de' ? 'Smart-Home Integration' : 'Smart home integration',
+                          dealroom.language === 'de' ? 'Montage & Installation' : 'Assembly & installation',
+                        ],
+                        highlighted: true,
+                      },
+                      {
+                        emoji: '\uD83C\uDFC6',
+                        name: 'Premium',
+                        price: '17.500',
+                        systemSize: '15 kWp',
+                        storage: '15 kWh',
+                        savings: '~2.500 €/Jahr',
+                        benefits: [
+                          dealroom.language === 'de' ? 'High-End Solarmodule' : 'High-end solar panels',
+                          dealroom.language === 'de' ? 'Hybrid-Wechselrichter' : 'Hybrid inverter',
+                          dealroom.language === 'de' ? 'Batteriespeicher 15 kWh' : '15 kWh battery storage',
+                          dealroom.language === 'de' ? 'Wallbox f\u00FCr E-Auto' : 'EV charging wallbox',
+                          dealroom.language === 'de' ? 'Energiemanagement-System' : 'Energy management system',
+                        ],
+                        highlighted: false,
+                      },
+                    ].map((pkg, i) => (
+                      <ScrollReveal key={i} delay={i * 0.1}>
+                        <div
+                          className="relative bg-white rounded-2xl border-2 shadow-sm p-6 sm:p-8 flex flex-col h-full"
+                          style={{
+                            borderColor: pkg.highlighted ? brandColor : '#e5e7eb',
+                          }}
+                        >
+                          {pkg.badge && (
+                            <div
+                              className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-xs font-bold text-white"
+                              style={{ backgroundColor: brandColor }}
+                            >
+                              {pkg.badge}
+                            </div>
+                          )}
+                          <div className="text-center mb-4">
+                            <span className="text-4xl">{pkg.emoji}</span>
+                            <h3 className="text-xl font-bold text-[#1a1a1a] mt-2">{pkg.name}</h3>
+                            <p className="text-2xl sm:text-3xl font-bold mt-2" style={{ color: brandColor }}>
+                              Ab {pkg.price} €
+                            </p>
+                          </div>
+
+                          <div className="space-y-2 mb-4 text-sm text-[#6b7280]">
+                            <div className="flex justify-between py-1.5 border-b border-[#f0f0f0]">
+                              <span>{dealroom.language === 'de' ? 'Anlagengr\u00F6\u00DFe' : 'System size'}</span>
+                              <span className="font-semibold text-[#1a1a1a]">{pkg.systemSize}</span>
+                            </div>
+                            <div className="flex justify-between py-1.5 border-b border-[#f0f0f0]">
+                              <span>{dealroom.language === 'de' ? 'Speicher' : 'Storage'}</span>
+                              <span className="font-semibold text-[#1a1a1a]">{pkg.storage}</span>
+                            </div>
+                            <div className="flex justify-between py-1.5 border-b border-[#f0f0f0]">
+                              <span>{dealroom.language === 'de' ? 'J\u00E4hrl. Ersparnis' : 'Annual savings'}</span>
+                              <span className="font-semibold text-emerald-600">{pkg.savings}</span>
+                            </div>
+                          </div>
+
+                          <ul className="space-y-2 mb-6 flex-1">
+                            {pkg.benefits.map((b, j) => (
+                              <li key={j} className="flex items-start gap-2 text-sm text-[#374151]">
+                                <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" style={{ color: brandColor }} />
+                                {b}
+                              </li>
+                            ))}
+                          </ul>
+
+                          <button
+                            onClick={() => handleCta(`product-${pkg.name.toLowerCase()}`)}
+                            className="w-full py-3 rounded-xl font-semibold text-sm transition-all hover:shadow-md active:scale-[0.98] min-h-[48px]"
+                            style={{
+                              backgroundColor: pkg.highlighted ? brandColor : 'transparent',
+                              color: pkg.highlighted ? 'white' : brandColor,
+                              border: pkg.highlighted ? 'none' : `2px solid ${brandColor}`,
+                            }}
+                          >
+                            {dealroom.language === 'de' ? 'Angebot ansehen' : 'View offer'}
+                            <ArrowRight className="h-4 w-4 inline ml-2" />
+                          </button>
+                        </div>
+                      </ScrollReveal>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
+              {/* ===== SOLAR CALCULATOR (Overview) ===== */}
+              <section className="bg-white">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+                  <ScrollReveal>
+                    <SolarCalculator
+                      brandColor={brandColor}
+                      customerType={dealroom.customer_type || 'private'}
+                      language={dealroom.language}
+                    />
+                  </ScrollReveal>
+                </div>
+              </section>
+
               {/* ===== 4. CONCRETE BENEFITS - Animated Numbers (quiet) ===== */}
               {content.concrete_benefits && content.concrete_benefits.length > 0 && (
                 <section className="bg-[#fafafa]">
@@ -872,69 +1000,6 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                 </section>
               )}
 
-              {/* ===== 6. SOCIAL PROOF INLINE (quiet) ===== */}
-              {references.length > 0 && (
-                <section className="bg-white">
-                  <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-                    <ScrollReveal>
-                      <div className="text-center mb-8">
-                        <Star className="h-6 w-6 mx-auto mb-3" style={{ color: brandColor }} />
-                        <h2 className="text-[22px] sm:text-[28px] font-bold text-[#1a1a1a]">{tr.references.title}</h2>
-                      </div>
-                    </ScrollReveal>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-3xl mx-auto">
-                      {references.slice(0, 4).map((ref, i) => (
-                        <ScrollReveal key={ref.id} delay={i * 0.1}>
-                          <div className="bg-white rounded-2xl p-5 sm:p-6 border border-[#e5e7eb] shadow-sm">
-                            <div className="flex items-center gap-3 mb-3">
-                              {ref.logo_url && (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img src={ref.logo_url} alt={ref.client_company} className="h-10 object-contain" />
-                              )}
-                              <div>
-                                <p className="font-semibold text-[#1a1a1a] text-sm">{ref.client_company}</p>
-                                <p className="text-xs text-[#6b7280]">{ref.client_name}</p>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-2 mb-3">
-                              <div className="flex">
-                                {[...Array(5)].map((_, j) => (
-                                  <Star key={j} className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                                ))}
-                              </div>
-                              <span className="text-[10px] font-medium text-emerald-600 flex items-center gap-0.5">
-                                <ShieldCheck className="h-3 w-3" /> Verifiziert
-                              </span>
-                            </div>
-                            {ref.quote && (
-                              <p className="text-[#6b7280] italic text-sm leading-relaxed">
-                                &ldquo;{ref.quote}&rdquo;
-                              </p>
-                            )}
-                            {ref.result_summary && (
-                              <div className="mt-3 inline-block px-3 py-1 rounded-full text-xs font-semibold text-white" style={{ backgroundColor: brandColor }}>
-                                {ref.result_summary}
-                              </div>
-                            )}
-                          </div>
-                        </ScrollReveal>
-                      ))}
-                    </div>
-                    {references.length > 4 && (
-                      <div className="text-center mt-6">
-                        <button
-                          onClick={() => switchTab('references')}
-                          className="text-sm font-medium hover:underline min-h-[44px]"
-                          style={{ color: brandColor }}
-                        >
-                          {dealroom.language === 'de' ? 'Alle Referenzen ansehen →' : 'View all references →'}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </section>
-              )}
-
               {/* ===== 7. KPI NUMBERS - Animated CountUp (quiet) ===== */}
               <section className="bg-[#fafafa]">
                 <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
@@ -953,87 +1018,6 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                       </ScrollReveal>
                     ))}
                   </div>
-                </div>
-              </section>
-
-              <SectionDivider />
-
-              {/* ===== 8. ABOUT US with Marquee (quiet) ===== */}
-              <section className="bg-white">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-                  <ScrollReveal>
-                    <div className="rounded-2xl overflow-hidden border border-[#e5e7eb] shadow-sm bg-white">
-                      <div className="grid grid-cols-1 lg:grid-cols-2">
-                        <div className="p-6 sm:p-8 lg:p-10" style={{ backgroundColor: brandColor + '06' }}>
-                          <h3 className="text-[18px] sm:text-[22px] font-bold text-[#1a1a1a] mb-4">
-                            {tr.about.title}
-                          </h3>
-                          <p className="text-sm text-[#6b7280] leading-relaxed mb-6">
-                            {tr.about.description}
-                          </p>
-                          <div className="flex flex-wrap gap-2">
-                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#e5e7eb] text-xs font-medium text-[#6b7280]">
-                              <Shield className="h-3.5 w-3.5" style={{ color: brandColor }} />
-                              SIGNAL IDUNA
-                            </div>
-                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#e5e7eb] text-xs font-medium text-[#6b7280]">
-                              <Award className="h-3.5 w-3.5" style={{ color: brandColor }} />
-                              Stiftung Warentest
-                            </div>
-                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#e5e7eb] text-xs font-medium text-[#6b7280]">
-                              <Star className="h-3.5 w-3.5" style={{ color: brandColor }} />
-                              Focus Money
-                            </div>
-                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#e5e7eb] text-xs font-medium text-[#6b7280]">
-                              <CheckCircle2 className="h-3.5 w-3.5" style={{ color: brandColor }} />
-                              DISQ Rating
-                            </div>
-                          </div>
-                        </div>
-                        <div className="p-4 sm:p-6 lg:p-8 flex items-center overflow-hidden relative">
-                          <div className="absolute left-0 top-0 bottom-0 w-12 sm:w-16 bg-gradient-to-r from-white to-transparent z-10 lg:from-[#fafafa]" />
-                          <div className="flex gap-4 animate-marquee">
-                            {[...teamImages, ...teamImages].map((img, i) => (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
-                                key={i}
-                                src={img.src}
-                                alt={img.alt}
-                                className="rounded-xl object-cover flex-shrink-0 h-[220px] sm:h-[280px] w-[300px] sm:w-[380px]"
-                              />
-                            ))}
-                          </div>
-                          <div className="absolute right-0 top-0 bottom-0 w-12 sm:w-16 bg-gradient-to-l from-white to-transparent z-10 lg:from-[#fafafa]" />
-                        </div>
-                      </div>
-                    </div>
-                  </ScrollReveal>
-                </div>
-              </section>
-
-              <SectionDivider />
-
-              {/* ===== 9. PARTNER LOGOS (Marquee) ===== */}
-              <section>
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-                  <ScrollReveal>
-                    <div className="rounded-2xl py-8 px-6 sm:px-10 overflow-hidden" style={{ backgroundColor: '#11485e' }}>
-                      <p className="text-center text-xs sm:text-sm font-medium text-white/60 uppercase tracking-wider mb-6">
-                        {tr.sections.partnersTitle}
-                      </p>
-                      <Marquee pauseOnHover className="[--duration:25s]">
-                        {partnerLogos.map((logo, i) => (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            key={i}
-                            src={logo.src}
-                            alt={logo.alt}
-                            className="h-16 sm:h-20 object-contain opacity-70 hover:opacity-100 transition-opacity duration-300 brightness-0 invert mx-6"
-                          />
-                        ))}
-                      </Marquee>
-                    </div>
-                  </ScrollReveal>
                 </div>
               </section>
 
@@ -1096,7 +1080,19 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
         <div className={activeTab === 'offer' ? '' : 'hidden'}>
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
 
-            {/* 1. PandaDoc Embed */}
+            {/* Offer Packages */}
+            {dealroom.offers_data?.offers && dealroom.offers_data.offers.length > 0 && (
+              <section className="fade-in-up mb-12">
+                <OfferPackages
+                  offers={dealroom.offers_data.offers}
+                  brandColor={brandColor}
+                  language={dealroom.language}
+                  onSelect={(offer) => trackEvent(dealroom.id, 'cta_click', { offer_name: offer.name, offer_price: offer.price })}
+                />
+              </section>
+            )}
+
+            {/* PandaDoc Embed */}
             <div className="text-center mb-6 fade-in-up">
               <h3 className="text-[18px] sm:text-[22px] font-semibold text-[#1a1a1a] mb-1">
                 {tr.offer.title}
@@ -1150,14 +1146,27 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
               </div>
             )}
 
-            {/* 3. Awards + Social Proof */}
+            {/* 3. Trust Badges */}
             <div className="fade-in-up mt-8 mb-4">
-              <div className="flex items-center justify-center gap-5 sm:gap-7 flex-wrap">
-                {/* eslint-disable @next/next/no-img-element */}
-                <img src="/images/awards/disq-rating.jpg" alt="DISQ Preisträger" className="h-14 sm:h-16 object-contain" />
-                <img src="/images/awards/focus-money.webp" alt="Focus Money" className="h-14 sm:h-16 object-contain" />
-                <img src="/images/awards/stiftung-warentest.webp" alt="Stiftung Warentest" className="h-14 sm:h-16 object-contain" />
-                {/* eslint-enable @next/next/no-img-element */}
+              <div className="flex items-center justify-center gap-6 sm:gap-8 flex-wrap">
+                <div className="flex flex-col items-center gap-1">
+                  <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: `${brandColor}15` }}>
+                    <ShieldCheck className="h-6 w-6" style={{ color: brandColor }} />
+                  </div>
+                  <span className="text-[10px] text-[#6b7280] font-medium">TÜV-zertifiziert</span>
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: `${brandColor}15` }}>
+                    <Award className="h-6 w-6" style={{ color: brandColor }} />
+                  </div>
+                  <span className="text-[10px] text-[#6b7280] font-medium">Qualitätsgeprüft</span>
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{ backgroundColor: `${brandColor}15` }}>
+                    <Star className="h-6 w-6" style={{ color: brandColor }} />
+                  </div>
+                  <span className="text-[10px] text-[#6b7280] font-medium">Top-Bewertung</span>
+                </div>
               </div>
               <SocialProof />
             </div>
@@ -1221,10 +1230,10 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
                   },
                   {
                     icon: Rocket,
-                    title: dealroom.language === 'de' ? 'Versicherungsschutz startet' : 'Coverage begins',
+                    title: dealroom.language === 'de' ? 'Ihre Solaranlage geht ans Netz' : 'Your solar system goes live',
                     desc: dealroom.language === 'de'
-                      ? 'Ihr individueller Versicherungsschutz tritt in Kraft – Sie sind ab sofort bestens abgesichert.'
-                      : 'Your individual insurance coverage takes effect – you are fully protected from now on.',
+                      ? 'Nach der Installation wird Ihre Anlage in Betrieb genommen – Sie produzieren ab sofort Ihren eigenen Strom.'
+                      : 'After installation, your system goes live – you start producing your own electricity right away.',
                   },
                 ].map((item, i) => (
                   <div key={i} className="flex items-start gap-4">
@@ -1243,140 +1252,10 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
               </div>
             </div>
 
-            {/* 5. Partner Logos (Marquee) */}
-            {partnerLogos.length > 0 && (
-              <div className="fade-in-up mt-12">
-                <div className="rounded-2xl py-8 px-6 sm:px-10 overflow-hidden" style={{ backgroundColor: '#11485e' }}>
-                  <p className="text-center text-xs sm:text-sm font-medium text-white/60 uppercase tracking-wider mb-6">
-                    {tr.sections.partnersTitle}
-                  </p>
-                  <Marquee pauseOnHover className="[--duration:25s]">
-                    {partnerLogos.map((logo, i) => (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img key={i} src={logo.src} alt={logo.alt} className="h-16 sm:h-20 object-contain opacity-70 hover:opacity-100 transition-opacity duration-300 brightness-0 invert mx-6" />
-                    ))}
-                  </Marquee>
-                </div>
-              </div>
-            )}
 
           </div>
         </div>
 
-        {/* ==================== REFERENCES TAB ==================== */}
-        <div className={activeTab === 'references' ? '' : 'hidden'}>
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
-            <div className="text-center mb-8 sm:mb-10 fade-in-up">
-              <h2 className="text-[22px] sm:text-[28px] font-bold text-[#1a1a1a] mb-2">
-                {tr.references.title}
-              </h2>
-              <p className="text-[#6b7280]">{tr.references.subtitle}</p>
-            </div>
-            {references.length === 0 ? (
-              <div className="text-center py-8 sm:py-10 text-[#6b7280]">
-                <Star className="h-12 w-12 mx-auto mb-4 text-[#d1d5db]" />
-                <p>{dealroom.language === 'de' ? 'Referenzen werden in Kürze hinzugefügt.' : 'References will be added shortly.'}</p>
-              </div>
-            ) : (
-              <div className="space-y-6 sm:space-y-8">
-                {references.map((ref) => (
-                  <div
-                    key={ref.id}
-                    className="fade-in-up rounded-2xl bg-white border border-[#e5e7eb] shadow-sm overflow-hidden"
-                  >
-                    <div className="flex flex-col-reverse lg:grid lg:grid-cols-2">
-                      <div className="bg-[#fafafa] flex items-center justify-center min-h-[240px] sm:min-h-[280px]">
-                        {ref.video_url ? (
-                          <div className="w-full h-full">
-                            <iframe
-                              src={getVideoEmbedUrl(ref.video_url) || ''}
-                              className="w-full h-full min-h-[240px] sm:min-h-[280px]"
-                              allowFullScreen
-                            />
-                          </div>
-                        ) : ref.image_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={ref.image_url} alt={ref.client_company} className="w-full h-full object-cover min-h-[240px] sm:min-h-[280px]" />
-                        ) : (
-                          <div className="flex flex-col items-center justify-center p-8 text-center">
-                            <p className="text-base sm:text-lg font-semibold text-[#1a1a1a]">{ref.client_company}</p>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="p-5 sm:p-6 lg:p-8 flex flex-col justify-center">
-                        <div className="flex items-center gap-3 mb-3">
-                          {ref.logo_url && (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={ref.logo_url} alt={ref.client_company} className="h-10 object-contain" />
-                          )}
-                          <div>
-                            <p className="font-bold text-[#1a1a1a]">{ref.client_company}</p>
-                            <p className="text-sm text-[#6b7280]">{ref.client_name}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 mb-4">
-                          <div className="flex">
-                            {[...Array(5)].map((_, i) => (
-                              <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
-                            ))}
-                          </div>
-                          <span className="text-xs font-medium text-emerald-600 flex items-center gap-0.5">
-                            <ShieldCheck className="h-3.5 w-3.5" /> Verifiziert
-                          </span>
-                        </div>
-
-                        {ref.quote && (
-                          <blockquote className="text-base sm:text-lg italic leading-relaxed pl-4 border-l-4 mb-5" style={{ borderColor: brandColor + '40', color: brandColor }}>
-                            &ldquo;{ref.quote}&rdquo;
-                          </blockquote>
-                        )}
-
-                        <div className="space-y-3">
-                          {ref.situation_text && (
-                            <div className="flex items-start gap-3">
-                              <div className="h-7 w-7 rounded-lg bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
-                                <FileText className="h-3.5 w-3.5 text-red-500" />
-                              </div>
-                              <div>
-                                <p className="text-xs font-semibold uppercase tracking-wider text-[#9ca3af] mb-0.5">{tr.references.situation}</p>
-                                <p className="text-sm text-[#6b7280]">{ref.situation_text}</p>
-                              </div>
-                            </div>
-                          )}
-                          {ref.method_text && (
-                            <div className="flex items-start gap-3">
-                              <div className="h-7 w-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5" style={{ backgroundColor: brandColor + '12' }}>
-                                <Lightbulb className="h-3.5 w-3.5" style={{ color: brandColor }} />
-                              </div>
-                              <div>
-                                <p className="text-xs font-semibold uppercase tracking-wider text-[#9ca3af] mb-0.5">{tr.references.method}</p>
-                                <p className="text-sm text-[#6b7280]">{ref.method_text}</p>
-                              </div>
-                            </div>
-                          )}
-                          {ref.result_summary && (
-                            <div className="flex items-start gap-3">
-                              <div className="h-7 w-7 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0 mt-0.5">
-                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                              </div>
-                              <div>
-                                <p className="text-xs font-semibold uppercase tracking-wider text-[#9ca3af] mb-0.5">{tr.references.result}</p>
-                                <span className="inline-block px-3 py-1 rounded-full text-sm font-semibold text-white" style={{ backgroundColor: brandColor }}>
-                                  {ref.result_summary}
-                                </span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
       </main>
 
       {/* Footer */}
@@ -1385,7 +1264,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4 text-xs text-[#6b7280]">
             <div className="flex items-center gap-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/images/logo-blue.svg" alt="Gündesli & Kollegen" className="h-5 object-contain" />
+              <img src="/images/logo-blue.svg" alt="Solarheld" className="h-5 object-contain" />
               <span className="font-medium">{tr.footer.copyright}</span>
             </div>
             <div className="flex items-center gap-3">
@@ -1393,18 +1272,15 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, refer
               <span>{tr.footer.address}</span>
             </div>
             <div className="flex items-center gap-4">
-              <a href="tel:02261/5016320" className="hover:underline min-h-[44px] flex items-center">02261/5016320</a>
-              <a href="mailto:info@guendesliundkollegen.de" className="hover:underline min-h-[44px] flex items-center">info@guendesliundkollegen.de</a>
+              <a href="mailto:info@solarheld.de" className="hover:underline min-h-[44px] flex items-center">info@solarheld.de</a>
             </div>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mt-4 text-xs text-[#9ca3af]">
-            <span>Bezirksdirektion der SIGNAL IDUNA Gruppe</span>
-            <span className="hidden sm:inline">|</span>
-            <a href="https://guendesliundkollegen.de/impressum" target="_blank" rel="noopener noreferrer" className="hover:underline min-h-[44px] flex items-center">
+            <a href="https://solarheld.de/impressum" target="_blank" rel="noopener noreferrer" className="hover:underline min-h-[44px] flex items-center">
               {tr.footer.imprint}
             </a>
             <span className="hidden sm:inline">|</span>
-            <a href="https://guendesliundkollegen.de/datenschutz" target="_blank" rel="noopener noreferrer" className="hover:underline min-h-[44px] flex items-center">
+            <a href="https://solarheld.de/datenschutz" target="_blank" rel="noopener noreferrer" className="hover:underline min-h-[44px] flex items-center">
               {tr.footer.privacy}
             </a>
             <span className="hidden sm:inline">|</span>

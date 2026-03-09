@@ -71,7 +71,7 @@ const statusConfig: Record<string, { label: string; color: string; dotColor: str
 function CollapsibleSection({
   title,
   icon: Icon,
-  iconColor = 'text-[#11485e]',
+  iconColor = 'text-[#E97E1C]',
   status,
   summary,
   defaultOpen = false,
@@ -173,13 +173,10 @@ export default function EditDealroomPage() {
 
   useEffect(() => {
     const fetchDealroom = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
       const [{ data }, { data: members }, { data: adminUser }, { data: docs }] = await Promise.all([
         supabase.from('dealrooms').select('*').eq('id', params.id).single(),
         supabase.from('team_members').select('*').eq('is_active', true).order('name'),
-        supabase.from('admin_users').select('name').eq('id', user.id).single(),
+        supabase.from('admin_users').select('name').limit(1).single(),
         supabase.from('dealroom_documents').select('*').eq('dealroom_id', params.id).order('sort_order'),
       ]);
       if (docs) setDocuments(docs);
@@ -404,12 +401,10 @@ export default function EditDealroomPage() {
 
   const handleDuplicate = async () => {
     if (!dealroom) return;
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
 
     const slug = nanoid(16);
     const { data, error } = await supabase.from('dealrooms').insert({
-      admin_id: user.id,
+      admin_id: null,
       slug,
       status: 'draft',
       client_name: '',
@@ -680,7 +675,7 @@ export default function EditDealroomPage() {
                     <FileUp className="h-3 w-3" />
                     Dokumente
                   </Label>
-                  <label className={`text-xs text-[#11485e] font-medium flex items-center gap-1 ${uploadingDoc ? 'opacity-50' : 'cursor-pointer hover:underline'}`}>
+                  <label className={`text-xs text-[#E97E1C] font-medium flex items-center gap-1 ${uploadingDoc ? 'opacity-50' : 'cursor-pointer hover:underline'}`}>
                     {uploadingDoc ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
                     {uploadingDoc ? 'Lädt...' : 'Hochladen'}
                     <input
@@ -810,8 +805,8 @@ export default function EditDealroomPage() {
                 <div className="space-y-2">
                   {content.situation_points.map((point, i) => (
                     <div key={i} className="flex items-center gap-2">
-                      <div className="shrink-0 h-8 w-8 rounded-lg bg-[#11485e]/10 flex items-center justify-center">
-                        <DynamicIcon name={point.icon} className="h-4 w-4 text-[#11485e]" />
+                      <div className="shrink-0 h-8 w-8 rounded-lg bg-[#E97E1C]/10 flex items-center justify-center">
+                        <DynamicIcon name={point.icon} className="h-4 w-4 text-[#E97E1C]" />
                       </div>
                       <Input
                         value={point.text}
@@ -923,9 +918,9 @@ export default function EditDealroomPage() {
               >
                 <div className="space-y-3">
                   {content.process_steps.map((step, i) => (
-                    <div key={i} className="bg-[#f8fafb] border border-[#e7eef1] p-3 rounded-lg space-y-2">
+                    <div key={i} className="bg-[#f8fafb] border border-[#FEF3E2] p-3 rounded-lg space-y-2">
                       <div className="flex items-center gap-2">
-                        <span className="h-6 w-6 rounded-full bg-[#11485e] text-white text-xs flex items-center justify-center font-semibold shrink-0">
+                        <span className="h-6 w-6 rounded-full bg-[#E97E1C] text-white text-xs flex items-center justify-center font-semibold shrink-0">
                           {step.step}
                         </span>
                         <Input
@@ -1028,7 +1023,7 @@ export default function EditDealroomPage() {
             <button
               onClick={undo}
               disabled={historyIndexRef.current <= 0}
-              className="h-8 w-8 flex items-center justify-center rounded-lg text-[#6b7280] hover:text-[#11485e] hover:bg-[#e7eef1] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="h-8 w-8 flex items-center justify-center rounded-lg text-[#6b7280] hover:text-[#E97E1C] hover:bg-[#FEF3E2] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               title="Rückgängig (Cmd+Z)"
             >
               <Undo2 size={16} />
@@ -1036,7 +1031,7 @@ export default function EditDealroomPage() {
             <button
               onClick={redo}
               disabled={historyIndexRef.current >= historyRef.current.length - 1}
-              className="h-8 w-8 flex items-center justify-center rounded-lg text-[#6b7280] hover:text-[#11485e] hover:bg-[#e7eef1] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="h-8 w-8 flex items-center justify-center rounded-lg text-[#6b7280] hover:text-[#E97E1C] hover:bg-[#FEF3E2] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               title="Wiederholen (Cmd+Shift+Z)"
             >
               <Redo2 size={16} />
@@ -1085,7 +1080,7 @@ export default function EditDealroomPage() {
         clientName={clientName}
         clientCompany={clientCompany}
         clientEmail={clientEmail}
-        contactName={teamMembers.find(m => m.id === assignedMemberId)?.name || 'Gündesli & Kollegen'}
+        contactName={teamMembers.find(m => m.id === assignedMemberId)?.name || 'Solarheld'}
       />
 
       <ConfirmDialog

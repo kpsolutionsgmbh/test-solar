@@ -171,7 +171,7 @@ export async function GET(req: NextRequest) {
       try {
         if (resend) {
           await resend.emails.send({
-            from: `Gündesli & Kollegen <${process.env.RESEND_FROM_DOMAIN || 'onboarding@resend.dev'}>`,
+            from: `Solarheld <${process.env.RESEND_FROM_DOMAIN || 'onboarding@resend.dev'}>`,
             to: dealroom.client_email,
             subject: emailSubject,
             html: htmlBody,
@@ -215,23 +215,22 @@ function buildFlowEmailHtml(body: string, dealroomUrl: string, unsubscribeUrl: s
   return `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 24px;">
       <div style="margin-bottom: 32px;">
-        <img src="${baseUrl}/images/logo-blue.svg" alt="Gündesli & Kollegen" style="height: 28px;" />
+        <img src="${baseUrl}/images/logo-blue.svg" alt="Solarheld" style="height: 28px;" />
       </div>
       <div style="white-space: pre-line; font-size: 15px; line-height: 1.6; color: #374151;">
         ${body.replace(/\n/g, '<br/>')}
       </div>
       <div style="margin-top: 32px; text-align: center;">
-        <a href="${dealroomUrl}" style="display: inline-block; padding: 14px 32px; background-color: #11485e; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px;">
+        <a href="${dealroomUrl}" style="display: inline-block; padding: 14px 32px; background-color: #E97E1C; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px;">
           Jetzt Angebot ansehen
         </a>
       </div>
       <div style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #9ca3af; text-align: center;">
-        Gündesli und Kollegen GmbH · Vollmerhauser Straße 47, Gummersbach<br/>
-        Bezirksdirektion der SIGNAL IDUNA Gruppe
+        Solarheld GmbH
       </div>
       <p style="font-size: 11px; color: #999; margin-top: 32px; text-align: center;">
         Sie erhalten diese E-Mail weil Ihnen ein persönliches Angebot
-        von Gündesli &amp; Kollegen zugesendet wurde.
+        von Solarheld zugesendet wurde.
         <a href="${unsubscribeUrl}" style="color: #999; text-decoration: underline;">Keine weiteren Erinnerungen</a>
       </p>
     </div>

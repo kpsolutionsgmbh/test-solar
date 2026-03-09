@@ -37,7 +37,7 @@ export function EmailSendModal({
   const [sending, setSending] = useState(false);
   const [email, setEmail] = useState(clientEmail);
   const [subject, setSubject] = useState(
-    `Ihr persönliches Angebot – Gündesli & Kollegen`
+    `Ihr persönliches Angebot – Solarheld`
   );
 
   // Generate default body based on client data
@@ -52,7 +52,7 @@ Bei Fragen stehe ich Ihnen jederzeit zur Verfügung.
 
 Mit freundlichen Grüßen
 ${contactName}
-Gündesli & Kollegen`;
+Solarheld`;
 
   const [body, setBody] = useState(defaultBody);
 
@@ -60,7 +60,7 @@ Gündesli & Kollegen`;
   useEffect(() => {
     if (open) {
       setEmail(clientEmail);
-      setSubject(`Ihr persönliches Angebot – Gündesli & Kollegen`);
+      setSubject(`Ihr persönliches Angebot – Solarheld`);
       setBody(`Sehr geehrte/r ${clientName},
 
 vielen Dank für unser Gespräch. Wie besprochen habe ich Ihr persönliches Angebot für ${clientCompany} zusammengestellt.
@@ -72,7 +72,7 @@ Bei Fragen stehe ich Ihnen jederzeit zur Verfügung.
 
 Mit freundlichen Grüßen
 ${contactName}
-Gündesli & Kollegen`);
+Solarheld`);
     }
   }, [open, clientEmail, clientName, clientCompany, contactName]);
 

@@ -48,10 +48,7 @@ export function NotificationBell() {
 
   // Fetch recent events on mount
   const fetchRecent = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    // Get recent tracking events for this admin's dealrooms
+    // Get recent tracking events for dealrooms
     const { data: dealrooms } = await supabase
       .from('dealrooms')
       .select('id, client_company, client_name');

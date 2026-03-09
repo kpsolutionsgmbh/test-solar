@@ -56,9 +56,6 @@ export default function CustomersPage() {
   const [formNotes, setFormNotes] = useState('');
 
   const fetchCustomers = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
     const [{ data }, { data: dealrooms }, { data: members }] = await Promise.all([
       supabase.from('customers').select('*').order('company'),
       supabase.from('dealrooms').select('customer_id, status').not('customer_id', 'is', null),
@@ -95,11 +92,8 @@ export default function CustomersPage() {
   };
 
   const handleSave = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
     const { error } = await supabase.from('customers').insert({
-      admin_id: user.id,
+      admin_id: null,
       salutation,
       first_name: firstName,
       last_name: lastName,
@@ -185,14 +179,14 @@ export default function CustomersPage() {
             const counts = dealroomCounts[customer.id] || { total: 0, signed: 0 };
             return (
               <Link key={customer.id} href={`/dashboard/customers/${customer.id}`} className="block">
-                <Card className="hover:border-[#11485e]/30 hover:shadow-sm transition-all cursor-pointer">
+                <Card className="hover:border-[#E97E1C]/30 hover:shadow-sm transition-all cursor-pointer">
                   <CardContent className="py-4 px-5 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       {customer.logo_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={customer.logo_url} alt={customer.company} className="h-10 w-10 rounded-lg object-contain" />
                       ) : (
-                        <div className="h-10 w-10 rounded-lg bg-[#e7eef1] flex items-center justify-center text-[#11485e] text-sm font-bold">
+                        <div className="h-10 w-10 rounded-lg bg-[#FEF3E2] flex items-center justify-center text-[#E97E1C] text-sm font-bold">
                           {customer.company.charAt(0)}
                         </div>
                       )}

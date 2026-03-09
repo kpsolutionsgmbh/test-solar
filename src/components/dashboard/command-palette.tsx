@@ -157,11 +157,11 @@ export function CommandPalette() {
                       onMouseEnter={() => setSelectedIndex(currentIndex)}
                       className={`flex w-full items-center gap-3 px-4 py-2 text-sm transition-colors ${
                         isSelected
-                          ? 'bg-[#11485e]/10 text-[#11485e]'
-                          : 'text-[#1a1a1a] hover:bg-[#11485e]/5'
+                          ? 'bg-[#E97E1C]/10 text-[#E97E1C]'
+                          : 'text-[#1a1a1a] hover:bg-[#E97E1C]/5'
                       }`}
                     >
-                      <span className={isSelected ? 'text-[#11485e]' : 'text-[#6b7280]'}>
+                      <span className={isSelected ? 'text-[#E97E1C]' : 'text-[#6b7280]'}>
                         {cmd.icon}
                       </span>
                       {cmd.label}

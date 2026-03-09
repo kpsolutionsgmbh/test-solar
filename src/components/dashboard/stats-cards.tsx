@@ -52,12 +52,12 @@ export function StatsGrid({ total, published, drafts, interactions }: StatsGridP
         label="Gesamt"
         value={total}
         icon={
-          <div className="h-10 w-10 rounded-xl bg-[#11485e]/10 flex items-center justify-center">
-            <svg className="h-5 w-5 text-[#11485e]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>
+          <div className="h-10 w-10 rounded-xl bg-[#E97E1C]/10 flex items-center justify-center">
+            <svg className="h-5 w-5 text-[#E97E1C]" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>
           </div>
         }
-        gradient="bg-gradient-to-br from-[#11485e]/5 to-[#11485e]/10"
-        textColor="text-[#11485e]"
+        gradient="bg-gradient-to-br from-[#E97E1C]/5 to-[#E97E1C]/10"
+        textColor="text-[#E97E1C]"
       />
       <StatCard
         label="Live"

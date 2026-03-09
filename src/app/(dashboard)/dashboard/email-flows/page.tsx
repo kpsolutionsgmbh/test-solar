@@ -1,5 +1,4 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
 import { EmailFlow } from '@/types/database';
 import { Metadata } from 'next';
 import { EmailPageClient } from '@/components/dashboard/email-page-client';
@@ -8,8 +7,6 @@ export const metadata: Metadata = { title: 'E-Mails' };
 
 export default async function EmailFlowsPage() {
   const supabase = createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/login');
 
   const { data: flows } = await supabase
     .from('email_flows')
@@ -53,11 +50,11 @@ export default async function EmailFlowsPage() {
     .in('status', ['published', 'draft'])
     .order('updated_at', { ascending: false });
 
-  // Get admin info for preview
+  // Get admin info for preview (first admin user)
   const { data: adminProfile } = await supabase
     .from('admin_users')
     .select('name, email')
-    .eq('id', user.id)
+    .limit(1)
     .single();
 
   // Normalize relation data (Supabase may return arrays for FK joins)

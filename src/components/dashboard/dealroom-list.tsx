@@ -22,7 +22,7 @@ import { EngagementScore } from '@/components/dashboard/engagement-score';
 const statusConfig: Record<string, { label: string; color: string; dotColor: string }> = {
   draft: { label: 'Entwurf', color: 'bg-[#fafafa] text-[#6b7280] border-[#e5e7eb]', dotColor: 'bg-[#6b7280]' },
   published: { label: 'Live', color: 'bg-emerald-50 text-emerald-700 border-emerald-200', dotColor: 'bg-emerald-500' },
-  signed: { label: 'Signiert', color: 'bg-[#e7eef1] text-[#11485e] border-[#cfdde3]', dotColor: 'bg-[#11485e]' },
+  signed: { label: 'Signiert', color: 'bg-[#FEF3E2] text-[#E97E1C] border-[#FDE5C8]', dotColor: 'bg-[#E97E1C]' },
   inactive: { label: 'Inaktiv', color: 'bg-amber-50 text-amber-700 border-amber-200', dotColor: 'bg-amber-500' },
   archived: { label: 'Archiviert', color: 'bg-[#fafafa] text-[#6b7280] border-[#e5e7eb]', dotColor: 'bg-[#6b7280]' },
 };
@@ -139,7 +139,7 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
               onClick={() => setStatusFilter(opt.value)}
               className={`px-3 py-1.5 rounded-md text-[11px] font-semibold transition-colors duration-75 ${
                 statusFilter === opt.value
-                  ? 'bg-[#11485e] text-white'
+                  ? 'bg-[#E97E1C] text-white'
                   : 'text-[#6b7280] hover:bg-[#fafafa] hover:text-[#1a1a1a]'
               }`}
             >
@@ -151,14 +151,14 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
           <div className="flex items-center gap-0.5 border border-[#e5e7eb] rounded-lg p-0.5">
             <button
               onClick={() => { setViewMode('cards'); localStorage.setItem('dealroom-view-mode', 'cards'); }}
-              className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-[#e7eef1] text-[#11485e]' : 'text-[#9ca3af] hover:text-[#6b7280]'}`}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-[#FEF3E2] text-[#E97E1C]' : 'text-[#9ca3af] hover:text-[#6b7280]'}`}
               title="Karten-Ansicht"
             >
               <LayoutGrid size={14} />
             </button>
             <button
               onClick={() => { setViewMode('list'); localStorage.setItem('dealroom-view-mode', 'list'); }}
-              className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-[#e7eef1] text-[#11485e]' : 'text-[#9ca3af] hover:text-[#6b7280]'}`}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-[#FEF3E2] text-[#E97E1C]' : 'text-[#9ca3af] hover:text-[#6b7280]'}`}
               title="Listen-Ansicht"
             >
               <List size={14} />
@@ -187,7 +187,7 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
           {dealrooms.length === 0 ? (
             <>
               <div className="h-12 w-12 rounded-xl bg-[#f0f5f7] flex items-center justify-center mx-auto mb-4">
-                <PlusCircle className="h-6 w-6 text-[#11485e]" />
+                <PlusCircle className="h-6 w-6 text-[#E97E1C]" />
               </div>
               <p className="text-[15px] font-semibold text-[#1a1a1a]">Noch keine Angebotsräume</p>
               <p className="text-[13px] text-[#6b7280] mt-1 max-w-[320px] mx-auto">
@@ -222,7 +222,7 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
                 className="block"
                 style={{ animationDelay: i < 10 ? `${i * 50}ms` : '0ms', animationFillMode: 'both' }}
               >
-                <div className="group border border-[#e5e7eb] rounded-xl bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-150 hover:border-[#cfdde3] hover:shadow-md">
+                <div className="group border border-[#e5e7eb] rounded-xl bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-150 hover:border-[#FDE5C8] hover:shadow-md">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       <div className="h-9 w-9 rounded-lg bg-[#fafafa] flex items-center justify-center shrink-0">
@@ -230,7 +230,7 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2.5">
-                          <h3 className="text-[14px] font-semibold text-[#1a1a1a] truncate group-hover:text-[#11485e] transition-colors duration-75">
+                          <h3 className="text-[14px] font-semibold text-[#1a1a1a] truncate group-hover:text-[#E97E1C] transition-colors duration-75">
                             {dealroom.client_company}
                           </h3>
                           <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold border shrink-0 ${config.color}`}>
@@ -256,7 +256,7 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
                         <Clock size={14} strokeWidth={1.75} />
                         <span className="text-[11px]">{formatRelativeTime(dealroom.updated_at)}</span>
                       </div>
-                      <ArrowUpRight size={16} strokeWidth={1.75} className="text-[#d1d5db] group-hover:text-[#11485e] transition-colors duration-75" />
+                      <ArrowUpRight size={16} strokeWidth={1.75} className="text-[#d1d5db] group-hover:text-[#E97E1C] transition-colors duration-75" />
                     </div>
                   </div>
                 </div>
@@ -284,7 +284,7 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
                 className="block"
               >
                 <div className="group grid grid-cols-[1fr_1fr_80px_90px_40px] gap-3 px-4 py-3 border-b border-[#f0f0f0] last:border-b-0 hover:bg-[#fafafa] transition-colors items-center">
-                  <span className="text-[13px] font-semibold text-[#1a1a1a] truncate group-hover:text-[#11485e] transition-colors">
+                  <span className="text-[13px] font-semibold text-[#1a1a1a] truncate group-hover:text-[#E97E1C] transition-colors">
                     {dealroom.client_company}
                   </span>
                   <span className="text-[13px] text-[#6b7280] truncate">
@@ -297,7 +297,7 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
                     <span className={`w-1.5 h-1.5 rounded-full ${config.dotColor}`} />
                     {config.label}
                   </span>
-                  <ArrowUpRight size={14} className="text-[#d1d5db] group-hover:text-[#11485e] transition-colors justify-self-end" />
+                  <ArrowUpRight size={14} className="text-[#d1d5db] group-hover:text-[#E97E1C] transition-colors justify-self-end" />
                 </div>
               </Link>
             );

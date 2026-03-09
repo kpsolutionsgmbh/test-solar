@@ -107,6 +107,7 @@ export default function NewDealroomPage() {
   const [clientPhone, setClientPhone] = useState('');
   const [clientAddress, setClientAddress] = useState('');
   const [clientLogoUrl, setClientLogoUrl] = useState('');
+  const [customerType, setCustomerType] = useState<'private' | 'commercial'>('private');
   const [language, setLanguage] = useState<'de' | 'en'>('de');
   const [inputText, setInputText] = useState('');
   const [generatedContent, setGeneratedContent] = useState<DealroomContent | null>(null);
@@ -127,8 +128,6 @@ export default function NewDealroomPage() {
   // Fetch team members and customers on mount
   useEffect(() => {
     const fetchData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
       const [{ data: members }, { data: custs }, { data: tmpls }] = await Promise.all([
         supabase.from('team_members').select('*').eq('is_active', true).order('name'),
         supabase.from('customers').select('*').order('company'),
@@ -235,6 +234,7 @@ export default function NewDealroomPage() {
           clientName,
           clientCompany,
           language,
+          customerType,
         }),
       });
       const data = await res.json();
@@ -252,9 +252,6 @@ export default function NewDealroomPage() {
   const publishDealroom = async (asDraft = false) => {
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
       let customerId: string | null = null;
 
       if (customerSource === 'existing' && selectedCustomerId) {
@@ -263,7 +260,7 @@ export default function NewDealroomPage() {
         const { data: newCustomer, error: custError } = await supabase
           .from('customers')
           .insert({
-            admin_id: user.id,
+            admin_id: null,
             salutation: clientSalutation,
             first_name: clientFirstName,
             last_name: clientLastName,
@@ -273,7 +270,6 @@ export default function NewDealroomPage() {
             phone: clientPhone || null,
             address: clientAddress || null,
             logo_url: clientLogoUrl || null,
-            assigned_member_id: assignedMemberId && assignedMemberId !== 'none' ? assignedMemberId : null,
           })
           .select()
           .single();
@@ -287,7 +283,7 @@ export default function NewDealroomPage() {
 
       const slug = nanoid(16);
       const { data: newDealroom, error } = await supabase.from('dealrooms').insert({
-        admin_id: user.id,
+        admin_id: null,
         slug,
         status: asDraft ? 'draft' : 'published',
         client_name: clientName,
@@ -304,6 +300,7 @@ export default function NewDealroomPage() {
         generated_content: generatedContent,
         language,
         assigned_member_id: assignedMemberId && assignedMemberId !== 'none' ? assignedMemberId : null,
+        customer_type: customerType,
         published_at: asDraft ? null : new Date().toISOString(),
       }).select('id').single();
 
@@ -364,10 +361,10 @@ export default function NewDealroomPage() {
           </p>
         </div>
 
-        <div className="bg-[#f0f5f7] rounded-xl p-4 mb-6 max-w-lg w-full">
+        <div className="bg-[#FFF8F0] rounded-xl p-4 mb-6 max-w-lg w-full">
           <p className="text-xs text-[#6b7280] mb-2">Link zum Angebotsraum:</p>
           <div className="flex items-center gap-2">
-            <code className="flex-1 text-sm text-[#11485e] bg-white rounded-lg px-3 py-2 border border-[#e5e7eb] truncate">
+            <code className="flex-1 text-sm text-[#E97E1C] bg-white rounded-lg px-3 py-2 border border-[#e5e7eb] truncate">
               {publishedUrl}
             </code>
             <Button size="sm" variant="outline" onClick={copyLink}>
@@ -416,8 +413,8 @@ export default function NewDealroomPage() {
                   i < currentStepIndex
                     ? 'bg-emerald-500 text-white'
                     : i === currentStepIndex
-                    ? 'bg-[#11485e] text-white'
-                    : 'bg-[#e7eef1] text-[#6b7280]'
+                    ? 'bg-[#E97E1C] text-white'
+                    : 'bg-[#FEF3E2] text-[#6b7280]'
                 }`}
               >
                 {i < currentStepIndex ? <Check className="h-4 w-4" /> : i + 1}
@@ -431,9 +428,9 @@ export default function NewDealroomPage() {
             </div>
           ))}
         </div>
-        <div className="w-full bg-[#e7eef1] rounded-full h-1.5">
+        <div className="w-full bg-[#FEF3E2] rounded-full h-1.5">
           <div
-            className="bg-[#11485e] h-1.5 rounded-full transition-all duration-300"
+            className="bg-[#E97E1C] h-1.5 rounded-full transition-all duration-300"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
@@ -444,7 +441,7 @@ export default function NewDealroomPage() {
       {generating && (
         <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="text-center">
-            <Loader2 className="h-10 w-10 text-[#11485e] animate-spin mx-auto mb-4" />
+            <Loader2 className="h-10 w-10 text-[#E97E1C] animate-spin mx-auto mb-4" />
             <h2 className="text-lg font-semibold text-[#1a1a1a] mb-1">Angebot wird erstellt...</h2>
             <p className="text-sm text-[#6b7280]">Die KI erstellt den Inhalt für Ihren Angebotsraum. Das dauert ca. 15 Sekunden.</p>
           </div>
@@ -458,6 +455,36 @@ export default function NewDealroomPage() {
             <div>
               <h2 className="text-lg font-semibold text-[#1a1a1a] mb-1">Für wen ist der Angebotsraum?</h2>
               <HelpText>Geben Sie die Daten Ihres Kunden ein. Diese werden im Angebotsraum angezeigt.</HelpText>
+            </div>
+
+            {/* Customer Type Selection */}
+            <div className="space-y-2">
+              <Label>Kundentyp</Label>
+              <div className="flex gap-3">
+                {([
+                  { value: 'private' as const, label: 'Privatkunde', desc: 'Eigenheim / Haushalt', icon: '🏠' },
+                  { value: 'commercial' as const, label: 'Gewerbekunde', desc: 'Unternehmen / Gewerbe', icon: '🏢' },
+                ] as const).map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setCustomerType(opt.value)}
+                    className={`flex-1 flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
+                      customerType === opt.value
+                        ? 'border-[#E97E1C] bg-[#E97E1C]/5'
+                        : 'border-[#e5e7eb] hover:border-[#E97E1C]/30'
+                    }`}
+                  >
+                    <span className="text-2xl">{opt.icon}</span>
+                    <div className="text-left">
+                      <p className={`text-sm font-semibold ${customerType === opt.value ? 'text-[#E97E1C]' : 'text-[#1a1a1a]'}`}>
+                        {opt.label}
+                      </p>
+                      <p className="text-xs text-[#6b7280]">{opt.desc}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
 
             {customers.length > 0 && (
@@ -479,7 +506,7 @@ export default function NewDealroomPage() {
                       }}
                       className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
                         customerSource === val
-                          ? 'border-[#11485e] bg-[#11485e]/5 text-[#11485e]'
+                          ? 'border-[#E97E1C] bg-[#E97E1C]/5 text-[#E97E1C]'
                           : 'border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]'
                       }`}
                     >
@@ -739,7 +766,7 @@ export default function NewDealroomPage() {
                 <button
                   onClick={() => setLanguage('de')}
                   className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                    language === 'de' ? 'bg-[#11485e] text-white' : 'bg-[#f0f5f7] text-[#6b7280] hover:text-[#1a1a1a]'
+                    language === 'de' ? 'bg-[#E97E1C] text-white' : 'bg-[#FFF8F0] text-[#6b7280] hover:text-[#1a1a1a]'
                   }`}
                 >
                   Deutsch
@@ -747,7 +774,7 @@ export default function NewDealroomPage() {
                 <button
                   onClick={() => setLanguage('en')}
                   className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                    language === 'en' ? 'bg-[#11485e] text-white' : 'bg-[#f0f5f7] text-[#6b7280] hover:text-[#1a1a1a]'
+                    language === 'en' ? 'bg-[#E97E1C] text-white' : 'bg-[#FFF8F0] text-[#6b7280] hover:text-[#1a1a1a]'
                   }`}
                 >
                   English
@@ -770,9 +797,9 @@ export default function NewDealroomPage() {
                         applyTemplate(tmpl.id);
                         setCurrentStep('finish');
                       }}
-                      className={`text-left p-3 rounded-lg border transition-colors hover:border-[#11485e] hover:bg-[#11485e]/5 ${
+                      className={`text-left p-3 rounded-lg border transition-colors hover:border-[#E97E1C] hover:bg-[#E97E1C]/5 ${
                         selectedTemplateId === tmpl.id
-                          ? 'border-[#11485e] bg-[#11485e]/5'
+                          ? 'border-[#E97E1C] bg-[#E97E1C]/5'
                           : 'border-[#e5e7eb]'
                       }`}
                     >
@@ -782,7 +809,7 @@ export default function NewDealroomPage() {
                       )}
                       <div className="flex items-center gap-2 mt-1.5">
                         {tmpl.product_type && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#11485e]/10 text-[#11485e] font-medium">{tmpl.product_type}</span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#E97E1C]/10 text-[#E97E1C] font-medium">{tmpl.product_type}</span>
                         )}
                         <span className="text-[10px] text-[#9ca3af]">{tmpl.usage_count}x verwendet</span>
                       </div>
@@ -845,7 +872,7 @@ export default function NewDealroomPage() {
                         </Button>
                       </div>
                       {audioRecorder.transcript && (
-                        <div className="bg-[#f0f5f7] rounded-lg p-3 text-sm text-[#374151] border border-[#e7eef1]">
+                        <div className="bg-[#FFF8F0] rounded-lg p-3 text-sm text-[#374151] border border-[#FEF3E2]">
                           <p className="text-xs text-[#6b7280] mb-1 font-medium">Live-Transkription:</p>
                           {audioRecorder.transcript}
                         </div>
@@ -878,19 +905,19 @@ export default function NewDealroomPage() {
               <p className="text-xs font-medium text-[#6b7280] mb-2">Diese Fragen helfen Ihnen:</p>
               <ul className="space-y-1.5 text-xs text-[#6b7280]">
                 <li className="flex items-start gap-1.5">
-                  <span className="text-[#11485e] mt-0.5">•</span>
+                  <span className="text-[#E97E1C] mt-0.5">•</span>
                   Was ist die aktuelle Situation des Kunden? (Ist-Zustand)
                 </li>
                 <li className="flex items-start gap-1.5">
-                  <span className="text-[#11485e] mt-0.5">•</span>
+                  <span className="text-[#E97E1C] mt-0.5">•</span>
                   Welche Probleme oder Risiken hat der Kunde? (Schmerzpunkte)
                 </li>
                 <li className="flex items-start gap-1.5">
-                  <span className="text-[#11485e] mt-0.5">•</span>
+                  <span className="text-[#E97E1C] mt-0.5">•</span>
                   Was möchte der Kunde erreichen? (Ziele)
                 </li>
                 <li className="flex items-start gap-1.5">
-                  <span className="text-[#11485e] mt-0.5">•</span>
+                  <span className="text-[#E97E1C] mt-0.5">•</span>
                   Welche Lösung bieten Sie an? (Ihr Ansatz)
                 </li>
               </ul>
@@ -972,7 +999,7 @@ export default function NewDealroomPage() {
                           onClick={() => setContentTab(tab.key)}
                           className={`px-3 py-1.5 rounded-md text-[12px] font-semibold transition-colors whitespace-nowrap ${
                             contentTab === tab.key
-                              ? 'bg-[#11485e] text-white'
+                              ? 'bg-[#E97E1C] text-white'
                               : 'text-[#6b7280] hover:bg-[#fafafa] hover:text-[#1a1a1a]'
                           }`}
                         >
@@ -1007,8 +1034,8 @@ export default function NewDealroomPage() {
                           <Label>Ausgangslage (Schmerzpunkte)</Label>
                           {generatedContent.situation_points.map((point, i) => (
                             <div key={i} className="flex items-center gap-2">
-                              <div className="shrink-0 h-8 w-8 rounded-lg bg-[#11485e]/10 flex items-center justify-center">
-                                <DynamicIcon name={point.icon} className="h-4 w-4 text-[#11485e]" />
+                              <div className="shrink-0 h-8 w-8 rounded-lg bg-[#E97E1C]/10 flex items-center justify-center">
+                                <DynamicIcon name={point.icon} className="h-4 w-4 text-[#E97E1C]" />
                               </div>
                               <Input
                                 value={point.text}
@@ -1106,12 +1133,12 @@ export default function NewDealroomPage() {
                   Dokumente (optional)
                 </Label>
                 {uploadingDoc ? (
-                  <div className="flex items-center justify-center gap-2 border-2 border-dashed border-[#11485e] rounded-lg py-6 bg-[#11485e]/5">
-                    <Loader2 className="h-5 w-5 text-[#11485e] animate-spin" />
-                    <span className="text-sm text-[#11485e]">Wird hochgeladen...</span>
+                  <div className="flex items-center justify-center gap-2 border-2 border-dashed border-[#E97E1C] rounded-lg py-6 bg-[#E97E1C]/5">
+                    <Loader2 className="h-5 w-5 text-[#E97E1C] animate-spin" />
+                    <span className="text-sm text-[#E97E1C]">Wird hochgeladen...</span>
                   </div>
                 ) : (
-                  <label className="flex items-center justify-center gap-2 border-2 border-dashed border-[#e5e7eb] rounded-lg py-6 cursor-pointer hover:border-[#11485e] hover:bg-[#11485e]/5 transition-colors">
+                  <label className="flex items-center justify-center gap-2 border-2 border-dashed border-[#e5e7eb] rounded-lg py-6 cursor-pointer hover:border-[#E97E1C] hover:bg-[#E97E1C]/5 transition-colors">
                     <Upload className="h-5 w-5 text-[#6b7280]" />
                     <span className="text-sm text-[#6b7280]">{pendingDocuments.length > 0 ? 'Weitere Dateien hinzufügen' : 'Dateien auswählen'}</span>
                     <input

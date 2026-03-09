@@ -1,7 +1,7 @@
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
-import { Dealroom, DealroomContent, Reference, TeamMember } from '@/types/database';
+import { Dealroom, DealroomContent, TeamMember } from '@/types/database';
 import { t } from '@/lib/i18n';
 import { DealroomClient } from '@/components/dealroom/dealroom-client';
 
@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!dealroom) {
     return {
-      title: 'Nicht verfügbar | Gündesli & Kollegen',
+      title: 'Nicht verfügbar | Solarheld',
       robots: { index: false, follow: false },
     };
   }
@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = content?.hero_title || `Angebot für ${dealroom?.client_company || 'Sie'}`;
 
   return {
-    title: `${title} | Gündesli & Kollegen`,
+    title: `${title} | Solarheld`,
     robots: { index: false, follow: false },
     icons: {
       icon: '/favicon.ico',
@@ -56,8 +56,8 @@ export default async function DealroomPage({ params }: Props) {
   const dr = dealroom as Dealroom;
   const content = (dr.custom_content || dr.generated_content) as DealroomContent | null;
 
-  // Fetch admin, team member, references, and documents in parallel
-  const [{ data: admin }, { data: member }, { data: refs }, { data: docs }] = await Promise.all([
+  // Fetch admin, team member, and documents in parallel
+  const [{ data: admin }, { data: member }, { data: docs }] = await Promise.all([
     supabase
       .from('admin_users')
       .select('name, avatar_url, company_name, company_logo_url, brand_color')
@@ -70,12 +70,6 @@ export default async function DealroomPage({ params }: Props) {
           .eq('id', dr.assigned_member_id)
           .single()
       : Promise.resolve({ data: null }),
-    supabase
-      .from('references')
-      .select('id, client_name, client_company, quote, result_summary, situation_text, method_text, image_url, video_url, logo_url, sort_order')
-      .eq('admin_id', dr.admin_id)
-      .eq('is_active', true)
-      .order('sort_order'),
     supabase
       .from('dealroom_documents')
       .select('id, name, file_url, file_type, file_size')
@@ -91,7 +85,6 @@ export default async function DealroomPage({ params }: Props) {
       content={content}
       admin={admin}
       assignedMember={member as TeamMember | null}
-      references={(refs as Reference[]) || []}
       documents={docs || []}
       translations={translations}
     />

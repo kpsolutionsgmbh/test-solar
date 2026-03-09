@@ -66,7 +66,7 @@ export function DashboardSidebar({ userName, companyName }: SidebarProps) {
         <div className="h-14 flex items-center px-4 border-b border-[#e5e7eb]">
           <Link href="/dashboard" className="block">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/logo-blue.svg" alt="Gündesli & Kollegen" className="h-7 object-contain" />
+            <img src="/images/logo-blue.svg" alt="Solarheld" className="h-7 object-contain" />
           </Link>
         </div>
 
@@ -85,18 +85,18 @@ export function DashboardSidebar({ userName, companyName }: SidebarProps) {
                 font-semibold
                 transition-colors duration-75
                 ${isActive(item.href)
-                  ? 'bg-[#e7eef1] text-[#11485e]'
+                  ? 'bg-[#FEF3E2] text-[#E97E1C]'
                   : 'text-[#6b7280] hover:bg-[#fafafa] hover:text-[#1a1a1a]'
                 }
               `}
             >
               {isActive(item.href) && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-full bg-[#11485e]" />
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-full bg-[#E97E1C]" />
               )}
               <item.icon
                 size={16}
                 strokeWidth={1.75}
-                className={isActive(item.href) ? 'text-[#11485e]' : 'text-[#6b7280] group-hover:text-[#1a1a1a]'}
+                className={isActive(item.href) ? 'text-[#E97E1C]' : 'text-[#6b7280] group-hover:text-[#1a1a1a]'}
               />
               {item.label}
             </Link>
@@ -116,18 +116,18 @@ export function DashboardSidebar({ userName, companyName }: SidebarProps) {
               font-semibold
               transition-colors duration-75
               ${isActive('/dashboard/settings')
-                ? 'bg-[#e7eef1] text-[#11485e]'
+                ? 'bg-[#FEF3E2] text-[#E97E1C]'
                 : 'text-[#6b7280] hover:bg-[#fafafa] hover:text-[#1a1a1a]'
               }
             `}
           >
             {isActive('/dashboard/settings') && (
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-full bg-[#11485e]" />
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-full bg-[#E97E1C]" />
             )}
             <Settings
               size={16}
               strokeWidth={1.75}
-              className={isActive('/dashboard/settings') ? 'text-[#11485e]' : 'text-[#6b7280] group-hover:text-[#1a1a1a]'}
+              className={isActive('/dashboard/settings') ? 'text-[#E97E1C]' : 'text-[#6b7280] group-hover:text-[#1a1a1a]'}
             />
             Einstellungen
           </Link>
@@ -136,7 +136,7 @@ export function DashboardSidebar({ userName, companyName }: SidebarProps) {
         {/* User section */}
         <div className="p-3 border-t border-[#e5e7eb]">
           <div className="flex items-center gap-3 px-2 py-2">
-            <div className="h-8 w-8 rounded-full bg-[#e7eef1] flex items-center justify-center text-[#11485e] text-[13px] font-semibold shrink-0">
+            <div className="h-8 w-8 rounded-full bg-[#FEF3E2] flex items-center justify-center text-[#E97E1C] text-[13px] font-semibold shrink-0">
               {userName.charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
@@ -158,7 +158,7 @@ export function DashboardSidebar({ userName, companyName }: SidebarProps) {
       <div className="md:hidden fixed top-0 left-0 right-0 h-14 bg-white border-b border-[#e5e7eb] flex items-center justify-between px-4 z-40">
         <Link href="/dashboard" className="block">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/images/logo-blue.svg" alt="Gündesli & Kollegen" className="h-6 object-contain" />
+          <img src="/images/logo-blue.svg" alt="Solarheld" className="h-6 object-contain" />
         </Link>
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
@@ -182,7 +182,7 @@ export function DashboardSidebar({ userName, companyName }: SidebarProps) {
                   className={`
                     flex items-center gap-3 px-3 py-3 rounded-lg text-[14px] font-semibold transition-colors
                     ${isActive(item.href)
-                      ? 'bg-[#e7eef1] text-[#11485e]'
+                      ? 'bg-[#FEF3E2] text-[#E97E1C]'
                       : 'text-[#6b7280] hover:bg-[#fafafa]'
                     }
                   `}
@@ -196,7 +196,7 @@ export function DashboardSidebar({ userName, companyName }: SidebarProps) {
                 href="/dashboard/settings"
                 onClick={() => setMobileOpen(false)}
                 className={`flex items-center gap-3 px-3 py-3 rounded-lg text-[14px] font-semibold transition-colors ${
-                  isActive('/dashboard/settings') ? 'bg-[#e7eef1] text-[#11485e]' : 'text-[#6b7280]'
+                  isActive('/dashboard/settings') ? 'bg-[#FEF3E2] text-[#E97E1C]' : 'text-[#6b7280]'
                 }`}
               >
                 <Settings size={18} strokeWidth={1.75} />
@@ -222,7 +222,7 @@ export function DashboardSidebar({ userName, companyName }: SidebarProps) {
               key={item.href}
               href={item.href}
               className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors ${
-                isActive(item.href) ? 'text-[#11485e]' : 'text-[#9ca3af]'
+                isActive(item.href) ? 'text-[#E97E1C]' : 'text-[#9ca3af]'
               }`}
             >
               <item.icon size={20} strokeWidth={isActive(item.href) ? 2 : 1.5} />

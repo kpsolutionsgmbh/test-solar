@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerSupabaseClient, createServiceRoleClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 const defaultFlows = [
   {
@@ -101,10 +101,6 @@ Mit freundlichen Grüßen
 
 export async function POST() {
   try {
-    const supabase = createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
     const serviceClient = createServiceRoleClient();
 
     // Check if flows already exist
@@ -119,7 +115,7 @@ export async function POST() {
     // Insert default flows
     const { data, error } = await serviceClient
       .from('email_flows')
-      .insert(defaultFlows.map(f => ({ ...f, admin_id: user.id })))
+      .insert(defaultFlows.map(f => ({ ...f, admin_id: null })))
       .select();
 
     if (error) {

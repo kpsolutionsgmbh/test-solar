@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import { createServerSupabaseClient, createServiceRoleClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 function getResend() {
   if (!process.env.RESEND_API_KEY) return null;
@@ -9,13 +9,6 @@ function getResend() {
 
 export async function POST(request: NextRequest) {
   try {
-    // Auth check
-    const supabase = createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { dealroomId, recipientEmail, subject, body } = await request.json();
     if (!dealroomId || !recipientEmail || !subject || !body) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
@@ -44,19 +37,18 @@ export async function POST(request: NextRequest) {
     const htmlBody = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 24px;">
         <div style="margin-bottom: 32px;">
-          <img src="${baseUrl}/images/logo-blue.svg" alt="Gündesli & Kollegen" style="height: 28px;" />
+          <img src="${baseUrl}/images/logo-blue.svg" alt="Solarheld" style="height: 28px;" />
         </div>
         <div style="white-space: pre-line; font-size: 15px; line-height: 1.6; color: #374151;">
           ${finalBody.replace(/\n/g, '<br/>')}
         </div>
         <div style="margin-top: 32px; text-align: center;">
-          <a href="${dealroomUrl}" style="display: inline-block; padding: 14px 32px; background-color: #11485e; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px;">
+          <a href="${dealroomUrl}" style="display: inline-block; padding: 14px 32px; background-color: #E97E1C; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px;">
             Jetzt Angebot ansehen
           </a>
         </div>
         <div style="margin-top: 48px; padding-top: 24px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #9ca3af; text-align: center;">
-          Gündesli und Kollegen GmbH · Vollmerhauser Straße 47, Gummersbach<br/>
-          Bezirksdirektion der SIGNAL IDUNA Gruppe
+          Solarheld GmbH
         </div>
       </div>
     `;
@@ -68,7 +60,7 @@ export async function POST(request: NextRequest) {
       console.log('Would send to:', recipientEmail, 'Subject:', subject);
     } else {
       const { error: sendError } = await resend.emails.send({
-        from: `Gündesli & Kollegen <${process.env.RESEND_FROM_DOMAIN || 'onboarding@resend.dev'}>`,
+        from: `Solarheld <${process.env.RESEND_FROM_DOMAIN || 'onboarding@resend.dev'}>`,
         to: recipientEmail,
         subject,
         html: htmlBody,
@@ -83,7 +75,7 @@ export async function POST(request: NextRequest) {
     // Log email
     await serviceClient.from('email_logs').insert({
       dealroom_id: dealroomId,
-      admin_id: user.id,
+      admin_id: null,
       recipient_email: recipientEmail,
       subject,
       body_preview: finalBody.substring(0, 200),

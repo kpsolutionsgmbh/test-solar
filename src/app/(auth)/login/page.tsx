@@ -40,7 +40,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex">
       {/* Left Panel - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-[#11485e] flex-col items-center justify-center px-12 overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 relative bg-[#E97E1C] flex-col items-center justify-center px-12 overflow-hidden">
         <DotPattern
           className="absolute inset-0 opacity-20 [mask-image:radial-gradient(600px_circle_at_center,white,transparent)]"
           cr={1.5}
@@ -51,7 +51,7 @@ export default function LoginPage() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/images/logo-white.svg"
-            alt="Gündesli & Kollegen"
+            alt="Solarheld"
             className="h-16 object-contain mx-auto mb-8"
           />
           <h1 className="text-3xl font-bold text-white mb-3">
@@ -85,7 +85,7 @@ export default function LoginPage() {
           {/* Mobile logo */}
           <div className="flex items-center justify-center mb-8 lg:hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/images/logo-blue.svg" alt="Gündesli & Kollegen" className="h-12 object-contain" />
+            <img src="/images/logo-blue.svg" alt="Solarheld" className="h-12 object-contain" />
           </div>
 
           <div className="mb-8">
@@ -148,7 +148,7 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center text-[11px] text-[#9ca3af] mt-8">
-            Gündesli & Kollegen – Dealroom Platform
+            Solarheld – Dealroom Platform
           </p>
         </div>
       </div>

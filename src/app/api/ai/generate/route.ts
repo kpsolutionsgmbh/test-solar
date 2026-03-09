@@ -1,16 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { generateDealroomContent } from '@/lib/claude';
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { inputText, clientName, clientCompany, language } = await request.json();
+    const { inputText, clientName, clientCompany, language, customerType } = await request.json();
 
     if (!inputText || !clientName || !clientCompany) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
@@ -20,7 +13,8 @@ export async function POST(request: NextRequest) {
       inputText,
       clientName,
       clientCompany,
-      language || 'de'
+      language || 'de',
+      customerType || 'private'
     );
 
     return NextResponse.json({ content });

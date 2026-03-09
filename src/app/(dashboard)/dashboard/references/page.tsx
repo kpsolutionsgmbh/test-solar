@@ -77,13 +77,13 @@ function SortableReferenceItem({
 
   return (
     <div ref={setNodeRef} style={style}>
-      <Card className={`transition-opacity ${!reference.is_active ? 'opacity-50' : ''} ${isDragging ? 'shadow-lg ring-2 ring-[#11485e]/20' : ''}`}>
+      <Card className={`transition-opacity ${!reference.is_active ? 'opacity-50' : ''} ${isDragging ? 'shadow-lg ring-2 ring-[#E97E1C]/20' : ''}`}>
         <CardContent className="flex items-center justify-between py-4 px-5">
           <div className="flex items-center gap-4 min-w-0">
             <button
               {...attributes}
               {...listeners}
-              className="cursor-grab active:cursor-grabbing text-[#d1d5db] hover:text-[#11485e] shrink-0 touch-none"
+              className="cursor-grab active:cursor-grabbing text-[#d1d5db] hover:text-[#E97E1C] shrink-0 touch-none"
             >
               <GripVertical className="h-4 w-4" />
             </button>
@@ -91,7 +91,7 @@ function SortableReferenceItem({
               // eslint-disable-next-line @next/next/no-img-element
               <img src={reference.image_url} alt="" className="h-10 w-10 rounded object-cover shrink-0" />
             ) : (
-              <div className="h-10 w-10 rounded bg-[#11485e]/8 flex items-center justify-center text-[#11485e] font-semibold text-sm shrink-0">
+              <div className="h-10 w-10 rounded bg-[#E97E1C]/8 flex items-center justify-center text-[#E97E1C] font-semibold text-sm shrink-0">
                 {reference.client_company.charAt(0)}
               </div>
             )}
@@ -154,8 +154,6 @@ export default function ReferencesPage() {
   );
 
   const fetchRefs = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
     const { data } = await supabase
       .from('references')
       .select('*')
@@ -205,9 +203,6 @@ export default function ReferencesPage() {
   };
 
   const handleSave = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
     const payload = {
       client_name: clientName,
       client_company: clientCompany,
@@ -223,7 +218,7 @@ export default function ReferencesPage() {
     } else {
       await supabase.from('references').insert({
         ...payload,
-        admin_id: user.id,
+        admin_id: null,
         sort_order: references.length,
       });
       toast({ title: 'Referenz erstellt' });
@@ -318,7 +313,7 @@ export default function ReferencesPage() {
                         onClick={() => setMediaType(val as MediaType)}
                         className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
                           mediaType === val
-                            ? 'border-[#11485e] bg-[#11485e]/5 text-[#11485e]'
+                            ? 'border-[#E97E1C] bg-[#E97E1C]/5 text-[#E97E1C]'
                             : 'border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]'
                         }`}
                       >

@@ -3,8 +3,8 @@ import { Link2Off } from 'lucide-react';
 
 export default function DealroomNotFound() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center text-center px-6 bg-[#fafafa]">
-      <Image src="/images/logo-blue.svg" alt="Gündesli & Kollegen" width={180} height={36} />
+    <div className="min-h-screen flex flex-col items-center justify-center text-center px-6 bg-[#FAFAF8]">
+      <Image src="/images/logo-blue.svg" alt="Solarheld" width={180} height={36} />
 
       <div className="mt-12 mb-6">
         <Link2Off size={48} className="text-[#6b7280] mx-auto" />
@@ -19,13 +19,12 @@ export default function DealroomNotFound() {
       </p>
 
       <div className="mt-8 space-y-2 text-sm text-[#6b7280]">
-        <p>📞 <a href="tel:022615016320" className="text-[#11485e] hover:underline">02261/5016320</a></p>
-        <p>✉️ <a href="mailto:info@guendesliundkollegen.de" className="text-[#11485e] hover:underline">info@guendesliundkollegen.de</a></p>
+        <p>✉️ <a href="mailto:info@solarheld.de" className="text-[#E97E1C] hover:underline">info@solarheld.de</a></p>
       </div>
 
       <a
-        href="https://guendesliundkollegen.de"
-        className="mt-8 h-9 px-6 inline-flex items-center bg-[#11485e] text-white text-sm font-semibold rounded-lg hover:bg-[#41697d] transition-colors"
+        href="https://solarheld.de"
+        className="mt-8 h-9 px-6 inline-flex items-center bg-[#E97E1C] text-white text-sm font-semibold rounded-lg hover:bg-[#D06A0F] transition-colors"
       >
         Zur Website
       </a>

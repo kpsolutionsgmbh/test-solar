@@ -38,13 +38,11 @@ export default function NewEmailFlowPage() {
     }
 
     setSaving(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
 
     const { data, error } = await supabase
       .from('email_flows')
       .insert({
-        admin_id: user.id,
+        admin_id: null,
         name: name.trim(),
         description: description.trim() || null,
         trigger_type: triggerType,

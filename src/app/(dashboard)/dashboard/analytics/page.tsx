@@ -1,5 +1,4 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dealroom, TrackingEvent } from '@/types/database';
@@ -19,8 +18,6 @@ function daysAgo(dateStr: string): number {
 
 export default async function AnalyticsPage() {
   const supabase = createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/login');
 
   const { data: dealrooms } = await supabase
     .from('dealrooms')
@@ -105,7 +102,7 @@ export default async function AnalyticsPage() {
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <Flame className="h-4 w-4 text-[#11485e]" />
+            <Flame className="h-4 w-4 text-[#E97E1C]" />
             Engagement Score Verteilung
           </CardTitle>
         </CardHeader>
@@ -131,7 +128,7 @@ export default async function AnalyticsPage() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 text-[#11485e]" />
+            <BarChart3 className="h-4 w-4 text-[#E97E1C]" />
             Angebotsraum-Übersicht
           </CardTitle>
         </CardHeader>
@@ -167,7 +164,7 @@ export default async function AnalyticsPage() {
                     return (
                       <tr key={dr.id} className="border-b last:border-0 hover:bg-[#fafafa]">
                         <td className="py-3">
-                          <Link href={`/dashboard/dealrooms/${dr.id}`} className="hover:text-[#11485e] transition-colors">
+                          <Link href={`/dashboard/dealrooms/${dr.id}`} className="hover:text-[#E97E1C] transition-colors">
                             <p className="font-medium text-[#1a1a1a]">{dr.client_company}</p>
                             <p className="text-xs text-[#6b7280]">{dr.client_name}</p>
                           </Link>

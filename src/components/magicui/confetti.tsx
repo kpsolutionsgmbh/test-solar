@@ -133,14 +133,14 @@ export function fireConfetti() {
         angle: 60,
         spread: 55,
         origin: { x: 0 },
-        colors: ["#11485e", "#22c55e", "#f59e0b", "#3b82f6"],
+        colors: ["#E97E1C", "#22c55e", "#f59e0b", "#3b82f6"],
       });
       confetti({
         particleCount: 3,
         angle: 120,
         spread: 55,
         origin: { x: 1 },
-        colors: ["#11485e", "#22c55e", "#f59e0b", "#3b82f6"],
+        colors: ["#E97E1C", "#22c55e", "#f59e0b", "#3b82f6"],
       });
 
       if (Date.now() < end) {

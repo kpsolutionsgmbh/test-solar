@@ -48,6 +48,34 @@ export interface Dealroom {
   customer_id: string | null;
   engagement_score: number;
   email_unsubscribed: boolean;
+  customer_type: 'private' | 'commercial';
+  calculator_data: CalculatorData | null;
+  offers_data: OffersData | null;
+}
+
+export interface CalculatorData {
+  annual_consumption_kwh: number;
+  electricity_price: number;
+  system_size_kwp: number;
+  storage_kwh: number;
+  annual_savings: number;
+  amortization_years: number;
+  co2_savings_tons: number;
+  lifetime_savings: number;
+}
+
+export interface SolarOffer {
+  name: string;
+  description: string;
+  price: number;
+  savings_year: number;
+  amortization_years: number;
+  is_recommended: boolean;
+  features: string[];
+}
+
+export interface OffersData {
+  offers: SolarOffer[];
 }
 
 export interface Customer {

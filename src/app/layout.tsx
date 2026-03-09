@@ -1,19 +1,19 @@
 import type { Metadata } from 'next';
-import { Poppins } from 'next/font/google';
+import { Plus_Jakarta_Sans } from 'next/font/google';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 
-const poppins = Poppins({
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin', 'latin-ext'],
-  weight: ['400', '600'],
+  weight: ['400', '500', '600', '700'],
   display: 'swap',
   preload: true,
-  variable: '--font-poppins',
+  variable: '--font-plus-jakarta',
 });
 
 export const metadata: Metadata = {
-  title: 'Dealroom | Gündesli & Kollegen',
-  description: 'Digital Sales Room für personalisierte Versicherungsangebote',
+  title: 'Dealroom | Solarheld',
+  description: 'Digital Sales Room für personalisierte Solarangebote',
   robots: 'noindex, nofollow',
   icons: {
     icon: [
@@ -31,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="de" className={poppins.variable}>
+    <html lang="de" className={plusJakartaSans.variable}>
       <body className="antialiased font-sans">
         {children}
         <Toaster />

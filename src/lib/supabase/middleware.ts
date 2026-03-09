@@ -25,38 +25,9 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const pathname = request.nextUrl.pathname;
-
-  // Public routes: no auth required
-  if (
-    pathname.startsWith('/d/') ||
-    pathname === '/api/track' ||
-    pathname === '/api/unsubscribe' ||
-    pathname.startsWith('/api/cron/')
-  ) {
-    return supabaseResponse;
-  }
-
-  // Protect dashboard and API routes
-  if ((pathname.startsWith('/dashboard') || pathname.startsWith('/api/')) && !user) {
-    if (pathname.startsWith('/api/')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    return NextResponse.redirect(url);
-  }
-
-  // Redirect logged-in users away from login
-  if (pathname === '/login' && user) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/dashboard';
-    return NextResponse.redirect(url);
-  }
+  // Keep session cookie handling but skip auth checks
+  // Just refresh the session if one exists (non-blocking)
+  await supabase.auth.getUser();
 
   return supabaseResponse;
 }

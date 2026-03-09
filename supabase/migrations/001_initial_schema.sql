@@ -4,9 +4,9 @@ CREATE TABLE admin_users (
   email TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
   avatar_url TEXT,
-  company_name TEXT NOT NULL DEFAULT 'Gündesli und Kollegen GmbH',
+  company_name TEXT NOT NULL DEFAULT 'Solarheld GmbH',
   company_logo_url TEXT,
-  brand_color TEXT DEFAULT '#11485e',
+  brand_color TEXT DEFAULT '#E97E1C',
   created_at TIMESTAMPTZ DEFAULT now()
 );
 

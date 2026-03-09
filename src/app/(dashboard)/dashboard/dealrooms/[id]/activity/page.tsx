@@ -231,9 +231,9 @@ export default function ActivityPage() {
                 <p className="text-[10px] text-[#6b7280] uppercase">Signiert</p>
               </CardContent>
             </Card>
-            <Card className="border-none shadow-sm bg-gradient-to-br from-[#11485e]/5 to-[#11485e]/10">
+            <Card className="border-none shadow-sm bg-gradient-to-br from-[#E97E1C]/5 to-[#E97E1C]/10">
               <CardContent className="pt-4 pb-3 text-center">
-                <Timer className="h-4 w-4 text-[#11485e] mx-auto mb-1" />
+                <Timer className="h-4 w-4 text-[#E97E1C] mx-auto mb-1" />
                 <p className={`text-xl font-bold ${engagementColor}`}>{engagementScore}%</p>
                 <p className="text-[10px] text-[#6b7280] uppercase">Engagement</p>
               </CardContent>

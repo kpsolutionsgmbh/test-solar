@@ -24,11 +24,11 @@ import { DealroomContent } from '@/types/database';
 import { FileStack, Loader2 } from 'lucide-react';
 
 const productTypes = [
-  { value: 'BAV', label: 'BAV' },
-  { value: 'bKV', label: 'bKV' },
-  { value: 'Gewerbeversicherung', label: 'Gewerbeversicherung' },
-  { value: 'Betriebshaftpflicht', label: 'Betriebshaftpflicht' },
-  { value: 'Sachversicherung', label: 'Sachversicherung' },
+  { value: 'PV-Anlage', label: 'PV-Anlage' },
+  { value: 'Speicher', label: 'Speicher' },
+  { value: 'Wallbox', label: 'Wallbox' },
+  { value: 'Wärmepumpe', label: 'Wärmepumpe' },
+  { value: 'Komplettsystem', label: 'Komplettsystem' },
   { value: 'Sonstige', label: 'Sonstige' },
 ];
 
@@ -56,16 +56,13 @@ export function SaveTemplateModal({ open, onClose, content, videoUrl, language }
 
     setSaving(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
-
       // Replace specific client data with placeholders in the content
       const templateContent = JSON.parse(JSON.stringify(content));
       // The hero_title typically contains the company name - replace with placeholder
       // We keep the content as-is since templates are meant to be a snapshot
 
       const { error } = await supabase.from('templates').insert({
-        admin_id: user.id,
+        admin_id: null,
         name: name.trim(),
         description: description.trim() || null,
         product_type: productType,

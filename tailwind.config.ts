@@ -10,7 +10,7 @@ const config: Config = {
   theme: {
   	extend: {
   		fontFamily: {
-  			sans: ['var(--font-poppins)', 'Poppins', 'Arial', 'Helvetica', 'sans-serif'],
+  			sans: ['var(--font-plus-jakarta)', 'Plus Jakarta Sans', 'Arial', 'Helvetica', 'sans-serif'],
   		},
   		colors: {
   			background: 'hsl(var(--background))',

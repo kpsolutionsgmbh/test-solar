@@ -296,7 +296,7 @@ export default function CustomerDetailPage() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={customer.logo_url} alt={customer.company} className="h-14 w-14 rounded-lg object-contain" />
                 ) : (
-                  <div className="h-14 w-14 rounded-lg bg-[#e7eef1] flex items-center justify-center text-[#11485e] text-xl font-bold">
+                  <div className="h-14 w-14 rounded-lg bg-[#FEF3E2] flex items-center justify-center text-[#E97E1C] text-xl font-bold">
                     {customer.company.charAt(0)}
                   </div>
                 )}
@@ -308,12 +308,12 @@ export default function CustomerDetailPage() {
                   </p>
                   <div className="flex flex-wrap gap-4 mt-2 text-sm text-[#6b7280]">
                     {customer.phone && (
-                      <a href={`tel:${customer.phone}`} className="flex items-center gap-1 hover:text-[#11485e]">
+                      <a href={`tel:${customer.phone}`} className="flex items-center gap-1 hover:text-[#E97E1C]">
                         <Phone className="h-3.5 w-3.5" /> {customer.phone}
                       </a>
                     )}
                     {customer.email && (
-                      <a href={`mailto:${customer.email}`} className="flex items-center gap-1 hover:text-[#11485e]">
+                      <a href={`mailto:${customer.email}`} className="flex items-center gap-1 hover:text-[#E97E1C]">
                         <Mail className="h-3.5 w-3.5" /> {customer.email}
                       </a>
                     )}
@@ -352,7 +352,7 @@ export default function CustomerDetailPage() {
         ].map((stat, i) => (
           <Card key={i}>
             <CardContent className="py-4 text-center">
-              <p className="text-2xl font-bold text-[#11485e]">{stat.value}</p>
+              <p className="text-2xl font-bold text-[#E97E1C]">{stat.value}</p>
               <p className="text-xs text-[#6b7280]">{stat.label}</p>
             </CardContent>
           </Card>

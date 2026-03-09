@@ -79,9 +79,6 @@ export default function FlowEditorPage() {
   const [dealroomSearch, setDealroomSearch] = useState('');
 
   const loadFlow = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
     const [{ data: flowData }, { data: logData }, { data: drData }, { data: selectedDrData }] = await Promise.all([
       supabase.from('email_flows').select('*').eq('id', params.id).single(),
       supabase
@@ -227,7 +224,7 @@ export default function FlowEditorPage() {
           onClick={() => setActiveTab('editor')}
           className={`px-4 py-2 text-[13px] font-semibold border-b-2 transition-colors ${
             activeTab === 'editor'
-              ? 'border-[#11485e] text-[#11485e]'
+              ? 'border-[#E97E1C] text-[#E97E1C]'
               : 'border-transparent text-[#6b7280] hover:text-[#1a1a1a]'
           }`}
         >
@@ -237,7 +234,7 @@ export default function FlowEditorPage() {
           onClick={() => setActiveTab('logs')}
           className={`px-4 py-2 text-[13px] font-semibold border-b-2 transition-colors ${
             activeTab === 'logs'
-              ? 'border-[#11485e] text-[#11485e]'
+              ? 'border-[#E97E1C] text-[#E97E1C]'
               : 'border-transparent text-[#6b7280] hover:text-[#1a1a1a]'
           }`}
         >
@@ -261,7 +258,7 @@ export default function FlowEditorPage() {
                   <select
                     value={triggerType}
                     onChange={(e) => setTriggerType(e.target.value)}
-                    className="mt-1 w-full rounded-md border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#11485e]/20 focus:border-[#11485e]"
+                    className="mt-1 w-full rounded-md border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#E97E1C]/20 focus:border-[#E97E1C]"
                   >
                     {triggerOptions.map((opt) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -301,7 +298,7 @@ export default function FlowEditorPage() {
                     name="appliesTo"
                     checked={appliesTo === 'all'}
                     onChange={() => setAppliesTo('all')}
-                    className="text-[#11485e] focus:ring-[#11485e]"
+                    className="text-[#E97E1C] focus:ring-[#E97E1C]"
                   />
                   <span className="text-sm text-[#374151]">An alle Kunden mit dieser Bedingung</span>
                 </label>
@@ -312,7 +309,7 @@ export default function FlowEditorPage() {
                     name="appliesTo"
                     checked={appliesTo === 'selected'}
                     onChange={() => setAppliesTo('selected')}
-                    className="text-[#11485e] focus:ring-[#11485e]"
+                    className="text-[#E97E1C] focus:ring-[#E97E1C]"
                   />
                   <span className="text-sm text-[#374151]">Nur an bestimmte Angebotsräume</span>
                 </label>
@@ -347,7 +344,7 @@ export default function FlowEditorPage() {
                                   setSelectedDealroomIds(prev => prev.filter(id => id !== dr.id));
                                 }
                               }}
-                              className="rounded border-[#d1d5db] text-[#11485e] focus:ring-[#11485e]"
+                              className="rounded border-[#d1d5db] text-[#E97E1C] focus:ring-[#E97E1C]"
                             />
                             <div className="min-w-0">
                               <p className="text-sm text-[#1a1a1a] truncate">{dr.client_company}</p>
@@ -393,7 +390,7 @@ export default function FlowEditorPage() {
                     value={body}
                     onChange={(e) => setBody(e.target.value)}
                     rows={12}
-                    className="mt-1 w-full rounded-md border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#11485e]/20 focus:border-[#11485e] resize-y"
+                    className="mt-1 w-full rounded-md border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#E97E1C]/20 focus:border-[#E97E1C] resize-y"
                     placeholder="Sehr geehrte{{r}} {{anrede}} {{nachname}},&#10;&#10;wir haben Ihnen kürzlich ein persönliches Angebot zusammengestellt..."
                   />
                 </div>
@@ -407,7 +404,7 @@ export default function FlowEditorPage() {
                         key={p.label}
                         type="button"
                         onClick={() => insertPersonalization(p.label)}
-                        className="px-2.5 py-1 rounded-md bg-[#e7eef1] text-[#11485e] text-[11px] font-semibold hover:bg-[#d0dfe6] transition-colors"
+                        className="px-2.5 py-1 rounded-md bg-[#FEF3E2] text-[#E97E1C] text-[11px] font-semibold hover:bg-[#FDE5C8] transition-colors"
                         title={p.desc}
                       >
                         {p.label}
@@ -432,7 +429,7 @@ export default function FlowEditorPage() {
                     type="checkbox"
                     checked={maxSends === 1}
                     onChange={(e) => setMaxSends(e.target.checked ? 1 : 99)}
-                    className="rounded border-[#d1d5db] text-[#11485e] focus:ring-[#11485e]"
+                    className="rounded border-[#d1d5db] text-[#E97E1C] focus:ring-[#E97E1C]"
                   />
                   <span className="text-sm text-[#374151]">Maximal 1x pro Kunde senden (nicht wiederholen)</span>
                 </label>
@@ -442,7 +439,7 @@ export default function FlowEditorPage() {
                     type="checkbox"
                     checked={skipIfSigned}
                     onChange={(e) => setSkipIfSigned(e.target.checked)}
-                    className="rounded border-[#d1d5db] text-[#11485e] focus:ring-[#11485e]"
+                    className="rounded border-[#d1d5db] text-[#E97E1C] focus:ring-[#E97E1C]"
                   />
                   <span className="text-sm text-[#374151]">Nicht senden wenn Kunde bereits unterschrieben hat</span>
                 </label>
@@ -452,7 +449,7 @@ export default function FlowEditorPage() {
                     type="checkbox"
                     checked={skipIfInactive}
                     onChange={(e) => setSkipIfInactive(e.target.checked)}
-                    className="rounded border-[#d1d5db] text-[#11485e] focus:ring-[#11485e]"
+                    className="rounded border-[#d1d5db] text-[#E97E1C] focus:ring-[#E97E1C]"
                   />
                   <span className="text-sm text-[#374151]">Nicht senden wenn Dealroom inaktiv/archiviert ist</span>
                 </label>
@@ -462,7 +459,7 @@ export default function FlowEditorPage() {
                     type="checkbox"
                     checked={!skipWeekends}
                     onChange={(e) => setSkipWeekends(!e.target.checked)}
-                    className="rounded border-[#d1d5db] text-[#11485e] focus:ring-[#11485e]"
+                    className="rounded border-[#d1d5db] text-[#E97E1C] focus:ring-[#E97E1C]"
                   />
                   <span className="text-sm text-[#374151]">Auch am Wochenende senden</span>
                 </label>

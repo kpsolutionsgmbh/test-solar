@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient, createServiceRoleClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 import { Resend } from 'resend';
 
 function getResend() {
@@ -17,10 +17,6 @@ function replacePlaceholders(template: string, replacements: Record<string, stri
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
     const body = await req.json();
     const { dealroomId, recipientEmail, subject, bodyHtml } = body;
 
@@ -31,14 +27,14 @@ export async function POST(req: NextRequest) {
     const serviceClient = createServiceRoleClient();
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://guk-angebot.com';
 
-    // Get admin info
+    // Get admin info (first admin user)
     const { data: admin } = await serviceClient
       .from('admin_users')
       .select('name, company_name, email')
-      .eq('id', user.id)
+      .limit(1)
       .single();
 
-    const fromName = admin?.company_name || admin?.name || 'Gündesli & Kollegen';
+    const fromName = admin?.company_name || admin?.name || 'Solarheld';
     const fromDomain = process.env.RESEND_FROM_DOMAIN || 'onboarding@resend.dev';
 
     // Build placeholder data from dealroom + customer + team member

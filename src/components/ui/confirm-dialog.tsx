@@ -49,7 +49,7 @@ export function ConfirmDialog({
             className={`h-9 px-4 text-sm font-semibold text-white rounded-lg transition-colors ${
               variant === 'destructive'
                 ? 'bg-red-500 hover:bg-red-600'
-                : 'bg-[#11485e] hover:bg-[#41697d]'
+                : 'bg-[#E97E1C] hover:bg-[#D06A0F]'
             }`}
           >
             {confirmText}

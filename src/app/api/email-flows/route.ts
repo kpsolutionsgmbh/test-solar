@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient, createServiceRoleClient } from '@/lib/supabase/server';
+import { createServiceRoleClient } from '@/lib/supabase/server';
 
 export async function GET() {
   try {
-    const supabase = createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
     const serviceClient = createServiceRoleClient();
     const { data, error } = await serviceClient
       .from('email_flows')
@@ -25,15 +21,11 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
     const body = await request.json();
     const serviceClient = createServiceRoleClient();
     const { data, error } = await serviceClient
       .from('email_flows')
-      .insert({ ...body, admin_id: user.id })
+      .insert({ ...body, admin_id: null })
       .select()
       .single();
 
@@ -49,10 +41,6 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = createServerSupabaseClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-
     const body = await request.json();
     const { id, selected_dealroom_ids, ...updates } = body;
     if (!id) return NextResponse.json({ error: 'Missing flow id' }, { status: 400 });
