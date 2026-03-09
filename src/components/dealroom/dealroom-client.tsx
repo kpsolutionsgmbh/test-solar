@@ -520,17 +520,6 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                     />
                   </ScrollReveal>
 
-                  {/* Awards */}
-                  <ScrollReveal delay={0.2}>
-                    <div className="flex items-center justify-center gap-6 sm:gap-10 flex-wrap mt-2 mb-8">
-                      {/* eslint-disable @next/next/no-img-element */}
-                      <img src="/images/awards/focus-money.webp" alt="Focus Money" className="h-16 sm:h-20 object-contain opacity-90" />
-                      <img src="/images/awards/stiftung-warentest.webp" alt="Stiftung Warentest" className="h-16 sm:h-20 object-contain opacity-90" />
-                      <img src="/images/awards/disq-rating.jpg" alt="DISQ Rating" className="h-16 sm:h-20 object-contain opacity-90" />
-                      {/* eslint-enable @next/next/no-img-element */}
-                    </div>
-                  </ScrollReveal>
-
                   {/* Contact Person Card */}
                   {contact && (
                     <ScrollReveal delay={0.25}>

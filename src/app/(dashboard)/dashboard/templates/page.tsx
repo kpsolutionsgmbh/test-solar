@@ -242,7 +242,7 @@ export default function TemplatesPage() {
               <Input
                 value={formName}
                 onChange={(e) => setFormName(e.target.value)}
-                placeholder="z.B. BAV – Standard"
+                placeholder="z.B. PV 10kWp – Standard"
               />
             </div>
             <div className="space-y-1.5">

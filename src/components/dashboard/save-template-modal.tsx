@@ -100,7 +100,7 @@ export function SaveTemplateModal({ open, onClose, content, videoUrl, language }
           </p>
           <div className="space-y-1.5">
             <Label className="text-xs">Template-Name *</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="z.B. BAV – Standard" className="h-9" />
+            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="z.B. PV 10kWp – Standard" className="h-9" />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs">Beschreibung</Label>

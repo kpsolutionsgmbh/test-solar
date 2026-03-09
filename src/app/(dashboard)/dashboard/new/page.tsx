@@ -232,7 +232,7 @@ export default function NewDealroomPage() {
         body: JSON.stringify({
           inputText,
           clientName,
-          clientCompany,
+          clientCompany: clientCompany || clientName,
           language,
           customerType,
         }),
@@ -905,7 +905,7 @@ export default function NewDealroomPage() {
                 <Textarea
                   value={inputText}
                   onChange={(e) => setInputText(e.target.value)}
-                  placeholder="Der Kunde ist ein mittelständisches Unternehmen mit 50 Mitarbeitern. Aktuell haben sie keine betriebliche Altersvorsorge..."
+                  placeholder="Der Kunde hat ein Einfamilienhaus mit ca. 150m² Dachfläche (Südausrichtung). Aktuell zahlt er ca. 250€/Monat Strom. Er interessiert sich für eine PV-Anlage mit Speicher..."
                   rows={8}
                   className="resize-none"
                 />

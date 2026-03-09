@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     }
 
     const serviceClient = createServiceRoleClient();
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://guk-angebot.com';
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://dealroom-app.vercel.app';
 
     // Get admin info (first admin user)
     const { data: admin } = await serviceClient
