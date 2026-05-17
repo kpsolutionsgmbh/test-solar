@@ -258,7 +258,11 @@ Generate the content in English. Adapt language and arguments to the customer ty
 
   const message = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 4000,
+    // 6000 is the safety ceiling. Per-field length caps in the system prompt
+    // enforce brevity, not max_tokens. 4000 was too tight for a full dealroom
+    // JSON (5 FAQs + 3 outcomes + 3 pains + 3 benefits + meta) and triggered
+    // truncation on legitimate requests.
+    max_tokens: 6000,
     system: `${systemPrompt}\n\n${JSON_SCHEMA}`,
     messages: [{ role: 'user', content: userPrompt }],
   });
