@@ -4,6 +4,7 @@ import { Metadata } from 'next';
 import { Dealroom, DealroomContent, TeamMember } from '@/types/database';
 import { t } from '@/lib/i18n';
 import { DealroomClient } from '@/components/dealroom/dealroom-client';
+import { getGlobalContent } from '@/lib/global-content';
 
 export const revalidate = 60;
 
@@ -78,6 +79,7 @@ export default async function DealroomPage({ params }: Props) {
   ]);
 
   const translations = t(dr.language);
+  const globalContent = await getGlobalContent(true);
 
   return (
     <DealroomClient
@@ -87,6 +89,7 @@ export default async function DealroomPage({ params }: Props) {
       assignedMember={member as TeamMember | null}
       documents={docs || []}
       translations={translations}
+      globalContent={globalContent}
     />
   );
 }

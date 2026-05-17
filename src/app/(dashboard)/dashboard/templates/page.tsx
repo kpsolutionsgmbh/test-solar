@@ -130,12 +130,34 @@ export default function TemplatesPage() {
       } else {
         toast({ title: 'Template aktualisiert' });
       }
+    } else {
+      const { data: admin } = await supabase.from('admin_users').select('id').limit(1).single();
+      const { error } = await supabase.from('templates').insert({
+        admin_id: admin?.id,
+        name: formName.trim(),
+        description: formDescription.trim() || null,
+        product_type: formProductType || null,
+        language: formLanguage,
+        is_active: formIsActive,
+        content: {},
+        usage_count: 0,
+      });
+      if (error) {
+        toast({ title: 'Fehler', description: 'Template konnte nicht erstellt werden.', variant: 'destructive' });
+      } else {
+        toast({ title: 'Template erstellt' });
+      }
     }
 
     setSaving(false);
     resetForm();
     setDialogOpen(false);
     fetchTemplates();
+  };
+
+  const openCreateDialog = () => {
+    resetForm();
+    setDialogOpen(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -159,21 +181,23 @@ export default function TemplatesPage() {
           <h1 className="text-2xl font-semibold text-[#1a1a1a]">Vorlagen</h1>
           <p className="text-sm text-[#6b7280] mt-1">Vorgefertigte Angebote für wiederkehrende Produkte.</p>
         </div>
-        <div title="Templates werden aus bestehenden Dealrooms erstellt">
-          <Button size="sm" disabled>
-            <Plus className="h-3.5 w-3.5 mr-1.5" />
-            Neues Template
-          </Button>
-        </div>
+        <Button size="sm" onClick={openCreateDialog}>
+          <Plus className="h-3.5 w-3.5 mr-1.5" />
+          Neues Template
+        </Button>
       </div>
 
       {templates.length === 0 ? (
         <div className="text-center py-16">
           <FileStack className="h-12 w-12 text-[#d1d5db] mx-auto mb-4" />
           <p className="text-sm font-medium text-[#1a1a1a]">Noch keine Templates</p>
-          <p className="text-xs text-[#9ca3af] mt-1 max-w-sm mx-auto">
-            Templates werden aus bestehenden Dealrooms erstellt. Öffnen Sie einen Dealroom und klicken Sie auf &quot;Als Template speichern&quot;.
+          <p className="text-xs text-[#9ca3af] mt-1 max-w-sm mx-auto mb-4">
+            Erstellen Sie ein Template als Ausgangspunkt für wiederkehrende Angebote, oder speichern Sie einen bestehenden Dealroom als Template.
           </p>
+          <Button size="sm" onClick={openCreateDialog}>
+            <Plus className="h-3.5 w-3.5 mr-1.5" />
+            Neues Template
+          </Button>
         </div>
       ) : (
         <div className="space-y-3">

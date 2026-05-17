@@ -16,6 +16,12 @@ export const metadata: Metadata = {
   title: 'Dealroom | Solarheld',
   description: 'Digital Sales Room für personalisierte Solarangebote',
   robots: 'noindex, nofollow',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Dealroom',
+  },
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
@@ -24,6 +30,13 @@ export const metadata: Metadata = {
     ],
     apple: '/apple-touch-icon.png',
   },
+};
+
+export const viewport = {
+  themeColor: '#E97E1C',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({

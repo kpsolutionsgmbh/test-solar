@@ -5,6 +5,7 @@ import { Dealroom, DealroomContent, TeamMember, VisualType, VisualData } from '@
 import { SolarCalculator } from '@/components/dealroom/solar-calculator';
 import { OfferPackages } from '@/components/dealroom/offer-packages';
 import { Translations } from '@/lib/i18n';
+import { DEFAULT_GLOBAL_CONTENT, type ResolvedGlobalContent } from '@/lib/global-content-types';
 import { initDealroomTracking, trackEvent } from '@/lib/tracking';
 import { motion } from 'framer-motion';
 import CountUp from 'react-countup';
@@ -262,11 +263,13 @@ interface Props {
   assignedMember: TeamMember | null;
   documents: DealroomDocument[];
   translations: Translations;
+  globalContent?: ResolvedGlobalContent;
 }
 
 type TabKey = 'overview' | 'offer';
 
-export function DealroomClient({ dealroom, content, admin, assignedMember, documents, translations: tr }: Props) {
+export function DealroomClient({ dealroom, content, admin, assignedMember, documents, translations: tr, globalContent }: Props) {
+  const gc = globalContent || DEFAULT_GLOBAL_CONTENT;
   const [activeTab, setActiveTab] = useState<TabKey>('overview');
   const [showCookieBanner, setShowCookieBanner] = useState(true);
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -366,7 +369,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
           <Star key={s} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
         ))}
       </div>
-      <span className="text-sm text-[#6b7280] font-medium">4.500+ {dealroom.language === 'de' ? 'zufriedene Kunden' : 'satisfied clients'}</span>
+      <span className="text-sm text-[#6b7280] font-medium">{gc.socialProof.customersLabel}</span>
     </div>
   );
 
@@ -597,63 +600,41 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                 </div>
               </section>
 
-              {/* ===== "So einfach geht's" — editorial sequence with display numerals ===== */}
+              {/* ===== Steps (global content) ===== */}
               <section className="bg-surface-sub border-y border-border">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
                   <ScrollReveal>
                     <div className="max-w-2xl mb-12 sm:mb-16 text-center md:text-left mx-auto md:mx-0">
                       <p className="text-micro uppercase text-fg-subtle mb-3">
-                        {dealroom.language === 'de' ? 'In drei Schritten' : 'In three steps'}
+                        {gc.steps.kicker}
                       </p>
                       <h2 className="text-h1 font-bold text-fg text-balance">
-                        {dealroom.language === 'de' ? "So einfach geht's" : 'How it works'}
+                        {gc.steps.headline}
                       </h2>
                     </div>
                   </ScrollReveal>
 
                   <ol className="grid grid-cols-1 md:grid-cols-3 gap-px bg-border border border-border rounded-xl overflow-hidden">
-                    {[
-                      {
-                        icon: <Play className="h-6 w-6" />,
-                        step: dealroom.language === 'de' ? 'Schritt 1' : 'Step 1',
-                        title: dealroom.language === 'de' ? 'Video anschauen' : 'Watch the video',
-                        description: dealroom.language === 'de'
-                          ? 'Ihr Ansprechpartner erklärt persönlich, worum es geht und warum dieses Angebot zu Ihrer Situation passt.'
-                          : 'Your contact person explains personally what it\'s about and why this offer fits your situation.',
-                      },
-                      {
-                        icon: <FileText className="h-6 w-6" />,
-                        step: dealroom.language === 'de' ? 'Schritt 2' : 'Step 2',
-                        title: dealroom.language === 'de' ? 'Angebot durchlesen' : 'Review the proposal',
-                        description: dealroom.language === 'de'
-                          ? 'Prüfen Sie unser Angebot in Ruhe — alles transparent und individuell auf Sie zugeschnitten.'
-                          : 'Review our proposal at your leisure — everything transparent and tailored to you.',
-                      },
-                      {
-                        icon: <PenLine className="h-6 w-6" />,
-                        step: dealroom.language === 'de' ? 'Schritt 3' : 'Step 3',
-                        title: dealroom.language === 'de' ? 'Unterschreiben & starten' : 'Sign & get started',
-                        description: dealroom.language === 'de'
-                          ? 'Passt alles? Unterschreiben Sie digital und wir legen direkt los. Kein Papierkram, kein Warten.'
-                          : 'Everything fits? Sign digitally and we get started right away. No paperwork, no waiting.',
-                      },
-                    ].map((s, i) => (
-                      <ScrollReveal key={i} delay={i * 0.08}>
-                        <li className="bg-surface p-6 sm:p-8 lg:p-10 h-full flex flex-col text-center md:text-left">
-                          <div
-                            className="h-12 w-12 rounded-full flex items-center justify-center mb-5 mx-auto md:mx-0"
-                            style={{ backgroundColor: `${brandColor}15`, color: brandColor }}
-                          >
-                            {s.icon}
-                          </div>
-                          <p className="text-micro uppercase font-semibold mb-2" style={{ color: brandColor }}>
-                            {s.step}
-                          </p>
-                          <h3 className="text-h3 font-bold text-fg mb-3">{s.title}</h3>
-                          <p className="text-body text-fg-muted text-pretty">{s.description}</p>
-                        </li>
-                      </ScrollReveal>
-                    ))}
+                    {gc.steps.items.map((s, i) => {
+                      const Icon = i === 0 ? Play : i === 1 ? FileText : PenLine;
+                      return (
+                        <ScrollReveal key={i} delay={i * 0.08}>
+                          <li className="bg-surface p-6 sm:p-8 lg:p-10 h-full flex flex-col text-center md:text-left">
+                            <div
+                              className="h-12 w-12 rounded-full flex items-center justify-center mb-5 mx-auto md:mx-0"
+                              style={{ backgroundColor: `${brandColor}15`, color: brandColor }}
+                            >
+                              <Icon className="h-6 w-6" />
+                            </div>
+                            <p className="text-micro uppercase font-semibold mb-2" style={{ color: brandColor }}>
+                              {s.step}
+                            </p>
+                            <h3 className="text-h3 font-bold text-fg mb-3">{s.title}</h3>
+                            <p className="text-body text-fg-muted text-pretty">{s.description}</p>
+                          </li>
+                        </ScrollReveal>
+                      );
+                    })}
                   </ol>
                 </div>
               </section>
@@ -1027,65 +1008,31 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                 </section>
               )}
 
-              {/* ===== ABOUT — fixed content, left text + right image on desktop ===== */}
+              {/* ===== ABOUT (global content) ===== */}
               <section className="bg-bg">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-28">
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
                     <div className="lg:col-span-6 text-center lg:text-left">
                       <ScrollReveal>
                         <p className="text-micro uppercase text-fg-subtle mb-3">
-                          {dealroom.language === 'de' ? 'Über uns' : 'About us'}
+                          {gc.about.kicker}
                         </p>
                         <h2 className="text-h1 font-bold text-fg text-balance mb-4 leading-[1.15]">
-                          {dealroom.language === 'de'
-                            ? 'Solarheld — Ihr Partner für saubere Energie.'
-                            : 'Solarheld — your partner for clean energy.'}
+                          {gc.about.headline}
                         </h2>
                         <p className="text-body-lg text-fg-muted text-pretty max-w-[55ch] mx-auto lg:mx-0 mb-8">
-                          {dealroom.language === 'de'
-                            ? 'Seit 25 Jahren installieren wir Solaranlagen in ganz Deutschland — von der ersten Beratung bis zur Inbetriebnahme aus einer Hand.'
-                            : 'For 25 years we have installed solar systems all over Germany — from first consultation to commissioning, all from one source.'}
+                          {gc.about.subheadline}
                         </p>
                         <ul className="space-y-4 text-left max-w-xl mx-auto lg:mx-0">
-                          <li className="flex items-start gap-3">
-                            <CheckCircle2 className="h-5 w-5 shrink-0 mt-0.5" style={{ color: brandColor }} aria-hidden="true" />
-                            <div>
-                              <p className="text-body font-semibold text-fg">
-                                {dealroom.language === 'de' ? '4.000+ zufriedene Kunden' : '4,000+ satisfied customers'}
-                              </p>
-                              <p className="text-body-sm text-fg-muted">
-                                {dealroom.language === 'de'
-                                  ? 'Familien und Unternehmen vertrauen auf unsere Erfahrung.'
-                                  : 'Families and businesses trust our experience.'}
-                              </p>
-                            </div>
-                          </li>
-                          <li className="flex items-start gap-3">
-                            <CheckCircle2 className="h-5 w-5 shrink-0 mt-0.5" style={{ color: brandColor }} aria-hidden="true" />
-                            <div>
-                              <p className="text-body font-semibold text-fg">
-                                {dealroom.language === 'de' ? 'Alles aus einer Hand' : 'All from one source'}
-                              </p>
-                              <p className="text-body-sm text-fg-muted">
-                                {dealroom.language === 'de'
-                                  ? 'Planung, Installation, Wartung — keine Subunternehmer, keine Schnittstellen.'
-                                  : 'Planning, installation, maintenance — no subcontractors, no handoffs.'}
-                              </p>
-                            </div>
-                          </li>
-                          <li className="flex items-start gap-3">
-                            <CheckCircle2 className="h-5 w-5 shrink-0 mt-0.5" style={{ color: brandColor }} aria-hidden="true" />
-                            <div>
-                              <p className="text-body font-semibold text-fg">
-                                {dealroom.language === 'de' ? '25 Jahre Garantie' : '25-year warranty'}
-                              </p>
-                              <p className="text-body-sm text-fg-muted">
-                                {dealroom.language === 'de'
-                                  ? 'Premium-Komponenten, geprüfte Qualität, langfristige Sicherheit.'
-                                  : 'Premium components, certified quality, long-term security.'}
-                              </p>
-                            </div>
-                          </li>
+                          {gc.about.bullets.map((bullet, i) => (
+                            <li key={i} className="flex items-start gap-3">
+                              <CheckCircle2 className="h-5 w-5 shrink-0 mt-0.5" style={{ color: brandColor }} aria-hidden="true" />
+                              <div>
+                                <p className="text-body font-semibold text-fg">{bullet.title}</p>
+                                <p className="text-body-sm text-fg-muted">{bullet.detail}</p>
+                              </div>
+                            </li>
+                          ))}
                         </ul>
                       </ScrollReveal>
                     </div>
@@ -1095,8 +1042,8 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                         <div className="relative aspect-square rounded-xl overflow-hidden bg-surface-sub shadow-floating">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
-                            src="/images/team/team-lg.jpeg"
-                            alt={dealroom.language === 'de' ? 'Das Solarheld-Team' : 'The Solarheld team'}
+                            src={gc.about.imageUrl}
+                            alt={gc.about.headline}
                             className="absolute inset-0 w-full h-full object-cover"
                             loading="lazy"
                           />
@@ -1178,17 +1125,17 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                   <ScrollReveal>
                     <div className="max-w-3xl mx-auto text-center">
                       <h2 className="text-h1 sm:text-display font-bold text-fg text-balance leading-[1.05] mb-6">
-                        {tr.sections.finalCtaTitle}
+                        {gc.finalCta.title}
                       </h2>
                       <p className="text-body-lg text-fg-muted text-pretty max-w-[55ch] mx-auto mb-10">
-                        {tr.sections.finalCtaSubtitle}
+                        {gc.finalCta.subtitle}
                       </p>
                       <button
                         onClick={() => handleCta('final')}
                         className="group inline-flex items-center gap-3 px-7 sm:px-8 py-4 rounded-md text-white font-semibold text-body shadow-floating transition-all duration-fast hover:opacity-95 active:scale-[0.99] min-h-[52px]"
                         style={{ backgroundColor: brandColor }}
                       >
-                        <span>{dealroom.language === 'de' ? 'Jetzt Angebot ansehen' : 'View Proposal'}</span>
+                        <span>{gc.finalCta.buttonLabel}</span>
                         <ArrowRight className="h-5 w-5 transition-transform duration-fast group-hover:translate-x-1" />
                       </button>
                       {contact && (

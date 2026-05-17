@@ -20,6 +20,7 @@ import {
   Moon,
   PanelLeftClose,
   PanelLeftOpen,
+  Layers,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTheme } from 'next-themes';
@@ -30,6 +31,7 @@ const mainNavItems = [
   { href: '/dashboard/activity', label: 'Aktivität', icon: Activity },
   { href: '/dashboard/customers', label: 'Kunden', icon: Users },
   { href: '/dashboard/references', label: 'Kundenstimmen', icon: Award },
+  { href: '/dashboard/global-content', label: 'Standard-Inhalte', icon: Layers },
   { href: '/dashboard/templates', label: 'Vorlagen', icon: FileStack },
   { href: '/dashboard/analytics', label: 'Auswertung', icon: BarChart3 },
   { href: '/dashboard/email-flows', label: 'E-Mails', icon: Mail },
