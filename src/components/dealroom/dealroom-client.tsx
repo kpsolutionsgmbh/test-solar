@@ -10,7 +10,6 @@ import { motion } from 'framer-motion';
 import CountUp from 'react-countup';
 import { useInView } from 'react-intersection-observer';
 import {
-  AlertTriangle,
   CheckCircle2,
   ArrowRight,
   Phone,
@@ -23,14 +22,12 @@ import {
   FileText,
   Download,
   ChevronDown,
-  PenLine,
   Rocket,
   ShieldCheck,
   Users,
 } from 'lucide-react';
 import { NumberTicker } from '@/components/magicui/number-ticker';
 import { ShimmerButton } from '@/components/magicui/shimmer-button';
-import { DotPattern } from '@/components/magicui/dot-pattern';
 import { fireConfetti } from '@/components/magicui/confetti';
 
 function getVideoEmbedUrl(url: string): string | null {
@@ -54,14 +51,6 @@ function getOutcomeDetail(outcome: string | { text: string; detail?: string }): 
 function getOutcomeVisual(outcome: string | { text: string; visual_type?: VisualType; visual_data?: VisualData }): { visual_type?: VisualType; visual_data?: VisualData } {
   if (typeof outcome === 'string') return {};
   return { visual_type: outcome.visual_type, visual_data: outcome.visual_data };
-}
-
-function SectionDivider() {
-  return (
-    <div className="flex items-center justify-center py-2">
-      <div className="h-px w-16 bg-[#e5e7eb]" />
-    </div>
-  );
 }
 
 // ==================== Animation Components ====================
