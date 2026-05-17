@@ -460,108 +460,149 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
         <div className={activeTab === 'overview' ? '' : 'hidden'}>
           {content && (
             <div>
-              {/* ===== 1. HERO ===== */}
-              <section className="bg-white">
-                <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-10 sm:pt-12 pb-6">
-                  <ScrollReveal>
-                    {/* Client Logo + Prepared For */}
-                    <div className="text-center mb-8">
-                      {dealroom.client_logo_url && (
-                        <div className="mb-5">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={dealroom.client_logo_url} alt={dealroom.client_company} className="h-12 sm:h-14 object-contain mx-auto" />
-                        </div>
-                      )}
-                      <p className="text-sm uppercase tracking-wider font-medium mb-3" style={{ color: brandColor }}>
-                        {tr.hero.preparedFor}
-                      </p>
-                      <h1 className="text-[28px] sm:text-[36px] font-bold text-[#1a1a1a] mb-4 leading-tight max-w-3xl mx-auto">
-                        {content.hero_title}
-                      </h1>
-                      <p className="text-[15px] sm:text-[17px] text-[#6b7280] max-w-2xl mx-auto leading-relaxed">
-                        {content.hero_subtitle}
-                      </p>
-                    </div>
-                  </ScrollReveal>
+              {/* ===== 1. HERO — Swiss Modernist, asymmetric ===== */}
+              <section className="relative bg-bg overflow-hidden">
+                {/* Atmospheric brand glow — replaces tinted-orange-everywhere pattern */}
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -top-32 -left-32 h-[600px] w-[600px] rounded-full blur-3xl opacity-40 animate-glow-pulse"
+                  style={{ background: `radial-gradient(circle, ${brandColor}1f 0%, transparent 60%)` }}
+                />
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute -bottom-40 -right-32 h-[500px] w-[500px] rounded-full blur-3xl opacity-30"
+                  style={{ background: `radial-gradient(circle, ${brandColor}1a 0%, transparent 65%)` }}
+                />
 
-                  {/* Video */}
-                  {dealroom.video_url && (
-                    <ScrollReveal delay={0.1}>
-                      <div className="mb-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          <Play className="h-5 w-5" style={{ color: brandColor }} />
-                          <h2 className="text-[22px] sm:text-[28px] font-bold text-[#1a1a1a]">
-                            {tr.sections.videoTitle}
-                          </h2>
-                        </div>
-                        <p className="text-sm text-[#6b7280] mb-3">
-                          {dealroom.language === 'de'
-                            ? `${contact?.name || 'Ihr Berater'} hat eine persönliche Nachricht für Sie aufgenommen.`
-                            : `${contact?.name || 'Your advisor'} recorded a personal message for you.`}
-                        </p>
-                        <div className="aspect-video rounded-2xl overflow-hidden bg-[#fafafa] border border-[#e5e7eb] shadow-sm">
-                          <iframe
-                            src={getVideoEmbedUrl(dealroom.video_url) || ''}
-                            className="w-full h-full"
-                            allowFullScreen
-                            allow="autoplay; fullscreen"
-                            onLoad={() => trackEvent(dealroom.id, 'video_play')}
-                          />
-                        </div>
-                      </div>
-                    </ScrollReveal>
-                  )}
-
-                  {/* First CTA */}
-                  <ScrollReveal delay={0.15}>
-                    <CtaBlock
-                      derisking={content.cta_derisking || tr.sections.ctaDerisking}
-                      ctaName="hero"
-                    />
-                  </ScrollReveal>
-
-                  {/* Contact Person Card */}
-                  {contact && (
-                    <ScrollReveal delay={0.25}>
-                      <div className="max-w-xl mx-auto rounded-2xl p-5 sm:p-7 border-2 shadow-sm" style={{ borderColor: brandColor + '25', backgroundColor: brandColor + '05' }}>
-                        <p className="text-xs uppercase tracking-wider font-semibold mb-4" style={{ color: brandColor }}>
-                          {tr.hero.by}
-                        </p>
-                        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5">
-                          <div className="h-20 w-20 rounded-full flex items-center justify-center text-white text-2xl font-semibold shrink-0 shadow-lg overflow-hidden" style={{ backgroundColor: brandColor }}>
-                            {contact.avatar_url ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img src={contact.avatar_url} alt={contact.name} className="h-20 w-20 rounded-full object-cover" />
-                            ) : (
-                              contact.name.charAt(0)
-                            )}
+                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-24 lg:pt-32 pb-12 sm:pb-16">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+                    {/* LEFT — Editorial type column (7 of 12) */}
+                    <div className="lg:col-span-7">
+                      <ScrollReveal>
+                        {dealroom.client_logo_url && (
+                          <div className="mb-8 sm:mb-10">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={dealroom.client_logo_url}
+                              alt={dealroom.client_company}
+                              className="h-10 sm:h-12 object-contain object-left grayscale opacity-70"
+                            />
                           </div>
-                          <div className="text-center sm:text-left">
-                            <p className="text-xl font-bold text-[#1a1a1a] mb-1">
-                              <span className="px-2.5 py-1 rounded-lg" style={{ backgroundColor: brandColor + '15', color: brandColor }}>
-                                {contact.name}
-                              </span>
+                        )}
+
+                        {/* Micro label — ONE brand-color accent allowed in hero */}
+                        <p
+                          className="text-micro uppercase mb-5 sm:mb-6 inline-flex items-center gap-2"
+                          style={{ color: brandColor }}
+                        >
+                          <span className="h-px w-6 bg-current" />
+                          {tr.hero.preparedFor}
+                          {dealroom.client_company && (
+                            <span className="text-fg-subtle"> · {dealroom.client_company}</span>
+                          )}
+                        </p>
+
+                        {/* Display headline — editorial scale, tight tracking */}
+                        <h1 className="font-display text-[clamp(36px,7vw,72px)] leading-[1.05] tracking-[-0.035em] font-medium text-fg text-balance mb-6 sm:mb-8 max-w-[20ch]">
+                          {content.hero_title}
+                        </h1>
+
+                        {/* Subtitle — body-lg, restricted line-length */}
+                        <p className="text-body-lg text-fg-muted text-pretty max-w-[55ch] mb-8 sm:mb-10">
+                          {content.hero_subtitle}
+                        </p>
+
+                        {/* CTA — primary surface, single source of brand fill in hero */}
+                        <CtaBlock
+                          derisking={content.cta_derisking || tr.sections.ctaDerisking}
+                          ctaName="hero"
+                        />
+                      </ScrollReveal>
+                    </div>
+
+                    {/* RIGHT — Video + contact (5 of 12) */}
+                    <div className="lg:col-span-5 lg:pt-2">
+                      {dealroom.video_url && (
+                        <ScrollReveal delay={0.15}>
+                          <figure className="mb-6 sm:mb-8">
+                            <div className="relative aspect-video rounded-xl overflow-hidden bg-surface-sub border border-border shadow-floating">
+                              <iframe
+                                src={getVideoEmbedUrl(dealroom.video_url) || ''}
+                                className="absolute inset-0 w-full h-full"
+                                allowFullScreen
+                                allow="autoplay; fullscreen"
+                                onLoad={() => trackEvent(dealroom.id, 'video_play')}
+                              />
+                            </div>
+                            <figcaption className="mt-3 text-body-sm text-fg-muted flex items-center gap-2">
+                              <Play className="h-3.5 w-3.5" style={{ color: brandColor }} aria-hidden="true" />
+                              {dealroom.language === 'de'
+                                ? `Persönliche Nachricht von ${contact?.name || 'Ihrem Berater'}`
+                                : `Personal message from ${contact?.name || 'your advisor'}`}
+                            </figcaption>
+                          </figure>
+                        </ScrollReveal>
+                      )}
+
+                      {/* Contact card — clean surface, no brand tint, brand only on avatar + links */}
+                      {contact && (
+                        <ScrollReveal delay={0.25}>
+                          <div className="rounded-xl p-5 sm:p-6 bg-surface border border-border shadow-raised">
+                            <p className="text-micro uppercase text-fg-subtle mb-4">
+                              {tr.hero.by}
                             </p>
-                            {contact.position && (
-                              <p className="text-sm text-[#6b7280] mb-2">{contact.position}</p>
-                            )}
-                            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-sm">
-                              {contact.phone && (
-                                <a href={`tel:${contact.phone}`} className="flex items-center gap-1.5 font-medium hover:underline" style={{ color: brandColor }}>
-                                  <Phone className="h-4 w-4" /> {contact.phone}
-                                </a>
-                              )}
-                              {contact.email && (
-                                <a href={`mailto:${contact.email}`} className="flex items-center gap-1.5 font-medium hover:underline" style={{ color: brandColor }}>
-                                  <Mail className="h-4 w-4" /> {contact.email}
-                                </a>
-                              )}
+                            <div className="flex items-start gap-4">
+                              <div
+                                className="h-14 w-14 rounded-full flex items-center justify-center text-white text-lg font-medium shrink-0 overflow-hidden"
+                                style={{ backgroundColor: brandColor }}
+                              >
+                                {contact.avatar_url ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img
+                                    src={contact.avatar_url}
+                                    alt={contact.name}
+                                    className="h-14 w-14 object-cover"
+                                  />
+                                ) : (
+                                  contact.name.charAt(0)
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-body font-medium text-fg leading-tight">
+                                  {contact.name}
+                                </p>
+                                {contact.position && (
+                                  <p className="text-body-sm text-fg-muted mt-0.5">
+                                    {contact.position}
+                                  </p>
+                                )}
+                                <div className="flex flex-col gap-1.5 mt-3 text-body-sm">
+                                  {contact.phone && (
+                                    <a
+                                      href={`tel:${contact.phone}`}
+                                      className="inline-flex items-center gap-2 text-fg hover:text-brand-500 transition-colors duration-fast"
+                                    >
+                                      <Phone className="h-3.5 w-3.5 text-fg-subtle" aria-hidden="true" />
+                                      {contact.phone}
+                                    </a>
+                                  )}
+                                  {contact.email && (
+                                    <a
+                                      href={`mailto:${contact.email}`}
+                                      className="inline-flex items-center gap-2 text-fg hover:text-brand-500 transition-colors duration-fast"
+                                    >
+                                      <Mail className="h-3.5 w-3.5 text-fg-subtle" aria-hidden="true" />
+                                      <span className="truncate">{contact.email}</span>
+                                    </a>
+                                  )}
+                                </div>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    </ScrollReveal>
-                  )}
+                        </ScrollReveal>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </section>
 

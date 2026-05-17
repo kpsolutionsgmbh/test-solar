@@ -6,72 +6,252 @@
   .text-balance {
     text-wrap: balance;
   }
+  .text-pretty {
+    text-wrap: pretty;
+  }
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 10%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
-    --primary: 27 82% 51%;
+    /* ============================================================
+     * FOUNDATION — Stone-warm neutrals (NOT cool slate)
+     * ============================================================ */
+    --bg:            42 14% 97%;   /* #fafaf9 paper-warm */
+    --surface:       0 0% 100%;
+    --surface-sub:   60 5% 96%;    /* #f5f5f4 */
+    --border:        24 6% 90%;    /* #e7e5e4 */
+    --border-strong: 30 6% 83%;    /* #d6d3d1 */
+    --fg:            24 10% 10%;   /* #1c1917 stone-900 */
+    --fg-muted:      33 5% 32%;    /* #57534e */
+    --fg-subtle:     30 6% 64%;    /* #a8a29e */
+
+    /* Trust contrast (premium CTAs, dark sections) */
+    --trust:         24 10% 10%;
+    --trust-deep:    20 14% 4%;    /* #0c0a09 */
+
+    /* ============================================================
+     * BRAND — Atmospheric accent only, NOT fill-everywhere
+     * ============================================================ */
+    --brand-50:      30 91% 96%;   /* #FEF5EB */
+    --brand-500:     27 82% 51%;   /* #E97E1C */
+    --brand-600:     22 80% 43%;   /* #C66514 */
+    --brand-glow:    27 82% 51%;   /* used with alpha */
+
+    /* ============================================================
+     * SEMANTIC
+     * ============================================================ */
+    --success:       142 71% 29%;  /* #15803d */
+    --success-bg:    138 76% 97%;
+    --warning:       30 89% 36%;   /* #b45309 */
+    --warning-bg:    48 100% 96%;
+    --danger:        0 70% 35%;    /* #991b1b */
+    --danger-bg:     0 86% 97%;
+    --info:          200 98% 32%;
+    --info-bg:       204 100% 97%;
+
+    /* ============================================================
+     * shadcn compat layer (existing components keep working)
+     * ============================================================ */
+    --background: var(--bg);
+    --foreground: var(--fg);
+    --card: var(--surface);
+    --card-foreground: var(--fg);
+    --popover: var(--surface);
+    --popover-foreground: var(--fg);
+    --primary: var(--brand-500);
     --primary-foreground: 0 0% 100%;
-    --secondary: 152 58% 26%;
+    --secondary: var(--success);
     --secondary-foreground: 0 0% 100%;
-    --muted: 40 20% 95%;
-    --muted-foreground: 220 9% 46%;
-    --accent: 33 95% 94%;
-    --accent-foreground: 27 82% 41%;
-    --destructive: 0 84% 60%;
+    --muted: var(--surface-sub);
+    --muted-foreground: var(--fg-muted);
+    --accent: var(--brand-50);
+    --accent-foreground: var(--brand-600);
+    --destructive: var(--danger);
     --destructive-foreground: 0 0% 100%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 27 82% 51%;
-    --chart-1: 27 82% 51%;
-    --chart-2: 152 58% 26%;
+    --input: var(--border);
+    --ring: var(--brand-500);
+    --chart-1: var(--brand-500);
+    --chart-2: var(--success);
     --chart-3: 46 97% 65%;
     --chart-4: 160 84% 39%;
-    --chart-5: 27 60% 40%;
-    --radius: 0.5rem;
+    --chart-5: var(--brand-600);
+
+    /* ============================================================
+     * RADIUS — hierarchical scale
+     * ============================================================ */
+    --radius-xs:   4px;
+    --radius-sm:   6px;
+    --radius-md:   8px;
+    --radius-lg:   12px;
+    --radius-xl:   20px;
+    --radius-full: 9999px;
+    --radius: 0.5rem; /* shadcn compat */
+
+    /* ============================================================
+     * ELEVATION — 5-step semantic scale
+     * ============================================================ */
+    --shadow-flat:     none;
+    --shadow-raised:   0 1px 2px rgba(28,25,23,.04), 0 1px 1px rgba(28,25,23,.06);
+    --shadow-floating: 0 4px 12px rgba(28,25,23,.06), 0 2px 4px rgba(28,25,23,.04);
+    --shadow-popover:  0 12px 32px rgba(28,25,23,.08), 0 4px 8px rgba(28,25,23,.06);
+    --shadow-modal:    0 32px 64px rgba(28,25,23,.12), 0 12px 24px rgba(28,25,23,.08);
+
+    /* ============================================================
+     * MOTION — durations + easings
+     * ============================================================ */
+    --duration-instant:     0ms;
+    --duration-micro:       100ms;
+    --duration-fast:        200ms;
+    --duration-base:        400ms;
+    --duration-slow:        700ms;
+    --duration-atmospheric: 1500ms;
+
+    --ease-enter:        cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-exit:         cubic-bezier(0.7, 0, 0.84, 0);
+    --ease-standard:     cubic-bezier(0.65, 0, 0.35, 1);
+    --ease-atmospheric:  cubic-bezier(0.83, 0, 0.17, 1);
+
+    /* ============================================================
+     * SPACING — section rhythm tokens
+     * ============================================================ */
+    --space-section-y-public: clamp(64px, 12vw, 160px);
+    --space-section-y-admin:  clamp(24px, 4vw, 48px);
+    --space-card-x:           16px;
+    --space-card-y:           16px;
+    --space-field-y:          8px;
+    --space-field-stack:      12px;
+
+    /* Admin density mode (overridable via .density-compact / .density-spacious) */
+    --density-scale: 1;
   }
+
+  .dark {
+    /* Foundation — warm stone dark */
+    --bg:            20 14% 4%;    /* #0c0a09 stone-950 */
+    --surface:       24 10% 10%;   /* #1c1917 */
+    --surface-sub:   12 6% 15%;    /* #292524 */
+    --border:        12 6% 15%;
+    --border-strong: 20 6% 25%;    /* #44403c */
+    --fg:            42 14% 97%;
+    --fg-muted:      30 6% 64%;
+    --fg-subtle:     33 5% 47%;    /* #78716c */
+    --trust:         42 14% 97%;
+    --trust-deep:    0 0% 100%;
+
+    --brand-50:      27 82% 12%;
+    --brand-500:     27 82% 51%;
+    --brand-600:     22 80% 43%;
+
+    /* shadcn compat */
+    --background: var(--bg);
+    --foreground: var(--fg);
+    --card: var(--surface);
+    --card-foreground: var(--fg);
+    --popover: var(--surface);
+    --popover-foreground: var(--fg);
+    --primary: var(--brand-500);
+    --secondary: var(--success);
+    --muted: var(--surface-sub);
+    --muted-foreground: var(--fg-muted);
+    --accent: var(--brand-50);
+    --accent-foreground: var(--brand-500);
+    --input: var(--border);
+
+    /* Dark mode shadows need stronger alpha */
+    --shadow-raised:   0 1px 2px rgba(0,0,0,.4), 0 1px 1px rgba(0,0,0,.5);
+    --shadow-floating: 0 4px 12px rgba(0,0,0,.5), 0 2px 4px rgba(0,0,0,.4);
+    --shadow-popover:  0 12px 32px rgba(0,0,0,.6), 0 4px 8px rgba(0,0,0,.5);
+    --shadow-modal:    0 32px 64px rgba(0,0,0,.7), 0 12px 24px rgba(0,0,0,.6);
+  }
+
+  /* Density modes (admin) */
+  .density-compact   { --density-scale: 0.85; }
+  .density-spacious  { --density-scale: 1.2; }
 }
 
 @layer base {
   * {
     @apply border-border;
   }
-  body {
-    @apply bg-background text-foreground;
+  html {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+  body {
+    @apply bg-bg text-fg font-sans;
+    font-feature-settings: 'ss01', 'cv11', 'kern';
+  }
+  /* Geist is geometric — tight tracking on display sizes */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight;
+    @apply font-medium;
+    letter-spacing: -0.02em;
+  }
+  h1 { letter-spacing: -0.03em; }
+  /* Tabular numerics for data, tables, calculator */
+  table, .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+  /* Focus rings use brand */
+  *:focus-visible {
+    outline: 2px solid hsl(var(--brand-500));
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
-/* Scroll animations for dealroom page */
+/* ============================================================
+ * Legacy scroll-reveal class (kept for dealroom-client.tsx)
+ * Will be replaced with framer-motion variants in Phase 1
+ * ============================================================ */
 .fade-in-up {
   opacity: 0;
   transform: translateY(24px);
-  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition:
+    opacity var(--duration-slow) var(--ease-enter),
+    transform var(--duration-slow) var(--ease-enter);
 }
-
 .fade-in-up.visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* Marquee animation for team photos */
+/* Marquee for trust badges / team photos */
 @keyframes marquee {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
-
 .animate-marquee {
   animation: marquee 30s linear infinite;
 }
-
 .animate-marquee:hover {
   animation-play-state: paused;
+}
+
+/* Atmospheric brand glow (hero / outcome sections) */
+.brand-glow-radial {
+  background: radial-gradient(
+    ellipse at center,
+    hsl(var(--brand-500) / 0.12) 0%,
+    transparent 65%
+  );
+}
+.dark .brand-glow-radial {
+  background: radial-gradient(
+    ellipse at center,
+    hsl(var(--brand-500) / 0.18) 0%,
+    transparent 65%
+  );
 }

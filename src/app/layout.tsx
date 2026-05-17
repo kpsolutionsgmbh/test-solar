@@ -1,15 +1,8 @@
 import type { Metadata } from 'next';
-import { Plus_Jakarta_Sans } from 'next/font/google';
+import { GeistSans } from 'geist/font/sans';
+import { GeistMono } from 'geist/font/mono';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ['latin', 'latin-ext'],
-  weight: ['400', '500', '600', '700'],
-  display: 'swap',
-  preload: true,
-  variable: '--font-plus-jakarta',
-});
 
 export const metadata: Metadata = {
   title: 'Dealroom | Solarheld',
@@ -31,8 +24,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="de" className={plusJakartaSans.variable}>
-      <body className="antialiased font-sans">
+    <html lang="de" className={`${GeistSans.variable} ${GeistMono.variable}`}>
+      <body className="antialiased font-sans bg-bg text-fg">
         {children}
         <Toaster />
       </body>
