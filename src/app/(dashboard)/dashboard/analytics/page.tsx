@@ -6,7 +6,7 @@ import { BarChart3, Flame } from 'lucide-react';
 import { AnalyticsStatsGrid } from '@/components/dashboard/analytics-stats';
 import { Metadata } from 'next';
 
-export const metadata: Metadata = { title: 'Analytics' };
+export const metadata: Metadata = { title: 'Auswertung' };
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -21,10 +21,10 @@ export default async function AnalyticsPage() {
 
   const { data: dealrooms } = await supabase
     .from('dealrooms')
-    .select('id, slug, client_name, client_company, status, engagement_score')
+    .select('id, slug, client_name, client_company, status, engagement_score, created_at')
     .order('updated_at', { ascending: false });
 
-  const allDealrooms = (dealrooms || []) as Dealroom[];
+  const allDealrooms = (dealrooms || []) as (Dealroom & { engagement_score?: number; created_at?: string })[];
   const dealroomIds = allDealrooms.map(d => d.id);
 
   const { data: events } = dealroomIds.length > 0
@@ -37,29 +37,65 @@ export default async function AnalyticsPage() {
 
   const allEvents = (events || []) as TrackingEvent[];
 
-  // Compute stats
-  const totalViews = allEvents.filter(e => e.event_type === 'page_view').length;
-  const totalVideoPlays = allEvents.filter(e => e.event_type === 'video_play').length;
-  const totalCtaClicks = allEvents.filter(e => e.event_type === 'cta_click').length;
-  const totalSigns = allEvents.filter(e => e.event_type === 'pandadoc_sign').length;
-  const uniqueSessions = new Set(allEvents.map(e => e.session_id)).size;
+  // Compute funnel metrics — counting unique dealrooms that reached each stage
+  const dealroomsByEventType = (eventType: string) =>
+    new Set(allEvents.filter(e => e.event_type === eventType).map(e => e.dealroom_id));
 
-  // Last 7 days events
-  const sevenDaysAgo = Date.now() - 7 * 86400000;
-  const recentEvents = allEvents.filter(e => new Date(e.created_at).getTime() > sevenDaysAgo);
-  const recentViews = recentEvents.filter(e => e.event_type === 'page_view').length;
+  const totalDealrooms = allDealrooms.length;
+  const openedDealrooms = dealroomsByEventType('page_view').size;
+  const videoDealrooms = dealroomsByEventType('video_play').size;
+  const ctaDealrooms = dealroomsByEventType('cta_click').size;
+  const signedDealrooms = allDealrooms.filter(d => d.status === 'signed').length || dealroomsByEventType('pandadoc_sign').size;
+
+  const conversionRate = totalDealrooms > 0 ? Math.round((signedDealrooms / totalDealrooms) * 100) : 0;
+  const avgEngagement = totalDealrooms > 0
+    ? Math.round(allDealrooms.reduce((sum, d) => sum + (d.engagement_score || 0), 0) / totalDealrooms)
+    : 0;
+
+  // 7-day window
+  const now = Date.now();
+  const sevenDaysAgo = now - 7 * 86400000;
+  const fourteenDaysAgo = now - 14 * 86400000;
+  const sessionsLast7 = new Set(
+    allEvents
+      .filter(e => e.event_type === 'page_view' && new Date(e.created_at).getTime() > sevenDaysAgo)
+      .map(e => e.session_id)
+  ).size;
+  const sessionsPrev7 = new Set(
+    allEvents
+      .filter(
+        e =>
+          e.event_type === 'page_view' &&
+          new Date(e.created_at).getTime() > fourteenDaysAgo &&
+          new Date(e.created_at).getTime() <= sevenDaysAgo
+      )
+      .map(e => e.session_id)
+  ).size;
+  const recentOpensDelta = sessionsPrev7 > 0
+    ? Math.round(((sessionsLast7 - sessionsPrev7) / sessionsPrev7) * 100)
+    : null;
+
+  // Funnel stages
+  const funnelStages = [
+    { label: 'Erstellt', count: totalDealrooms, color: 'bg-fg' },
+    { label: 'Geöffnet', count: openedDealrooms, color: 'bg-brand-500' },
+    { label: 'Video', count: videoDealrooms, color: 'bg-brand-500/80' },
+    { label: 'CTA', count: ctaDealrooms, color: 'bg-brand-500/60' },
+    { label: 'Signiert', count: signedDealrooms, color: 'bg-success' },
+  ];
+  const maxFunnel = Math.max(...funnelStages.map(s => s.count), 1);
 
   // Score distribution
   const scoreCategories = [
-    { label: 'Kalt (0-20)', min: 0, max: 20, color: 'bg-gray-400' },
-    { label: 'Lauwarm (21-40)', min: 21, max: 40, color: 'bg-blue-400' },
-    { label: 'Warm (41-60)', min: 41, max: 60, color: 'bg-orange-400' },
-    { label: 'Heiß (61-80)', min: 61, max: 80, color: 'bg-red-500' },
-    { label: 'Deal-Ready (81+)', min: 81, max: 100, color: 'bg-emerald-500' },
+    { label: 'Kalt (0-20)', min: 0, max: 20, color: 'bg-fg-subtle' },
+    { label: 'Lauwarm (21-40)', min: 21, max: 40, color: 'bg-info' },
+    { label: 'Warm (41-60)', min: 41, max: 60, color: 'bg-brand-500' },
+    { label: 'Heiß (61-80)', min: 61, max: 80, color: 'bg-danger' },
+    { label: 'Deal-Ready (81+)', min: 81, max: 100, color: 'bg-success' },
   ];
   const scoreCounts = scoreCategories.map(cat => ({
     ...cat,
-    count: allDealrooms.filter((d: { engagement_score?: number }) => {
+    count: allDealrooms.filter(d => {
       const s = d.engagement_score || 0;
       return s >= cat.min && s <= cat.max;
     }).length,
@@ -75,106 +111,146 @@ export default async function AnalyticsPage() {
     const signs = drEvents.filter(e => e.event_type === 'pandadoc_sign').length;
     const sessions = new Set(drEvents.map(e => e.session_id)).size;
     const lastEvent = drEvents[0]?.created_at;
-    const score = (dr as Dealroom & { engagement_score?: number }).engagement_score || 0;
+    const score = dr.engagement_score || 0;
     return { ...dr, views, videos, ctas, signs, sessions, lastEvent, score };
   });
 
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-[#1a1a1a]">Auswertungen</h1>
-        <p className="text-sm text-[#6b7280] mt-1">
+        <h1 className="text-2xl font-bold text-fg">Auswertung</h1>
+        <p className="text-sm text-fg-muted mt-1">
           Wie Ihre Kunden mit den Angebotsräumen interagieren.
         </p>
       </div>
 
-      {/* Global Stats */}
+      {/* Global KPI Strip */}
       <AnalyticsStatsGrid
-        totalViews={totalViews}
-        uniqueSessions={uniqueSessions}
-        totalVideoPlays={totalVideoPlays}
-        totalCtaClicks={totalCtaClicks}
-        totalSigns={totalSigns}
-        recentViews={recentViews}
+        totalDealrooms={totalDealrooms}
+        totalOpened={openedDealrooms}
+        totalSigns={signedDealrooms}
+        conversionRate={conversionRate}
+        avgEngagement={avgEngagement}
+        recentOpens={sessionsLast7}
+        recentOpensDelta={recentOpensDelta}
       />
 
-      {/* Engagement Score Distribution */}
-      <Card className="mb-6">
+      {/* Funnel */}
+      <Card className="mb-6 border-border shadow-raised">
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Flame className="h-4 w-4 text-[#E97E1C]" />
-            Engagement Score Verteilung
+          <CardTitle className="text-base font-bold flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 text-brand-500" />
+            Dealroom-Funnel
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2.5">
+            {funnelStages.map((stage, i) => {
+              const pct = totalDealrooms > 0 ? Math.round((stage.count / totalDealrooms) * 100) : 0;
+              const dropoff = i > 0 ? funnelStages[i - 1].count - stage.count : null;
+              return (
+                <div key={stage.label} className="flex items-center gap-3">
+                  <span className="text-body-sm text-fg w-24 shrink-0">{stage.label}</span>
+                  <div className="flex-1 h-7 bg-surface-sub rounded-md overflow-hidden relative">
+                    <div
+                      className={`h-full rounded-md ${stage.color} transition-all duration-500`}
+                      style={{ width: `${(stage.count / maxFunnel) * 100}%` }}
+                    />
+                  </div>
+                  <span className="text-body-sm font-semibold text-fg w-10 text-right tabular-nums">{stage.count}</span>
+                  <span className="text-micro text-fg-subtle w-12 text-right tabular-nums">{pct}%</span>
+                  {dropoff != null && dropoff > 0 ? (
+                    <span className="text-micro text-danger w-14 text-right tabular-nums">−{dropoff}</span>
+                  ) : (
+                    <span className="w-14" />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Engagement Score Distribution */}
+      <Card className="mb-6 border-border shadow-raised">
+        <CardHeader>
+          <CardTitle className="text-base font-bold flex items-center gap-2">
+            <Flame className="h-4 w-4 text-brand-500" />
+            Engagement-Score Verteilung
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
             {scoreCounts.map((cat) => (
               <div key={cat.label} className="flex items-center gap-3">
-                <span className="text-xs text-[#6b7280] w-32 shrink-0">{cat.label}</span>
-                <div className="flex-1 h-5 bg-[#f3f4f6] rounded-full overflow-hidden">
+                <span className="text-body-sm text-fg-muted w-32 shrink-0">{cat.label}</span>
+                <div className="flex-1 h-5 bg-surface-sub rounded-full overflow-hidden">
                   <div
                     className={`h-full rounded-full ${cat.color} transition-all duration-500`}
                     style={{ width: `${(cat.count / maxScoreCount) * 100}%`, minWidth: cat.count > 0 ? '20px' : '0' }}
                   />
                 </div>
-                <span className="text-xs font-semibold text-[#1a1a1a] w-6 text-right tabular-nums">{cat.count}</span>
+                <span className="text-body-sm font-semibold text-fg w-6 text-right tabular-nums">{cat.count}</span>
               </div>
             ))}
           </div>
         </CardContent>
       </Card>
 
-      {/* Per-Dealroom Table */}
-      <Card>
+      {/* Per-Dealroom Table — link goes to ACTIVITY page */}
+      <Card className="border-border shadow-raised">
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 text-[#E97E1C]" />
+          <CardTitle className="text-base font-bold flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 text-brand-500" />
             Angebotsraum-Übersicht
           </CardTitle>
         </CardHeader>
         <CardContent>
           {perDealroom.length === 0 ? (
-            <p className="text-sm text-[#6b7280] py-8 text-center">Noch keine Daten vorhanden</p>
+            <p className="text-sm text-fg-muted py-8 text-center">Noch keine Daten vorhanden</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b text-left">
-                    <th className="pb-2 font-medium text-[#6b7280]">Angebotsraum</th>
-                    <th className="pb-2 font-medium text-[#6b7280] text-center">Score</th>
-                    <th className="pb-2 font-medium text-[#6b7280] text-center">Status</th>
-                    <th className="pb-2 font-medium text-[#6b7280] text-center">Views</th>
-                    <th className="pb-2 font-medium text-[#6b7280] text-center">Sessions</th>
-                    <th className="pb-2 font-medium text-[#6b7280] text-center">Video</th>
-                    <th className="pb-2 font-medium text-[#6b7280] text-center">CTA</th>
-                    <th className="pb-2 font-medium text-[#6b7280] text-center">Signiert</th>
-                    <th className="pb-2 font-medium text-[#6b7280] text-right">Letzte Aktivität</th>
+                  <tr className="border-b border-border text-left">
+                    <th className="pb-2 font-medium text-fg-muted">Angebotsraum</th>
+                    <th className="pb-2 font-medium text-fg-muted text-center">Score</th>
+                    <th className="pb-2 font-medium text-fg-muted text-center">Status</th>
+                    <th className="pb-2 font-medium text-fg-muted text-center">Views</th>
+                    <th className="pb-2 font-medium text-fg-muted text-center">Sessions</th>
+                    <th className="pb-2 font-medium text-fg-muted text-center">Video</th>
+                    <th className="pb-2 font-medium text-fg-muted text-center">CTA</th>
+                    <th className="pb-2 font-medium text-fg-muted text-center">Signiert</th>
+                    <th className="pb-2 font-medium text-fg-muted text-right">Letzte Aktivität</th>
                   </tr>
                 </thead>
                 <tbody>
                   {perDealroom.map(dr => {
                     const statusColors: Record<string, string> = {
-                      draft: 'bg-amber-100 text-amber-700',
-                      published: 'bg-emerald-100 text-emerald-700',
-                      signed: 'bg-blue-100 text-blue-700',
-                      inactive: 'bg-orange-100 text-orange-700',
-                      archived: 'bg-gray-100 text-gray-500',
+                      draft: 'bg-warning-bg text-warning',
+                      published: 'bg-success-bg text-success',
+                      signed: 'bg-info-bg text-info',
+                      inactive: 'bg-warning-bg text-warning',
+                      archived: 'bg-surface-sub text-fg-subtle',
                     };
                     const statusLabels: Record<string, string> = { draft: 'Entwurf', published: 'Live', signed: 'Signiert', inactive: 'Inaktiv', archived: 'Archiv' };
                     return (
-                      <tr key={dr.id} className="border-b last:border-0 hover:bg-[#fafafa]">
+                      <tr key={dr.id} className="border-b border-border last:border-0 hover:bg-surface-sub transition-colors duration-fast">
                         <td className="py-3">
-                          <Link href={`/dashboard/dealrooms/${dr.id}`} className="hover:text-[#E97E1C] transition-colors">
-                            <p className="font-medium text-[#1a1a1a]">{dr.client_company}</p>
-                            <p className="text-xs text-[#6b7280]">{dr.client_name}</p>
+                          <Link
+                            href={`/dashboard/dealrooms/${dr.id}/activity`}
+                            className="block hover:text-brand-500 transition-colors duration-fast"
+                          >
+                            <p className="font-semibold text-fg">{dr.client_company}</p>
+                            <p className="text-xs text-fg-muted">{dr.client_name}</p>
                           </Link>
                         </td>
                         <td className="py-3 text-center">
                           <span className={`tabular-nums text-xs font-semibold ${
-                            dr.score >= 81 ? 'text-emerald-600' :
-                            dr.score >= 61 ? 'text-red-500' :
-                            dr.score >= 41 ? 'text-orange-500' :
-                            dr.score >= 21 ? 'text-blue-500' : 'text-gray-400'
+                            dr.score >= 81 ? 'text-success' :
+                            dr.score >= 61 ? 'text-danger' :
+                            dr.score >= 41 ? 'text-brand-500' :
+                            dr.score >= 21 ? 'text-info' : 'text-fg-subtle'
                           }`}>{dr.score}</span>
                         </td>
                         <td className="py-3 text-center">
@@ -182,22 +258,22 @@ export default async function AnalyticsPage() {
                             {statusLabels[dr.status]}
                           </span>
                         </td>
-                        <td className="py-3 text-center tabular-nums">{dr.views}</td>
-                        <td className="py-3 text-center tabular-nums">{dr.sessions}</td>
-                        <td className="py-3 text-center tabular-nums">{dr.videos}</td>
-                        <td className="py-3 text-center tabular-nums">{dr.ctas}</td>
+                        <td className="py-3 text-center tabular-nums text-fg-muted">{dr.views}</td>
+                        <td className="py-3 text-center tabular-nums text-fg-muted">{dr.sessions}</td>
+                        <td className="py-3 text-center tabular-nums text-fg-muted">{dr.videos}</td>
+                        <td className="py-3 text-center tabular-nums text-fg-muted">{dr.ctas}</td>
                         <td className="py-3 text-center tabular-nums">
                           {dr.signs > 0 ? (
-                            <span className="text-emerald-600 font-medium">{dr.signs}</span>
+                            <span className="text-success font-semibold">{dr.signs}</span>
                           ) : (
-                            <span className="text-[#d1d5db]">-</span>
+                            <span className="text-fg-subtle">-</span>
                           )}
                         </td>
-                        <td className="py-3 text-right text-xs text-[#6b7280]">
+                        <td className="py-3 text-right text-xs text-fg-muted">
                           {dr.lastEvent ? (
                             <>
                               {formatDate(dr.lastEvent)}
-                              <span className="text-[#d1d5db] ml-1">({daysAgo(dr.lastEvent)}d)</span>
+                              <span className="text-fg-subtle ml-1">({daysAgo(dr.lastEvent)}d)</span>
                             </>
                           ) : '-'}
                         </td>

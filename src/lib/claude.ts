@@ -71,11 +71,24 @@ COPYWRITING-REGELN:
    NICHT: "einfach"      → SONDERN: "ein Telefonat, wir erledigen den Rest"
 
 10. KÜRZE über ALLES: Jeder Text der kürzer sein kann, MUSS kürzer sein.
-   TEXTLÄNGE-REGELN:
-   - Pain Headings: Maximum 8 Wörter.
-   - Pain Subtext: Maximum 1 Satz (15-20 Wörter).
+   TEXTLÄNGE-REGELN (HARTES MAXIMUM):
+   - Hero-Subtitle: Maximum 140 Zeichen, idealerweise 90.
+   - Pain Heading: Maximum 8 Wörter.
+   - Pain Subtext: Maximum 80 Zeichen, ein Satz.
    - Outcome Text: Maximum 8 Wörter pro Outcome.
+   - Outcome Detail: Maximum 60 Zeichen.
    - FAQ Antworten: Maximum 2 Sätze.
+
+11. GLOBALE SCHREIBREGELN (gelten in JEDEM Feld, nicht nur FAQ):
+   - KEINE Gedankenstriche (—, –). Punkt oder Komma stattdessen.
+   - KEINE Ellipsen (…). Vollständige Sätze.
+   - KEINE Doppelpunkte am Satzende.
+   - KEINE Marketing-Floskeln. Verboten: transparent, individuell, persönlich,
+     optimal, perfekt, einfach, maßgeschneidert, ganzheitlich, nachhaltig (als
+     Adjektiv), zukunftssicher, innovativ, kompetent, professionell.
+   - Direkter, sachlicher Ton. Konkrete Verben statt schwacher Verbalisierungen.
+     NICHT "wir bieten Ihnen die Möglichkeit zu installieren" SONDERN "wir
+     installieren". NICHT "ermöglicht es Ihnen zu sparen" SONDERN "spart Ihnen".
 
 11. KONKRETE ZAHLEN (concrete_benefits): Generiere 3 greifbare Zahlen/KPIs.
    Große Zahlen oben (z.B. "€1.575", "80%", "4,2t CO₂"), kurzes Label, optionales Detail.
@@ -245,7 +258,7 @@ Generate the content in English. Adapt language and arguments to the customer ty
 
   const message = await anthropic.messages.create({
     model: 'claude-sonnet-4-6',
-    max_tokens: 8000,
+    max_tokens: 4000,
     system: `${systemPrompt}\n\n${JSON_SCHEMA}`,
     messages: [{ role: 'user', content: userPrompt }],
   });
@@ -260,7 +273,6 @@ Generate the content in English. Adapt language and arguments to the customer ty
     throw new Error('No text response from Claude');
   }
 
-  // Strip markdown code blocks if Claude wraps the JSON
   let jsonText = textBlock.text.trim();
   if (jsonText.startsWith('```')) {
     jsonText = jsonText.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '');
@@ -268,11 +280,40 @@ Generate the content in English. Adapt language and arguments to the customer ty
 
   try {
     const parsed = JSON.parse(jsonText) as DealroomContent;
-    return parsed;
+    return sanitizeContent(parsed);
   } catch {
     console.error('Failed to parse Claude response:', jsonText.substring(0, 500));
     throw new Error('Invalid JSON from Claude');
   }
+}
+
+// Strip em-dashes, en-dashes, ellipses globally from generated content.
+// Belt-and-suspenders to the system prompt rule.
+function stripDashes(text: string): string {
+  if (!text) return text;
+  return text
+    .replace(/\s*—\s*/g, ', ')
+    .replace(/\s*–\s*/g, ', ')
+    .replace(/\s*…\s*/g, '. ')
+    .replace(/,\s*,/g, ',')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function sanitizeContent(content: DealroomContent): DealroomContent {
+  const walk = (value: unknown): unknown => {
+    if (typeof value === 'string') return stripDashes(value);
+    if (Array.isArray(value)) return value.map(walk);
+    if (value && typeof value === 'object') {
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+        out[k] = walk(v);
+      }
+      return out;
+    }
+    return value;
+  };
+  return walk(content) as DealroomContent;
 }
 
 export async function transcribeAudio(audioBase64: string): Promise<string> {

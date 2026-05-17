@@ -29,7 +29,7 @@ export default async function DashboardLayout({
 
   return (
     <DashboardShell showOnboarding={showOnboarding}>
-      <div className="flex h-screen bg-[#fafafa]">
+      <div className="flex h-screen bg-bg">
         <DashboardSidebar
           userName={adminUser?.name || 'Admin'}
           companyName={adminUser?.company_name || 'Solarheld'}
