@@ -183,14 +183,14 @@
   }
   body {
     @apply bg-bg text-fg font-sans;
-    font-feature-settings: 'ss01', 'cv11', 'kern';
+    font-feature-settings: 'kern';
   }
-  /* Geist is geometric — tight tracking on display sizes */
+  /* All headings bold by default */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-medium;
+    @apply font-bold;
     letter-spacing: -0.02em;
   }
-  h1 { letter-spacing: -0.03em; }
+  h1 { letter-spacing: -0.025em; }
   /* Tabular numerics for data, tables, calculator */
   table, .tabular-nums {
     font-variant-numeric: tabular-nums;

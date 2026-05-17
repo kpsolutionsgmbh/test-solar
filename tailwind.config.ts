@@ -13,9 +13,9 @@ const config: Config = {
       // TYPOGRAPHY — Geist (one-family Swiss-modernist system)
       // ============================================================
       fontFamily: {
-        sans: ['var(--font-geist-sans)', 'system-ui', 'sans-serif'],
-        mono: ['var(--font-geist-mono)', 'ui-monospace', 'monospace'],
-        display: ['var(--font-geist-sans)', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-poppins)', 'system-ui', 'sans-serif'],
+        mono: ['ui-monospace', 'SFMono-Regular', 'monospace'],
+        display: ['var(--font-poppins)', 'system-ui', 'sans-serif'],
       },
       fontSize: {
         // [size, { lineHeight, letterSpacing, fontWeight }]
@@ -23,12 +23,12 @@ const config: Config = {
         'body-sm':     ['14px', { lineHeight: '20px', letterSpacing: '0',       fontWeight: '400' }],
         'body':        ['16px', { lineHeight: '24px', letterSpacing: '0',       fontWeight: '400' }],
         'body-lg':     ['18px', { lineHeight: '28px', letterSpacing: '-0.005em', fontWeight: '400' }],
-        'h3':          ['22px', { lineHeight: '28px', letterSpacing: '-0.01em',  fontWeight: '500' }],
-        'h2':          ['28px', { lineHeight: '32px', letterSpacing: '-0.015em', fontWeight: '500' }],
-        'h1':          ['36px', { lineHeight: '40px', letterSpacing: '-0.02em',  fontWeight: '500' }],
-        'display':     ['48px', { lineHeight: '52px', letterSpacing: '-0.025em', fontWeight: '500' }],
-        'display-xl':  ['60px', { lineHeight: '64px', letterSpacing: '-0.03em',  fontWeight: '600' }],
-        'display-2xl': ['72px', { lineHeight: '76px', letterSpacing: '-0.04em',  fontWeight: '600' }],
+        'h3':          ['22px', { lineHeight: '28px', letterSpacing: '-0.01em',  fontWeight: '700' }],
+        'h2':          ['28px', { lineHeight: '32px', letterSpacing: '-0.015em', fontWeight: '700' }],
+        'h1':          ['36px', { lineHeight: '40px', letterSpacing: '-0.02em',  fontWeight: '700' }],
+        'display':     ['48px', { lineHeight: '52px', letterSpacing: '-0.025em', fontWeight: '700' }],
+        'display-xl':  ['60px', { lineHeight: '64px', letterSpacing: '-0.03em',  fontWeight: '800' }],
+        'display-2xl': ['72px', { lineHeight: '76px', letterSpacing: '-0.04em',  fontWeight: '800' }],
       },
 
       // ============================================================

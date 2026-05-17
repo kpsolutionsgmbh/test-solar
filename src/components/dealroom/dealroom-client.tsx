@@ -348,8 +348,8 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
   const brandColor = admin?.brand_color || '#E97E1C';
 
   // Social proof element (reusable under CTAs)
-  const SocialProof = () => (
-    <div className="flex flex-col items-center gap-1 mt-3">
+  const SocialProof = ({ align = 'center' }: { align?: 'center' | 'left-md' }) => (
+    <div className={`flex flex-col gap-1 mt-3 ${align === 'left-md' ? 'items-center md:items-start' : 'items-center'}`}>
       <div className="flex -space-x-2">
         {[0, 1, 2].map((i) => (
           <div
@@ -371,21 +371,23 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
   );
 
   // Reusable CTA block with social proof
-  const CtaBlock = ({ derisking, ctaName, className = '' }: { derisking: string; ctaName: string; className?: string }) => (
-    <div className={`text-center py-6 ${className}`}>
-      <ShimmerButton
-        onClick={() => handleCta(ctaName)}
-        background={brandColor}
-        shimmerColor="rgba(255,255,255,0.3)"
-        className="inline-flex items-center gap-3 min-h-[48px] mx-auto"
-      >
-        {dealroom.language === 'de' ? 'Jetzt Angebot ansehen' : 'View Proposal'}
-        <ArrowRight className="h-5 w-5" />
-      </ShimmerButton>
-      <p className="text-sm text-[#9ca3af] mt-3">{derisking}</p>
-      <SocialProof />
-    </div>
-  );
+  const CtaBlock = ({ ctaName, className = '', align = 'center' }: { ctaName: string; className?: string; align?: 'center' | 'left-md' }) => {
+    const leftMd = align === 'left-md';
+    return (
+      <div className={`py-6 ${leftMd ? 'text-center md:text-left' : 'text-center'} ${className}`}>
+        <ShimmerButton
+          onClick={() => handleCta(ctaName)}
+          background={brandColor}
+          shimmerColor="rgba(255,255,255,0.3)"
+          className={`inline-flex items-center gap-3 min-h-[48px] ${leftMd ? 'mx-auto md:mx-0' : 'mx-auto'}`}
+        >
+          {dealroom.language === 'de' ? 'Jetzt Angebot ansehen' : 'View Proposal'}
+          <ArrowRight className="h-5 w-5" />
+        </ShimmerButton>
+        <SocialProof align={align} />
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -503,8 +505,8 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                       <ScrollReveal delay={0.15}>
                         <div className="mb-8 sm:mb-10">
                           <CtaBlock
-                            derisking={content.cta_derisking || tr.sections.ctaDerisking}
                             ctaName="hero"
+                            align="left-md"
                           />
                         </div>
                       </ScrollReveal>
@@ -648,7 +650,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                           <p className="text-micro uppercase font-semibold mb-2" style={{ color: brandColor }}>
                             {s.step}
                           </p>
-                          <h3 className="text-h3 font-semibold text-fg mb-3">{s.title}</h3>
+                          <h3 className="text-h3 font-bold text-fg mb-3">{s.title}</h3>
                           <p className="text-body text-fg-muted text-pretty">{s.description}</p>
                         </li>
                       </ScrollReveal>
@@ -699,11 +701,11 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                                   <PainVisual visual_type={point.visual_type} visual_data={point.visual_data} />
                                 </div>
                               ) : (
-                                <span className="font-mono text-h2 font-medium text-red-400/70 tabular-nums mb-4">
+                                <span className="text-h2 font-bold text-red-400/70 tabular-nums mb-4 leading-none">
                                   {String(i + 1).padStart(2, '0')}
                                 </span>
                               )}
-                              <h3 className="text-body sm:text-body-lg font-semibold text-white mb-2 text-balance leading-snug">
+                              <h3 className="text-body sm:text-body-lg font-bold text-white mb-2 text-balance leading-snug">
                                 {point.heading || point.text}
                               </h3>
                               {point.subtext && (
@@ -728,10 +730,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
 
                   <ScrollReveal delay={0.1}>
                     <div className="mt-10 sm:mt-12">
-                      <CtaBlock
-                        derisking={tr.sections.ctaDeriskingPain}
-                        ctaName="after-pain"
-                      />
+                      <CtaBlock ctaName="after-pain" />
                     </div>
                   </ScrollReveal>
                 </div>
@@ -784,7 +783,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                                 />
                               )}
                             </div>
-                            <p className="text-h3 font-semibold text-white text-balance mb-1">
+                            <p className="text-h3 font-bold text-white text-balance mb-1">
                               {getOutcomeText(outcome)}
                             </p>
                             {getOutcomeDetail(outcome) && (
@@ -800,10 +799,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
 
                   <ScrollReveal delay={0.1}>
                     <div className="mt-4 sm:mt-6">
-                      <CtaBlock
-                        derisking={tr.sections.ctaDeriskingOutcome}
-                        ctaName="after-outcome"
-                      />
+                      <CtaBlock ctaName="after-outcome" />
                     </div>
                   </ScrollReveal>
                 </div>
@@ -1020,7 +1016,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                         <ScrollReveal key={i} delay={i * 0.08}>
                           <div className="py-10 sm:py-12 sm:px-8 lg:px-10 text-center sm:text-left">
                             <BenefitValue value={benefit.value} brandColor={brandColor} />
-                            <p className="text-h3 font-semibold text-fg mt-4 mb-1 text-balance">{benefit.label}</p>
+                            <p className="text-h3 font-bold text-fg mt-4 mb-1 text-balance">{benefit.label}</p>
                             {benefit.detail && (
                               <p className="text-body-sm text-fg-muted text-pretty">{benefit.detail}</p>
                             )}
@@ -1144,7 +1140,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                                     className="group w-full flex items-start justify-between gap-6 py-6 sm:py-7 text-left min-h-[56px]"
                                     aria-expanded={open}
                                   >
-                                    <span className="text-h3 font-semibold text-fg text-balance pr-4">
+                                    <span className="text-h3 font-bold text-fg text-balance pr-4">
                                       {item.question}
                                     </span>
                                     <ChevronDown
@@ -1196,9 +1192,6 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                         <span>{dealroom.language === 'de' ? 'Jetzt Angebot ansehen' : 'View Proposal'}</span>
                         <ArrowRight className="h-5 w-5 transition-transform duration-fast group-hover:translate-x-1" />
                       </button>
-                      <p className="text-body-sm text-fg-subtle mt-4">
-                        {content.cta_derisking || tr.sections.ctaDerisking}
-                      </p>
                       {contact && (
                         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-8 text-body-sm text-fg-muted pt-6 border-t border-border max-w-xl mx-auto">
                           {contact.phone && (
@@ -1239,7 +1232,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
 
             {/* PandaDoc Embed */}
             <div className="text-center mb-6 fade-in-up">
-              <h3 className="text-[18px] sm:text-[22px] font-semibold text-[#1a1a1a] mb-1">
+              <h3 className="text-[18px] sm:text-[22px] font-bold text-[#1a1a1a] mb-1">
                 {tr.offer.title}
               </h3>
               <p className="text-sm text-[#6b7280]">{tr.offer.subtitle}</p>
@@ -1263,7 +1256,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
             {/* 2. Documents */}
             {documents.length > 0 && (
               <div className="fade-in-up mt-8">
-                <h3 className="text-[16px] font-semibold text-[#1a1a1a] mb-4 text-center">Anhänge</h3>
+                <h3 className="text-[16px] font-bold text-[#1a1a1a] mb-4 text-center">Anhänge</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                   {documents.map((doc) => (
                     <button
