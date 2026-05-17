@@ -477,43 +477,68 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                 />
 
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 sm:pt-20 lg:pt-28 pb-12 sm:pb-16">
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
-                    {/* LEFT — content (mobile centered, desktop left-aligned) */}
-                    <div className="lg:col-span-7 text-center lg:text-left">
-                      <ScrollReveal>
-                        {dealroom.client_logo_url && (
-                          <div className="mb-8 sm:mb-10">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={dealroom.client_logo_url}
-                              alt={dealroom.client_company}
-                              className="h-10 sm:h-12 object-contain mx-auto lg:mx-0 lg:object-left grayscale opacity-70"
-                            />
-                          </div>
-                        )}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-8 lg:gap-y-8 lg:gap-x-12 items-start">
+                    {/* Logo */}
+                    {dealroom.client_logo_url && (
+                      <div className="lg:col-span-7 lg:col-start-1 lg:row-start-1 text-center lg:text-left">
+                        <ScrollReveal>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={dealroom.client_logo_url}
+                            alt={dealroom.client_company}
+                            className="h-10 sm:h-12 object-contain mx-auto lg:mx-0 lg:object-left grayscale opacity-70"
+                          />
+                        </ScrollReveal>
+                      </div>
+                    )}
 
+                    {/* Headline + subtitle */}
+                    <div className={`lg:col-span-7 lg:col-start-1 ${dealroom.client_logo_url ? 'lg:row-start-2' : 'lg:row-start-1'} text-center lg:text-left`}>
+                      <ScrollReveal>
                         <h1 className="font-display text-[clamp(28px,4.5vw,48px)] leading-[1.1] tracking-[-0.025em] font-bold text-fg text-balance mb-5 sm:mb-6 max-w-[20ch] mx-auto lg:mx-0">
                           {content.hero_title}
                         </h1>
-
-                        <p className="text-body-lg text-fg-muted text-pretty max-w-[55ch] mb-8 sm:mb-10 mx-auto lg:mx-0">
+                        <p className="text-body-lg text-fg-muted text-pretty max-w-[55ch] mx-auto lg:mx-0">
                           {content.hero_subtitle}
                         </p>
                       </ScrollReveal>
+                    </div>
 
-                      {/* CTA — left-aligned on desktop, centered on mobile */}
+                    {/* Video — mobile DOM order: between subtitle and CTA; desktop: right column spanning rows */}
+                    {dealroom.video_url && (
+                      <div className="lg:col-span-5 lg:col-start-8 lg:row-start-1 lg:row-span-4">
+                        <ScrollReveal delay={0.1}>
+                          <figure>
+                            <div className="relative aspect-video rounded-xl overflow-hidden bg-surface-sub border border-border shadow-floating">
+                              <iframe
+                                src={getVideoEmbedUrl(dealroom.video_url) || ''}
+                                className="absolute inset-0 w-full h-full"
+                                allowFullScreen
+                                allow="autoplay; fullscreen"
+                                onLoad={() => trackEvent(dealroom.id, 'video_play')}
+                              />
+                            </div>
+                            <figcaption className="mt-3 text-body-sm text-fg-muted flex items-center justify-center lg:justify-start gap-2">
+                              <Play className="h-3.5 w-3.5" style={{ color: brandColor }} aria-hidden="true" />
+                              {dealroom.language === 'de'
+                                ? `Persönliche Nachricht von ${contact?.name || 'Ihrem Berater'}`
+                                : `Personal message from ${contact?.name || 'your advisor'}`}
+                            </figcaption>
+                          </figure>
+                        </ScrollReveal>
+                      </div>
+                    )}
+
+                    {/* CTA */}
+                    <div className={`lg:col-span-7 lg:col-start-1 ${dealroom.client_logo_url ? 'lg:row-start-3' : 'lg:row-start-2'} text-center lg:text-left`}>
                       <ScrollReveal delay={0.15}>
-                        <div className="mb-8 sm:mb-10">
-                          <CtaBlock
-                            ctaName="hero"
-                            align="left-md"
-                          />
-                        </div>
+                        <CtaBlock ctaName="hero" align="left-md" />
                       </ScrollReveal>
+                    </div>
 
-                      {/* Contact card — left column on desktop */}
+                      {/* Contact card */}
                       {contact && (
-                        <ScrollReveal delay={0.25}>
+                        <ScrollReveal delay={0.25} className={`lg:col-span-7 lg:col-start-1 ${dealroom.client_logo_url ? 'lg:row-start-4' : 'lg:row-start-3'}`}>
                           <div className="rounded-xl p-5 sm:p-6 bg-surface border border-border shadow-raised text-left">
                             <p className="text-micro uppercase text-fg-subtle mb-4">
                               {tr.hero.by}
@@ -568,32 +593,6 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                           </div>
                         </ScrollReveal>
                       )}
-                    </div>
-
-                    {/* RIGHT — video (desktop right column, mobile below content) */}
-                    {dealroom.video_url && (
-                      <div className="lg:col-span-5 lg:pt-2">
-                        <ScrollReveal delay={0.1}>
-                          <figure>
-                            <div className="relative aspect-video rounded-xl overflow-hidden bg-surface-sub border border-border shadow-floating">
-                              <iframe
-                                src={getVideoEmbedUrl(dealroom.video_url) || ''}
-                                className="absolute inset-0 w-full h-full"
-                                allowFullScreen
-                                allow="autoplay; fullscreen"
-                                onLoad={() => trackEvent(dealroom.id, 'video_play')}
-                              />
-                            </div>
-                            <figcaption className="mt-3 text-body-sm text-fg-muted flex items-center justify-center lg:justify-start gap-2">
-                              <Play className="h-3.5 w-3.5" style={{ color: brandColor }} aria-hidden="true" />
-                              {dealroom.language === 'de'
-                                ? `Persönliche Nachricht von ${contact?.name || 'Ihrem Berater'}`
-                                : `Personal message from ${contact?.name || 'your advisor'}`}
-                            </figcaption>
-                          </figure>
-                        </ScrollReveal>
-                      </div>
-                    )}
                   </div>
                 </div>
               </section>
@@ -1032,7 +1031,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
               <section className="bg-bg">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-28">
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
-                    <div className="lg:col-span-7 text-center lg:text-left">
+                    <div className="lg:col-span-6 text-center lg:text-left">
                       <ScrollReveal>
                         <p className="text-micro uppercase text-fg-subtle mb-3">
                           {dealroom.language === 'de' ? 'Über uns' : 'About us'}
@@ -1091,7 +1090,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                       </ScrollReveal>
                     </div>
 
-                    <div className="lg:col-span-5">
+                    <div className="lg:col-span-6">
                       <ScrollReveal delay={0.15}>
                         <div className="relative aspect-square rounded-xl overflow-hidden bg-surface-sub shadow-floating">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
