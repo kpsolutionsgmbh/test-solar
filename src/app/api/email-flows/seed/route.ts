@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServiceRoleClient } from '@/lib/supabase/server';
+import { createServiceRoleClient, createServerSupabaseClient } from '@/lib/supabase/server';
 
 const defaultFlows = [
   {
@@ -101,6 +101,14 @@ Mit freundlichen Grüßen
 
 export async function POST() {
   try {
+    // Auth gate — admin-only setup action. The endpoint is idempotent (skips
+    // on existing flows) but we still don't want random callers triggering it.
+    const sb = createServerSupabaseClient();
+    const { data: admin } = await sb.from('admin_users').select('id').limit(1).single();
+    if (!admin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const serviceClient = createServiceRoleClient();
 
     // Check if flows already exist

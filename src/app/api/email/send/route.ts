@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import { createServiceRoleClient } from '@/lib/supabase/server';
+import { createServiceRoleClient, createServerSupabaseClient } from '@/lib/supabase/server';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -21,9 +21,27 @@ function escapeHtml(str: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    // Auth gate — prevents unauth callers from sending mails through your
+    // Resend sender domain (phishing-as-a-service risk).
+    const supabase = createServerSupabaseClient();
+    const { data: admin } = await supabase
+      .from('admin_users')
+      .select('id')
+      .limit(1)
+      .single();
+    if (!admin) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const { dealroomId, recipientEmail, subject, body } = await request.json();
     if (!dealroomId || !recipientEmail || !subject || !body) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+    }
+    if (typeof subject !== 'string' || subject.length > 200) {
+      return NextResponse.json({ error: 'Invalid subject' }, { status: 400 });
+    }
+    if (typeof body !== 'string' || body.length > 20000) {
+      return NextResponse.json({ error: 'Invalid body' }, { status: 400 });
     }
 
     if (typeof dealroomId !== 'string' || !UUID_REGEX.test(dealroomId)) {
