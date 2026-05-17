@@ -2,7 +2,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dealroom, TrackingEvent } from '@/types/database';
-import { BarChart3, Flame } from 'lucide-react';
+import { BarChart3, Flame, Info, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { AnalyticsStatsGrid } from '@/components/dashboard/analytics-stats';
 import { Metadata } from 'next';
 
@@ -11,9 +11,61 @@ export const metadata: Metadata = { title: 'Auswertung' };
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
-
 function daysAgo(dateStr: string): number {
   return Math.floor((Date.now() - new Date(dateStr).getTime()) / 86400000);
+}
+
+function HeadlineSummary({
+  totalDealrooms,
+  openedDealrooms,
+  signedDealrooms,
+  conversionRate,
+}: {
+  totalDealrooms: number;
+  openedDealrooms: number;
+  signedDealrooms: number;
+  conversionRate: number;
+}) {
+  if (totalDealrooms === 0) {
+    return (
+      <Card className="border-border bg-surface-sub shadow-raised mb-6">
+        <CardContent className="py-6">
+          <p className="text-h3 font-bold text-fg">Noch keine Angebote</p>
+          <p className="text-body text-fg-muted mt-1">
+            Sobald Sie das erste Angebot anlegen, sehen Sie hier wie es bei Ihren Kunden ankommt.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+  const openedPct = Math.round((openedDealrooms / totalDealrooms) * 100);
+  let tone = 'Solide.';
+  if (conversionRate >= 20) tone = 'Stark.';
+  else if (conversionRate >= 10) tone = 'Solide.';
+  else if (signedDealrooms === 0) tone = 'Noch keine Unterschrift.';
+  else tone = 'Ausbaufähig.';
+
+  return (
+    <Card className="border-border bg-surface shadow-raised mb-6">
+      <CardContent className="py-6">
+        <p className="text-body-lg text-fg leading-snug text-balance">
+          Von <span className="font-bold tabular-nums">{totalDealrooms}</span> Angeboten haben{' '}
+          <span className="font-bold tabular-nums">{openedDealrooms}</span> Kunden geöffnet (
+          {openedPct}%) und <span className="font-bold tabular-nums">{signedDealrooms}</span>{' '}
+          unterschrieben. <span className="text-fg-muted">{tone}</span>
+        </p>
+      </CardContent>
+    </Card>
+  );
+}
+
+function HelpText({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-xs text-fg-muted mt-3 flex items-start gap-1.5">
+      <Info className="h-3 w-3 mt-0.5 shrink-0 opacity-70" />
+      <span>{children}</span>
+    </p>
+  );
 }
 
 export default async function AnalyticsPage() {
@@ -37,61 +89,57 @@ export default async function AnalyticsPage() {
 
   const allEvents = (events || []) as TrackingEvent[];
 
-  // Compute funnel metrics — counting unique dealrooms that reached each stage
-  const dealroomsByEventType = (eventType: string) =>
-    new Set(allEvents.filter(e => e.event_type === eventType).map(e => e.dealroom_id));
+  // Funnel metrics — unique dealrooms reaching each stage
+  const dealroomsByEventType = (et: string) =>
+    new Set(allEvents.filter(e => e.event_type === et).map(e => e.dealroom_id));
 
   const totalDealrooms = allDealrooms.length;
   const openedDealrooms = dealroomsByEventType('page_view').size;
   const videoDealrooms = dealroomsByEventType('video_play').size;
   const ctaDealrooms = dealroomsByEventType('cta_click').size;
-  const signedDealrooms = allDealrooms.filter(d => d.status === 'signed').length || dealroomsByEventType('pandadoc_sign').size;
+  const signedDealrooms =
+    allDealrooms.filter(d => d.status === 'signed').length || dealroomsByEventType('pandadoc_sign').size;
 
   const conversionRate = totalDealrooms > 0 ? Math.round((signedDealrooms / totalDealrooms) * 100) : 0;
   const avgEngagement = totalDealrooms > 0
-    ? Math.round(allDealrooms.reduce((sum, d) => sum + (d.engagement_score || 0), 0) / totalDealrooms)
+    ? Math.round(allDealrooms.reduce((s, d) => s + (d.engagement_score || 0), 0) / totalDealrooms)
     : 0;
 
-  // 7-day window
+  // 7-day window with prior-7d delta
   const now = Date.now();
   const sevenDaysAgo = now - 7 * 86400000;
   const fourteenDaysAgo = now - 14 * 86400000;
   const sessionsLast7 = new Set(
-    allEvents
-      .filter(e => e.event_type === 'page_view' && new Date(e.created_at).getTime() > sevenDaysAgo)
+    allEvents.filter(e => e.event_type === 'page_view' && new Date(e.created_at).getTime() > sevenDaysAgo)
       .map(e => e.session_id)
   ).size;
   const sessionsPrev7 = new Set(
-    allEvents
-      .filter(
-        e =>
-          e.event_type === 'page_view' &&
-          new Date(e.created_at).getTime() > fourteenDaysAgo &&
-          new Date(e.created_at).getTime() <= sevenDaysAgo
-      )
-      .map(e => e.session_id)
+    allEvents.filter(
+      e =>
+        e.event_type === 'page_view' &&
+        new Date(e.created_at).getTime() > fourteenDaysAgo &&
+        new Date(e.created_at).getTime() <= sevenDaysAgo
+    ).map(e => e.session_id)
   ).size;
   const recentOpensDelta = sessionsPrev7 > 0
     ? Math.round(((sessionsLast7 - sessionsPrev7) / sessionsPrev7) * 100)
     : null;
 
-  // Funnel stages
   const funnelStages = [
-    { label: 'Erstellt', count: totalDealrooms, color: 'bg-fg' },
+    { label: 'Angelegt', count: totalDealrooms, color: 'bg-fg' },
     { label: 'Geöffnet', count: openedDealrooms, color: 'bg-brand-500' },
-    { label: 'Video', count: videoDealrooms, color: 'bg-brand-500/80' },
-    { label: 'CTA', count: ctaDealrooms, color: 'bg-brand-500/60' },
-    { label: 'Signiert', count: signedDealrooms, color: 'bg-success' },
+    { label: 'Video gesehen', count: videoDealrooms, color: 'bg-brand-500/80' },
+    { label: 'Auf Knopf geklickt', count: ctaDealrooms, color: 'bg-brand-500/60' },
+    { label: 'Unterschrieben', count: signedDealrooms, color: 'bg-success' },
   ];
   const maxFunnel = Math.max(...funnelStages.map(s => s.count), 1);
 
-  // Score distribution
   const scoreCategories = [
-    { label: 'Kalt (0-20)', min: 0, max: 20, color: 'bg-fg-subtle' },
-    { label: 'Lauwarm (21-40)', min: 21, max: 40, color: 'bg-info' },
-    { label: 'Warm (41-60)', min: 41, max: 60, color: 'bg-brand-500' },
-    { label: 'Heiß (61-80)', min: 61, max: 80, color: 'bg-danger' },
-    { label: 'Deal-Ready (81+)', min: 81, max: 100, color: 'bg-success' },
+    { label: 'Kalt', range: '0 – 20', min: 0, max: 20, color: 'bg-fg-subtle', tone: 'noch nicht angeschaut' },
+    { label: 'Lauwarm', range: '21 – 40', min: 21, max: 40, color: 'bg-info', tone: 'kurz angeschaut' },
+    { label: 'Warm', range: '41 – 60', min: 41, max: 60, color: 'bg-brand-500', tone: 'interessiert' },
+    { label: 'Heiß', range: '61 – 80', min: 61, max: 80, color: 'bg-danger', tone: 'sehr interessiert' },
+    { label: 'Deal-Ready', range: '81 – 100', min: 81, max: 100, color: 'bg-success', tone: 'kurz vor Abschluss' },
   ];
   const scoreCounts = scoreCategories.map(cat => ({
     ...cat,
@@ -102,7 +150,6 @@ export default async function AnalyticsPage() {
   }));
   const maxScoreCount = Math.max(...scoreCounts.map(c => c.count), 1);
 
-  // Per-dealroom stats
   const perDealroom = allDealrooms.map(dr => {
     const drEvents = allEvents.filter(e => e.dealroom_id === dr.id);
     const views = drEvents.filter(e => e.event_type === 'page_view').length;
@@ -115,16 +162,33 @@ export default async function AnalyticsPage() {
     return { ...dr, views, videos, ctas, signs, sessions, lastEvent, score };
   });
 
+  const TrendIcon = recentOpensDelta == null ? Minus : recentOpensDelta > 0 ? TrendingUp : TrendingDown;
+  const trendColor = recentOpensDelta == null
+    ? 'text-fg-subtle'
+    : recentOpensDelta > 0
+      ? 'text-success'
+      : recentOpensDelta < 0
+        ? 'text-danger'
+        : 'text-fg-subtle';
+
   return (
     <div>
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold text-fg">Auswertung</h1>
         <p className="text-sm text-fg-muted mt-1">
-          Wie Ihre Kunden mit den Angebotsräumen interagieren.
+          Wer hat Ihr Angebot gesehen, wer hat unterschrieben.
         </p>
       </div>
 
-      {/* Global KPI Strip */}
+      {/* Plain-language headline summary */}
+      <HeadlineSummary
+        totalDealrooms={totalDealrooms}
+        openedDealrooms={openedDealrooms}
+        signedDealrooms={signedDealrooms}
+        conversionRate={conversionRate}
+      />
+
+      {/* KPI strip — bigger numbers, tooltip-style explanations live under each card via AnalyticsStatsGrid */}
       <AnalyticsStatsGrid
         totalDealrooms={totalDealrooms}
         totalOpened={openedDealrooms}
@@ -135,12 +199,27 @@ export default async function AnalyticsPage() {
         recentOpensDelta={recentOpensDelta}
       />
 
-      {/* Funnel */}
+      {/* 7-day trend explanation */}
+      <div className="mb-6 text-sm text-fg-muted flex items-center gap-2">
+        <TrendIcon className={`h-4 w-4 ${trendColor}`} />
+        <span>
+          Letzte 7 Tage: <strong className="text-fg tabular-nums">{sessionsLast7}</strong> Kunden-Besuche
+          {recentOpensDelta != null && (
+            <>
+              {' '}
+              ({recentOpensDelta > 0 ? '+' : ''}
+              {recentOpensDelta}% vs. Woche davor)
+            </>
+          )}
+        </span>
+      </div>
+
+      {/* Funnel — friendlier labels + drop-off counts */}
       <Card className="mb-6 border-border shadow-raised">
         <CardHeader>
           <CardTitle className="text-base font-bold flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-brand-500" />
-            Dealroom-Funnel
+            Vom Angebot zur Unterschrift
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -150,17 +229,21 @@ export default async function AnalyticsPage() {
               const dropoff = i > 0 ? funnelStages[i - 1].count - stage.count : null;
               return (
                 <div key={stage.label} className="flex items-center gap-3">
-                  <span className="text-body-sm text-fg w-24 shrink-0">{stage.label}</span>
+                  <span className="text-body-sm text-fg w-40 shrink-0">{stage.label}</span>
                   <div className="flex-1 h-7 bg-surface-sub rounded-md overflow-hidden relative">
                     <div
-                      className={`h-full rounded-md ${stage.color} transition-all duration-500`}
+                      className={`h-full rounded-md ${stage.color} transition-all duration-slow ease-enter`}
                       style={{ width: `${(stage.count / maxFunnel) * 100}%` }}
                     />
                   </div>
-                  <span className="text-body-sm font-semibold text-fg w-10 text-right tabular-nums">{stage.count}</span>
+                  <span className="text-body-sm font-semibold text-fg w-10 text-right tabular-nums">
+                    {stage.count}
+                  </span>
                   <span className="text-micro text-fg-subtle w-12 text-right tabular-nums">{pct}%</span>
                   {dropoff != null && dropoff > 0 ? (
-                    <span className="text-micro text-danger w-14 text-right tabular-nums">−{dropoff}</span>
+                    <span className="text-micro text-danger w-14 text-right tabular-nums">
+                      −{dropoff}
+                    </span>
                   ) : (
                     <span className="w-14" />
                   )}
@@ -168,41 +251,57 @@ export default async function AnalyticsPage() {
               );
             })}
           </div>
+          <HelpText>
+            Jeder Balken zeigt wie viele Kunden bis hierhin gekommen sind. Roter Wert rechts: wie viele
+            zwischen den Stufen verloren gehen. Ziel: möglichst wenig Verlust.
+          </HelpText>
         </CardContent>
       </Card>
 
-      {/* Engagement Score Distribution */}
+      {/* Engagement Score Distribution — with what-it-means column */}
       <Card className="mb-6 border-border shadow-raised">
         <CardHeader>
           <CardTitle className="text-base font-bold flex items-center gap-2">
             <Flame className="h-4 w-4 text-brand-500" />
-            Engagement-Score Verteilung
+            Wie heiß sind Ihre Leads?
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            {scoreCounts.map((cat) => (
+          <div className="space-y-2.5">
+            {scoreCounts.map(cat => (
               <div key={cat.label} className="flex items-center gap-3">
-                <span className="text-body-sm text-fg-muted w-32 shrink-0">{cat.label}</span>
-                <div className="flex-1 h-5 bg-surface-sub rounded-full overflow-hidden">
+                <div className="w-44 shrink-0">
+                  <span className="text-body-sm font-semibold text-fg">{cat.label}</span>
+                  <span className="text-micro text-fg-subtle ml-2">{cat.tone}</span>
+                </div>
+                <div className="flex-1 h-6 bg-surface-sub rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full ${cat.color} transition-all duration-500`}
-                    style={{ width: `${(cat.count / maxScoreCount) * 100}%`, minWidth: cat.count > 0 ? '20px' : '0' }}
+                    className={`h-full rounded-full ${cat.color} transition-all duration-slow ease-enter`}
+                    style={{
+                      width: `${(cat.count / maxScoreCount) * 100}%`,
+                      minWidth: cat.count > 0 ? '20px' : '0',
+                    }}
                   />
                 </div>
-                <span className="text-body-sm font-semibold text-fg w-6 text-right tabular-nums">{cat.count}</span>
+                <span className="text-body-sm font-semibold text-fg w-8 text-right tabular-nums">
+                  {cat.count}
+                </span>
               </div>
             ))}
           </div>
+          <HelpText>
+            Engagement-Score = wie intensiv ein Kunde sich Ihr Angebot anschaut. Je höher, desto näher
+            am Abschluss. Werte ab 60 sind ein guter Zeitpunkt für einen Anruf.
+          </HelpText>
         </CardContent>
       </Card>
 
-      {/* Per-Dealroom Table — link goes to ACTIVITY page */}
+      {/* Per-Dealroom Table */}
       <Card className="border-border shadow-raised">
         <CardHeader>
           <CardTitle className="text-base font-bold flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-brand-500" />
-            Angebotsraum-Übersicht
+            Alle Angebote im Überblick
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -213,15 +312,14 @@ export default async function AnalyticsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border text-left">
-                    <th className="pb-2 font-medium text-fg-muted">Angebotsraum</th>
+                    <th className="pb-2 font-medium text-fg-muted">Angebot</th>
                     <th className="pb-2 font-medium text-fg-muted text-center">Score</th>
                     <th className="pb-2 font-medium text-fg-muted text-center">Status</th>
                     <th className="pb-2 font-medium text-fg-muted text-center">Views</th>
-                    <th className="pb-2 font-medium text-fg-muted text-center">Sessions</th>
                     <th className="pb-2 font-medium text-fg-muted text-center">Video</th>
-                    <th className="pb-2 font-medium text-fg-muted text-center">CTA</th>
+                    <th className="pb-2 font-medium text-fg-muted text-center">Klicks</th>
                     <th className="pb-2 font-medium text-fg-muted text-center">Signiert</th>
-                    <th className="pb-2 font-medium text-fg-muted text-right">Letzte Aktivität</th>
+                    <th className="pb-2 font-medium text-fg-muted text-right">Zuletzt aktiv</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -233,9 +331,18 @@ export default async function AnalyticsPage() {
                       inactive: 'bg-warning-bg text-warning',
                       archived: 'bg-surface-sub text-fg-subtle',
                     };
-                    const statusLabels: Record<string, string> = { draft: 'Entwurf', published: 'Live', signed: 'Signiert', inactive: 'Inaktiv', archived: 'Archiv' };
+                    const statusLabels: Record<string, string> = {
+                      draft: 'Entwurf',
+                      published: 'Live',
+                      signed: 'Signiert',
+                      inactive: 'Inaktiv',
+                      archived: 'Archiv',
+                    };
                     return (
-                      <tr key={dr.id} className="border-b border-border last:border-0 hover:bg-surface-sub transition-colors duration-fast">
+                      <tr
+                        key={dr.id}
+                        className="border-b border-border last:border-0 hover:bg-surface-sub transition-colors duration-fast"
+                      >
                         <td className="py-3">
                           <Link
                             href={`/dashboard/dealrooms/${dr.id}/activity`}
@@ -246,20 +353,30 @@ export default async function AnalyticsPage() {
                           </Link>
                         </td>
                         <td className="py-3 text-center">
-                          <span className={`tabular-nums text-xs font-semibold ${
-                            dr.score >= 81 ? 'text-success' :
-                            dr.score >= 61 ? 'text-danger' :
-                            dr.score >= 41 ? 'text-brand-500' :
-                            dr.score >= 21 ? 'text-info' : 'text-fg-subtle'
-                          }`}>{dr.score}</span>
+                          <span
+                            className={`tabular-nums text-xs font-semibold ${
+                              dr.score >= 81
+                                ? 'text-success'
+                                : dr.score >= 61
+                                  ? 'text-danger'
+                                  : dr.score >= 41
+                                    ? 'text-brand-500'
+                                    : dr.score >= 21
+                                      ? 'text-info'
+                                      : 'text-fg-subtle'
+                            }`}
+                          >
+                            {dr.score}
+                          </span>
                         </td>
                         <td className="py-3 text-center">
-                          <span className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium ${statusColors[dr.status]}`}>
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-medium ${statusColors[dr.status]}`}
+                          >
                             {statusLabels[dr.status]}
                           </span>
                         </td>
                         <td className="py-3 text-center tabular-nums text-fg-muted">{dr.views}</td>
-                        <td className="py-3 text-center tabular-nums text-fg-muted">{dr.sessions}</td>
                         <td className="py-3 text-center tabular-nums text-fg-muted">{dr.videos}</td>
                         <td className="py-3 text-center tabular-nums text-fg-muted">{dr.ctas}</td>
                         <td className="py-3 text-center tabular-nums">
@@ -273,9 +390,11 @@ export default async function AnalyticsPage() {
                           {dr.lastEvent ? (
                             <>
                               {formatDate(dr.lastEvent)}
-                              <span className="text-fg-subtle ml-1">({daysAgo(dr.lastEvent)}d)</span>
+                              <span className="text-fg-subtle ml-1">({daysAgo(dr.lastEvent)}T)</span>
                             </>
-                          ) : '-'}
+                          ) : (
+                            '-'
+                          )}
                         </td>
                       </tr>
                     );
