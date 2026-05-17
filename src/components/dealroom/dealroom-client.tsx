@@ -23,6 +23,7 @@ import {
   FileText,
   Download,
   ChevronDown,
+  PenLine,
   Rocket,
   ShieldCheck,
   Users,
@@ -612,18 +613,24 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                   <ol className="grid grid-cols-1 md:grid-cols-3 gap-px bg-border border border-border rounded-xl overflow-hidden">
                     {[
                       {
+                        icon: <Play className="h-6 w-6" />,
+                        step: dealroom.language === 'de' ? 'Schritt 1' : 'Step 1',
                         title: dealroom.language === 'de' ? 'Video anschauen' : 'Watch the video',
                         description: dealroom.language === 'de'
                           ? 'Ihr Ansprechpartner erklärt persönlich, worum es geht und warum dieses Angebot zu Ihrer Situation passt.'
                           : 'Your contact person explains personally what it\'s about and why this offer fits your situation.',
                       },
                       {
+                        icon: <FileText className="h-6 w-6" />,
+                        step: dealroom.language === 'de' ? 'Schritt 2' : 'Step 2',
                         title: dealroom.language === 'de' ? 'Angebot durchlesen' : 'Review the proposal',
                         description: dealroom.language === 'de'
                           ? 'Prüfen Sie unser Angebot in Ruhe — alles transparent und individuell auf Sie zugeschnitten.'
                           : 'Review our proposal at your leisure — everything transparent and tailored to you.',
                       },
                       {
+                        icon: <PenLine className="h-6 w-6" />,
+                        step: dealroom.language === 'de' ? 'Schritt 3' : 'Step 3',
                         title: dealroom.language === 'de' ? 'Unterschreiben & starten' : 'Sign & get started',
                         description: dealroom.language === 'de'
                           ? 'Passt alles? Unterschreiben Sie digital und wir legen direkt los. Kein Papierkram, kein Warten.'
@@ -632,14 +639,15 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                     ].map((s, i) => (
                       <ScrollReveal key={i} delay={i * 0.08}>
                         <li className="bg-surface p-6 sm:p-8 lg:p-10 h-full flex flex-col text-center md:text-left">
-                          <span
-                            className="font-mono text-display-xl font-medium leading-none mb-6 tabular-nums"
-                            style={{ color: i === 0 ? brandColor : undefined }}
+                          <div
+                            className="h-12 w-12 rounded-full flex items-center justify-center mb-5 mx-auto md:mx-0"
+                            style={{ backgroundColor: `${brandColor}15`, color: brandColor }}
                           >
-                            <span className={i === 0 ? '' : 'text-fg-subtle'}>
-                              {String(i + 1).padStart(2, '0')}
-                            </span>
-                          </span>
+                            {s.icon}
+                          </div>
+                          <p className="text-micro uppercase font-semibold mb-2" style={{ color: brandColor }}>
+                            {s.step}
+                          </p>
                           <h3 className="text-h3 font-semibold text-fg mb-3">{s.title}</h3>
                           <p className="text-body text-fg-muted text-pretty">{s.description}</p>
                         </li>
@@ -887,6 +895,10 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                             </span>
                           )}
 
+                          <div className="text-4xl mb-3 leading-none" aria-hidden="true">
+                            {pkg.emoji}
+                          </div>
+
                           <header className="mb-5">
                             <p className="text-micro uppercase text-fg-subtle mb-2">
                               {pkg.name === 'Comfort'
@@ -1085,7 +1097,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
 
                     <div className="lg:col-span-5">
                       <ScrollReveal delay={0.15}>
-                        <div className="relative aspect-[4/5] rounded-xl overflow-hidden bg-surface-sub shadow-floating">
+                        <div className="relative aspect-square rounded-xl overflow-hidden bg-surface-sub shadow-floating">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
                             src="/images/team/team-lg.jpeg"
