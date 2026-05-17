@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import CountUp from 'react-countup';
 import { useInView } from 'react-intersection-observer';
 import {
+  AlertTriangle,
   CheckCircle2,
   ArrowRight,
   Phone,
@@ -76,7 +77,7 @@ function AnimatedCounter({ from = 0, to, prefix = '', suffix = '', color = 'bran
 
   return (
     <div className="text-center">
-      <p className={`text-4xl sm:text-5xl font-bold ${textColor}`} style={!textColor ? { color: brandColor || '#E97E1C' } : undefined}>
+      <p className={`text-3xl sm:text-4xl font-bold tabular-nums leading-none ${textColor}`} style={!textColor ? { color: brandColor || '#E97E1C' } : undefined}>
         {prefix}
         <NumberTicker value={to} startValue={from} className={textColor} />
         {suffix}
@@ -123,24 +124,46 @@ function ComparisonBar({ you, competitor, label }: { you: number; competitor: nu
 
 function PercentageRing({ value, label, color = 'red' }: { value: number; label: string; color?: string }) {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.5 });
-  const radius = 36;
+  const size = 96;
+  const radius = 40;
+  const stroke = 7;
   const circumference = 2 * Math.PI * radius;
   const strokeColor = color === 'red' ? '#ef4444' : '#22c55e';
+  const textColor = color === 'red' ? 'text-red-400' : 'text-emerald-400';
 
   return (
-    <div ref={ref} className="flex flex-col items-center gap-2">
-      <svg width="88" height="88" className="-rotate-90">
-        <circle cx="44" cy="44" r={radius} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="6" />
-        <motion.circle
-          cx="44" cy="44" r={radius} fill="none" stroke={strokeColor} strokeWidth="6" strokeLinecap="round"
-          strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={inView ? { strokeDashoffset: circumference - (value / 100) * circumference } : {}}
-          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
-        />
-      </svg>
-      <p className={`text-2xl font-bold ${color === 'red' ? 'text-red-400' : 'text-emerald-400'} -mt-[62px] mb-6`}>{value}%</p>
-      <p className="text-xs text-[#d1d5db] text-center">{label}</p>
+    <div ref={ref} className="flex flex-col items-center gap-2.5">
+      <div className="relative" style={{ width: size, height: size }}>
+        <svg width={size} height={size} className="-rotate-90 absolute inset-0">
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke="rgba(255,255,255,0.1)"
+            strokeWidth={stroke}
+          />
+          <motion.circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="none"
+            stroke={strokeColor}
+            strokeWidth={stroke}
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            initial={{ strokeDashoffset: circumference }}
+            animate={inView ? { strokeDashoffset: circumference - (value / 100) * circumference } : {}}
+            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          />
+        </svg>
+        <span
+          className={`absolute inset-0 flex items-center justify-center text-lg font-bold tabular-nums leading-none ${textColor}`}
+        >
+          {value}%
+        </span>
+      </div>
+      <p className="text-xs text-white/65 text-center max-w-[140px] leading-snug">{label}</p>
     </div>
   );
 }
@@ -220,18 +243,6 @@ function BenefitValue({ value, brandColor }: { value: string; brandColor: string
 }
 
 // ==================== KPI CountUp ====================
-
-function KpiValue({ value, suffix = '' }: { value: number; suffix?: string }) {
-  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.5 });
-
-  return (
-    <div ref={ref}>
-      <p className="text-3xl sm:text-4xl font-bold text-[#1a1a1a]">
-        {inView ? <CountUp end={value} duration={2} separator="." /> : '0'}{suffix}
-      </p>
-    </div>
-  );
-}
 
 // ==================== Main Component ====================
 
@@ -449,9 +460,8 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
         <div className={activeTab === 'overview' ? '' : 'hidden'}>
           {content && (
             <div>
-              {/* ===== 1. HERO — Single-column left, atmospheric whitespace right ===== */}
+              {/* ===== 1. HERO — Content left, video right on desktop. Mobile stacks. ===== */}
               <section className="relative bg-bg overflow-hidden">
-                {/* Atmospheric brand glow — lives in the right negative-space area */}
                 <div
                   aria-hidden="true"
                   className="pointer-events-none absolute -top-32 right-0 h-[600px] w-[600px] rounded-full blur-3xl opacity-40 animate-glow-pulse"
@@ -464,120 +474,122 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                 />
 
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 sm:pt-20 lg:pt-28 pb-12 sm:pb-16">
-                  {/* Everything packed left on desktop, full width on mobile */}
-                  <div className="max-w-2xl">
-                    <ScrollReveal>
-                      {dealroom.client_logo_url && (
-                        <div className="mb-8 sm:mb-10">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={dealroom.client_logo_url}
-                            alt={dealroom.client_company}
-                            className="h-10 sm:h-12 object-contain object-left grayscale opacity-70"
-                          />
-                        </div>
-                      )}
-
-                      {/* Headline — smaller, bold */}
-                      <h1 className="font-display text-[clamp(28px,4.5vw,48px)] leading-[1.1] tracking-[-0.025em] font-bold text-fg text-balance mb-5 sm:mb-6">
-                        {content.hero_title}
-                      </h1>
-
-                      {/* Subtitle */}
-                      <p className="text-body-lg text-fg-muted text-pretty max-w-[55ch] mb-8 sm:mb-10">
-                        {content.hero_subtitle}
-                      </p>
-                    </ScrollReveal>
-
-                    {/* Video — in the same left column, between subtitle and CTA */}
-                    {dealroom.video_url && (
-                      <ScrollReveal delay={0.1}>
-                        <figure className="mb-8 sm:mb-10">
-                          <div className="relative aspect-video rounded-xl overflow-hidden bg-surface-sub border border-border shadow-floating">
-                            <iframe
-                              src={getVideoEmbedUrl(dealroom.video_url) || ''}
-                              className="absolute inset-0 w-full h-full"
-                              allowFullScreen
-                              allow="autoplay; fullscreen"
-                              onLoad={() => trackEvent(dealroom.id, 'video_play')}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+                    {/* LEFT — content (mobile centered, desktop left-aligned) */}
+                    <div className="lg:col-span-7 text-center lg:text-left">
+                      <ScrollReveal>
+                        {dealroom.client_logo_url && (
+                          <div className="mb-8 sm:mb-10">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={dealroom.client_logo_url}
+                              alt={dealroom.client_company}
+                              className="h-10 sm:h-12 object-contain mx-auto lg:mx-0 lg:object-left grayscale opacity-70"
                             />
                           </div>
-                          <figcaption className="mt-3 text-body-sm text-fg-muted flex items-center gap-2">
-                            <Play className="h-3.5 w-3.5" style={{ color: brandColor }} aria-hidden="true" />
-                            {dealroom.language === 'de'
-                              ? `Persönliche Nachricht von ${contact?.name || 'Ihrem Berater'}`
-                              : `Personal message from ${contact?.name || 'your advisor'}`}
-                          </figcaption>
-                        </figure>
+                        )}
+
+                        <h1 className="font-display text-[clamp(28px,4.5vw,48px)] leading-[1.1] tracking-[-0.025em] font-bold text-fg text-balance mb-5 sm:mb-6 max-w-[20ch] mx-auto lg:mx-0">
+                          {content.hero_title}
+                        </h1>
+
+                        <p className="text-body-lg text-fg-muted text-pretty max-w-[55ch] mb-8 sm:mb-10 mx-auto lg:mx-0">
+                          {content.hero_subtitle}
+                        </p>
                       </ScrollReveal>
-                    )}
 
-                    {/* CTA */}
-                    <ScrollReveal delay={0.15}>
-                      <div className="mb-8 sm:mb-10">
-                        <CtaBlock
-                          derisking={content.cta_derisking || tr.sections.ctaDerisking}
-                          ctaName="hero"
-                        />
-                      </div>
-                    </ScrollReveal>
+                      {/* CTA — left-aligned on desktop, centered on mobile */}
+                      <ScrollReveal delay={0.15}>
+                        <div className="mb-8 sm:mb-10">
+                          <CtaBlock
+                            derisking={content.cta_derisking || tr.sections.ctaDerisking}
+                            ctaName="hero"
+                          />
+                        </div>
+                      </ScrollReveal>
 
-                    {/* Contact card — left-aligned, same column */}
-                    {contact && (
-                      <ScrollReveal delay={0.25}>
-                        <div className="rounded-xl p-5 sm:p-6 bg-surface border border-border shadow-raised">
-                          <p className="text-micro uppercase text-fg-subtle mb-4">
-                            {tr.hero.by}
-                          </p>
-                          <div className="flex items-start gap-4">
-                            <div
-                              className="h-14 w-14 rounded-full flex items-center justify-center text-white text-lg font-semibold shrink-0 overflow-hidden"
-                              style={{ backgroundColor: brandColor }}
-                            >
-                              {contact.avatar_url ? (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
-                                  src={contact.avatar_url}
-                                  alt={contact.name}
-                                  className="h-14 w-14 object-cover"
-                                />
-                              ) : (
-                                contact.name.charAt(0)
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-body font-semibold text-fg leading-tight">
-                                {contact.name}
-                              </p>
-                              {contact.position && (
-                                <p className="text-body-sm text-fg-muted mt-0.5">
-                                  {contact.position}
+                      {/* Contact card — left column on desktop */}
+                      {contact && (
+                        <ScrollReveal delay={0.25}>
+                          <div className="rounded-xl p-5 sm:p-6 bg-surface border border-border shadow-raised text-left">
+                            <p className="text-micro uppercase text-fg-subtle mb-4">
+                              {tr.hero.by}
+                            </p>
+                            <div className="flex items-start gap-4">
+                              <div
+                                className="h-14 w-14 rounded-full flex items-center justify-center text-white text-lg font-semibold shrink-0 overflow-hidden"
+                                style={{ backgroundColor: brandColor }}
+                              >
+                                {contact.avatar_url ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img
+                                    src={contact.avatar_url}
+                                    alt={contact.name}
+                                    className="h-14 w-14 object-cover"
+                                  />
+                                ) : (
+                                  contact.name.charAt(0)
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-body font-semibold text-fg leading-tight">
+                                  {contact.name}
                                 </p>
-                              )}
-                              <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-3 text-body-sm">
-                                {contact.phone && (
-                                  <a
-                                    href={`tel:${contact.phone}`}
-                                    className="inline-flex items-center gap-2 text-fg hover:text-brand-500 transition-colors duration-fast"
-                                  >
-                                    <Phone className="h-3.5 w-3.5 text-fg-subtle" aria-hidden="true" />
-                                    {contact.phone}
-                                  </a>
+                                {contact.position && (
+                                  <p className="text-body-sm text-fg-muted mt-0.5">
+                                    {contact.position}
+                                  </p>
                                 )}
-                                {contact.email && (
-                                  <a
-                                    href={`mailto:${contact.email}`}
-                                    className="inline-flex items-center gap-2 text-fg hover:text-brand-500 transition-colors duration-fast"
-                                  >
-                                    <Mail className="h-3.5 w-3.5 text-fg-subtle" aria-hidden="true" />
-                                    <span className="truncate">{contact.email}</span>
-                                  </a>
-                                )}
+                                <div className="flex flex-wrap gap-x-4 gap-y-1.5 mt-3 text-body-sm">
+                                  {contact.phone && (
+                                    <a
+                                      href={`tel:${contact.phone}`}
+                                      className="inline-flex items-center gap-2 text-fg hover:text-brand-500 transition-colors duration-fast"
+                                    >
+                                      <Phone className="h-3.5 w-3.5 text-fg-subtle" aria-hidden="true" />
+                                      {contact.phone}
+                                    </a>
+                                  )}
+                                  {contact.email && (
+                                    <a
+                                      href={`mailto:${contact.email}`}
+                                      className="inline-flex items-center gap-2 text-fg hover:text-brand-500 transition-colors duration-fast"
+                                    >
+                                      <Mail className="h-3.5 w-3.5 text-fg-subtle" aria-hidden="true" />
+                                      <span className="truncate">{contact.email}</span>
+                                    </a>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </ScrollReveal>
+                        </ScrollReveal>
+                      )}
+                    </div>
+
+                    {/* RIGHT — video (desktop right column, mobile below content) */}
+                    {dealroom.video_url && (
+                      <div className="lg:col-span-5 lg:pt-2">
+                        <ScrollReveal delay={0.1}>
+                          <figure>
+                            <div className="relative aspect-video rounded-xl overflow-hidden bg-surface-sub border border-border shadow-floating">
+                              <iframe
+                                src={getVideoEmbedUrl(dealroom.video_url) || ''}
+                                className="absolute inset-0 w-full h-full"
+                                allowFullScreen
+                                allow="autoplay; fullscreen"
+                                onLoad={() => trackEvent(dealroom.id, 'video_play')}
+                              />
+                            </div>
+                            <figcaption className="mt-3 text-body-sm text-fg-muted flex items-center justify-center lg:justify-start gap-2">
+                              <Play className="h-3.5 w-3.5" style={{ color: brandColor }} aria-hidden="true" />
+                              {dealroom.language === 'de'
+                                ? `Persönliche Nachricht von ${contact?.name || 'Ihrem Berater'}`
+                                : `Personal message from ${contact?.name || 'your advisor'}`}
+                            </figcaption>
+                          </figure>
+                        </ScrollReveal>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -587,7 +599,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
               <section className="bg-surface-sub border-y border-border">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
                   <ScrollReveal>
-                    <div className="max-w-2xl mb-12 sm:mb-16">
+                    <div className="max-w-2xl mb-12 sm:mb-16 text-center md:text-left mx-auto md:mx-0">
                       <p className="text-micro uppercase text-fg-subtle mb-3">
                         {dealroom.language === 'de' ? 'In drei Schritten' : 'In three steps'}
                       </p>
@@ -619,7 +631,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                       },
                     ].map((s, i) => (
                       <ScrollReveal key={i} delay={i * 0.08}>
-                        <li className="bg-surface p-6 sm:p-8 lg:p-10 h-full flex flex-col">
+                        <li className="bg-surface p-6 sm:p-8 lg:p-10 h-full flex flex-col text-center md:text-left">
                           <span
                             className="font-mono text-display-xl font-medium leading-none mb-6 tabular-nums"
                             style={{ color: i === 0 ? brandColor : undefined }}
@@ -637,79 +649,83 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                 </div>
               </section>
 
-              {/* ===== 2. PAIN — deep stone-dark, editorial 2-col, vertical list ===== */}
-              <section className="relative bg-trust-deep text-white overflow-hidden">
-                {/* Subtle red atmospheric glow — replaces dramatic icon-badge cliché */}
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute top-1/4 -right-40 h-[500px] w-[500px] rounded-full blur-3xl opacity-20"
-                  style={{ background: 'radial-gradient(circle, hsl(0 70% 50%) 0%, transparent 60%)' }}
-                />
-                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-32">
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
-                    {/* LEFT — Section header */}
-                    <div className="lg:col-span-5 lg:sticky lg:top-24 lg:self-start">
-                      <ScrollReveal>
-                        <p className="text-micro uppercase mb-4 inline-flex items-center gap-2 text-red-400/80">
-                          <span className="h-px w-6 bg-current" />
-                          {dealroom.language === 'de' ? 'Status quo' : 'Status quo'}
-                        </p>
-                        <h2 className="text-h1 font-bold text-balance mb-5 leading-[1.1]">
+              {/* ===== 2. PAIN — dark container, centered header, 3-card grid ===== */}
+              <section className="bg-bg">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
+                  <ScrollReveal>
+                    <div className="relative rounded-2xl sm:rounded-3xl p-6 sm:p-10 lg:p-14 overflow-hidden bg-trust-deep text-white">
+                      <div
+                        aria-hidden="true"
+                        className="pointer-events-none absolute -top-20 -right-20 h-[400px] w-[400px] rounded-full blur-3xl opacity-20"
+                        style={{ background: 'radial-gradient(circle, hsl(0 70% 50%) 0%, transparent 60%)' }}
+                      />
+
+                      {/* Centered header */}
+                      <div className="relative text-center mb-10 sm:mb-14 max-w-3xl mx-auto">
+                        <div className="inline-flex items-center justify-center h-12 w-12 rounded-full bg-red-500/15 mb-5">
+                          <AlertTriangle className="h-5 w-5 text-red-400" aria-hidden="true" />
+                        </div>
+                        <h2 className="text-h2 sm:text-h1 font-bold text-white text-balance leading-[1.15] mb-3">
                           {content.cost_of_inaction.headline}
                         </h2>
-                        <p className="text-body-lg text-white/70 text-pretty max-w-[45ch]">
+                        <p className="text-body sm:text-body-lg text-white/65 text-pretty max-w-xl mx-auto">
                           {tr.sections.situationDescription}
                         </p>
-                      </ScrollReveal>
-                    </div>
+                      </div>
 
-                    {/* RIGHT — Pain points as vertical list (robust to 1-N items) */}
-                    <div className="lg:col-span-7">
-                      <ul className="divide-y divide-white/10 border-y border-white/10">
+                      {/* Pain cards — robust to variable count, 1 on mobile / 3 on lg */}
+                      <div
+                        className={`relative grid gap-4 sm:gap-5 ${
+                          content.situation_points.length >= 3
+                            ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+                            : content.situation_points.length === 2
+                            ? 'grid-cols-1 md:grid-cols-2'
+                            : 'grid-cols-1'
+                        }`}
+                      >
                         {content.situation_points.map((point, i) => (
                           <ScrollReveal key={i} delay={i * 0.08}>
-                            <li className="py-7 sm:py-9 grid grid-cols-[auto_1fr] gap-5 sm:gap-7 items-start">
-                              {/* Number / Visual column */}
-                              <div className="w-20 sm:w-28 shrink-0">
-                                {point.visual_type && point.visual_data ? (
+                            <div className="h-full rounded-xl p-5 sm:p-6 border bg-white/[0.04] border-white/10 flex flex-col text-center sm:text-left">
+                              {point.visual_type && point.visual_data ? (
+                                <div className="mb-4 py-2 flex justify-center sm:justify-start">
                                   <PainVisual visual_type={point.visual_type} visual_data={point.visual_data} />
-                                ) : (
-                                  <span className="font-mono text-h2 font-medium text-red-400/60 tabular-nums">
-                                    {String(i + 1).padStart(2, '0')}
-                                  </span>
-                                )}
-                              </div>
-                              {/* Content column */}
-                              <div className="min-w-0 pt-1">
-                                <h3 className="text-h3 font-semibold text-white mb-2 text-balance">
-                                  {point.heading || point.text}
-                                </h3>
-                                {point.subtext && (
-                                  <p className="text-body text-white/65 text-pretty max-w-[55ch]">
-                                    {point.subtext}
-                                  </p>
-                                )}
-                                {point.visual_data?.label && !point.subtext && (
+                                </div>
+                              ) : (
+                                <span className="font-mono text-h2 font-medium text-red-400/70 tabular-nums mb-4">
+                                  {String(i + 1).padStart(2, '0')}
+                                </span>
+                              )}
+                              <h3 className="text-body sm:text-body-lg font-semibold text-white mb-2 text-balance leading-snug">
+                                {point.heading || point.text}
+                              </h3>
+                              {point.subtext && (
+                                <p className="text-body-sm text-white/60 text-pretty">
+                                  {point.subtext}
+                                </p>
+                              )}
+                              {point.visual_data?.label &&
+                                !point.subtext &&
+                                point.visual_type !== 'comparison_bar' &&
+                                point.visual_type !== 'percentage_ring' && (
                                   <p className="text-body-sm text-white/50 mt-1">
                                     {point.visual_data.label}
                                   </p>
                                 )}
-                              </div>
-                            </li>
+                            </div>
                           </ScrollReveal>
                         ))}
-                      </ul>
-
-                      <ScrollReveal delay={0.1}>
-                        <div className="mt-10 sm:mt-12">
-                          <CtaBlock
-                            derisking={tr.sections.ctaDeriskingPain}
-                            ctaName="after-pain"
-                          />
-                        </div>
-                      </ScrollReveal>
+                      </div>
                     </div>
-                  </div>
+                  </ScrollReveal>
+
+                  <ScrollReveal delay={0.1}>
+                    <div className="mt-10 sm:mt-12">
+                      <CtaBlock
+                        derisking={tr.sections.ctaDeriskingPain}
+                        ctaName="after-pain"
+                      />
+                    </div>
+                  </ScrollReveal>
                 </div>
               </section>
 
@@ -728,7 +744,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                 />
 
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-32">
-                  <div className="max-w-3xl mb-12 sm:mb-16">
+                  <div className="max-w-3xl mb-12 sm:mb-16 text-center lg:text-left mx-auto lg:mx-0">
                     <ScrollReveal>
                       <p className="text-micro uppercase mb-4 inline-flex items-center gap-2 text-emerald-400/90">
                         <span className="h-px w-6 bg-current" />
@@ -746,8 +762,8 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                       const visual = getOutcomeVisual(outcome);
                       return (
                         <ScrollReveal key={i} delay={i * 0.08}>
-                          <div className="h-full rounded-xl p-6 sm:p-7 bg-white/5 border border-white/10 backdrop-blur-sm flex flex-col">
-                            <div className="mb-5 min-h-[88px] flex items-center justify-start">
+                          <div className="h-full rounded-xl p-6 sm:p-7 bg-white/5 border border-white/10 backdrop-blur-sm flex flex-col text-center sm:text-left">
+                            <div className="mb-5 min-h-[96px] flex items-center justify-center sm:justify-start">
                               {visual.visual_type && visual.visual_data ? (
                                 <PainVisual
                                   visual_type={visual.visual_type}
@@ -774,19 +790,8 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                     })}
                   </div>
 
-                  {/* Editorial quote — no decorative border, italic display type */}
-                  {content.outcome_quote && (
-                    <ScrollReveal delay={0.2}>
-                      <figure className="max-w-3xl">
-                        <blockquote className="text-h2 sm:text-h1 font-display font-medium italic text-white/85 text-balance leading-[1.2] tracking-tight">
-                          &ldquo;{content.outcome_quote}&rdquo;
-                        </blockquote>
-                      </figure>
-                    </ScrollReveal>
-                  )}
-
                   <ScrollReveal delay={0.1}>
-                    <div className="mt-12 sm:mt-16">
+                    <div className="mt-4 sm:mt-6">
                       <CtaBlock
                         derisking={tr.sections.ctaDeriskingOutcome}
                         ctaName="after-outcome"
@@ -800,7 +805,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
               <section className="bg-bg">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-32">
                   <ScrollReveal>
-                    <div className="max-w-2xl mb-12 sm:mb-16">
+                    <div className="max-w-2xl mb-12 sm:mb-16 text-center md:text-left mx-auto md:mx-0">
                       <p className="text-micro uppercase text-fg-subtle mb-3">
                         {dealroom.language === 'de' ? 'Pakete' : 'Packages'}
                       </p>
@@ -815,7 +820,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                     </div>
                   </ScrollReveal>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
                     {[
                       {
                         emoji: '\u2600\uFE0F',
@@ -866,94 +871,81 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                         highlighted: false,
                       },
                     ].map((pkg, i) => (
-                      <ScrollReveal
-                        key={i}
-                        delay={i * 0.08}
-                        className={pkg.highlighted ? 'lg:row-span-2' : ''}
-                      >
+                      <ScrollReveal key={i} delay={i * 0.08}>
                         <article
-                          className={`relative h-full rounded-xl p-6 sm:p-8 lg:p-10 flex flex-col transition-shadow duration-base ${
-                            pkg.highlighted
-                              ? 'bg-trust-deep text-white shadow-floating'
-                              : 'bg-surface border border-border shadow-raised hover:shadow-floating'
-                          }`}
+                          className="relative h-full rounded-xl p-6 sm:p-7 lg:p-8 bg-surface border-2 flex flex-col text-center md:text-left shadow-raised hover:shadow-floating transition-shadow duration-base"
+                          style={{
+                            borderColor: pkg.highlighted ? brandColor : 'hsl(var(--border))',
+                          }}
                         >
                           {pkg.badge && (
                             <span
-                              className="absolute top-6 right-6 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-micro uppercase font-medium"
-                              style={{ backgroundColor: brandColor, color: 'white' }}
+                              className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center px-3 py-1 rounded-full text-micro uppercase font-medium text-white whitespace-nowrap"
+                              style={{ backgroundColor: brandColor }}
                             >
                               {pkg.badge}
                             </span>
                           )}
 
-                          <header className="mb-6">
-                            <p className={`text-micro uppercase mb-2 ${pkg.highlighted ? 'text-white/50' : 'text-fg-subtle'}`}>
+                          <header className="mb-5">
+                            <p className="text-micro uppercase text-fg-subtle mb-2">
                               {pkg.name === 'Comfort'
                                 ? (dealroom.language === 'de' ? 'Die Empfehlung' : 'The recommendation')
                                 : pkg.name === 'Premium'
                                 ? (dealroom.language === 'de' ? 'Die Komplettlösung' : 'The complete solution')
                                 : (dealroom.language === 'de' ? 'Der Einstieg' : 'The entry')}
                             </p>
-                            <h3 className={`text-h2 font-bold ${pkg.highlighted ? 'text-white' : 'text-fg'} mb-4`}>
+                            <h3 className="text-h2 font-bold text-fg mb-3">
                               {pkg.name}
                             </h3>
-                            <p className="flex items-baseline gap-1.5">
-                              <span className={`text-body-sm ${pkg.highlighted ? 'text-white/55' : 'text-fg-subtle'}`}>Ab</span>
+                            <p className="flex items-baseline gap-1.5 justify-center md:justify-start">
+                              <span className="text-body-sm text-fg-subtle">Ab</span>
                               <span
-                                className={`font-display font-bold tabular-nums ${pkg.highlighted ? 'text-display' : 'text-h1'}`}
-                                style={{ color: pkg.highlighted ? brandColor : undefined }}
+                                className="font-display text-h1 font-bold tabular-nums"
+                                style={{ color: brandColor }}
                               >
                                 {pkg.price}
                               </span>
-                              <span className={`text-h3 font-medium ${pkg.highlighted ? 'text-white/80' : 'text-fg-muted'}`}>
-                                {'€'}
-                              </span>
+                              <span className="text-h3 font-medium text-fg-muted">{'€'}</span>
                             </p>
                           </header>
 
-                          <dl
-                            className={`grid grid-cols-3 gap-3 py-4 mb-6 border-y ${
-                              pkg.highlighted ? 'border-white/10' : 'border-border'
-                            }`}
-                          >
+                          <dl className="grid grid-cols-3 gap-3 py-4 mb-5 border-y border-border">
                             <div>
-                              <dt className={`text-micro uppercase ${pkg.highlighted ? 'text-white/45' : 'text-fg-subtle'} mb-1`}>
+                              <dt className="text-micro uppercase text-fg-subtle mb-1">
                                 {dealroom.language === 'de' ? 'Anlage' : 'System'}
                               </dt>
-                              <dd className={`text-body font-semibold tabular-nums ${pkg.highlighted ? 'text-white' : 'text-fg'}`}>
+                              <dd className="text-body-sm font-semibold tabular-nums text-fg">
                                 {pkg.systemSize}
                               </dd>
                             </div>
                             <div>
-                              <dt className={`text-micro uppercase ${pkg.highlighted ? 'text-white/45' : 'text-fg-subtle'} mb-1`}>
+                              <dt className="text-micro uppercase text-fg-subtle mb-1">
                                 {dealroom.language === 'de' ? 'Speicher' : 'Storage'}
                               </dt>
-                              <dd className={`text-body font-semibold tabular-nums ${pkg.highlighted ? 'text-white' : 'text-fg'}`}>
+                              <dd className="text-body-sm font-semibold tabular-nums text-fg">
                                 {pkg.storage}
                               </dd>
                             </div>
                             <div>
-                              <dt className={`text-micro uppercase ${pkg.highlighted ? 'text-white/45' : 'text-fg-subtle'} mb-1`}>
+                              <dt className="text-micro uppercase text-fg-subtle mb-1">
                                 {dealroom.language === 'de' ? 'Ersparnis' : 'Savings'}
                               </dt>
-                              <dd className="text-body font-semibold tabular-nums text-emerald-400">
+                              <dd className="text-body-sm font-semibold tabular-nums text-success">
                                 {pkg.savings}
                               </dd>
                             </div>
                           </dl>
 
-                          <ul className="space-y-2.5 mb-8 flex-1">
+                          <ul className="space-y-2.5 mb-6 flex-1 text-left">
                             {pkg.benefits.map((b, j) => (
                               <li
                                 key={j}
-                                className={`flex items-start gap-2.5 text-body-sm ${
-                                  pkg.highlighted ? 'text-white/85' : 'text-fg-muted'
-                                }`}
+                                className="flex items-start gap-2.5 text-body-sm text-fg-muted"
                               >
                                 <CheckCircle2
                                   className="h-4 w-4 shrink-0 mt-0.5"
-                                  style={{ color: pkg.highlighted ? brandColor : undefined }}
+                                  style={{ color: brandColor }}
                                   aria-hidden="true"
                                 />
                                 <span>{b}</span>
@@ -963,12 +955,16 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
 
                           <button
                             onClick={() => handleCta(`product-${pkg.name.toLowerCase()}`)}
-                            className={`group w-full inline-flex items-center justify-between px-5 py-3.5 rounded-md font-semibold text-body-sm transition-all duration-fast active:scale-[0.99] min-h-[48px] ${
+                            className={`group w-full inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-md font-semibold text-body-sm transition-all duration-fast active:scale-[0.99] min-h-[48px] ${
                               pkg.highlighted
                                 ? 'text-white hover:opacity-90'
-                                : 'border border-border-strong text-fg hover:bg-surface-sub hover:border-fg'
+                                : 'border-2 hover:bg-surface-sub'
                             }`}
-                            style={pkg.highlighted ? { backgroundColor: brandColor } : undefined}
+                            style={
+                              pkg.highlighted
+                                ? { backgroundColor: brandColor }
+                                : { borderColor: brandColor, color: brandColor }
+                            }
                           >
                             <span>{dealroom.language === 'de' ? 'Angebot ansehen' : 'View offer'}</span>
                             <ArrowRight className="h-4 w-4 transition-transform duration-fast group-hover:translate-x-0.5" />
@@ -998,7 +994,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                 <section className="bg-bg">
                   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-32">
                     <ScrollReveal>
-                      <div className="max-w-2xl mb-12 sm:mb-16">
+                      <div className="max-w-2xl mb-12 sm:mb-16 text-center md:text-left mx-auto md:mx-0">
                         <p className="text-micro uppercase text-fg-subtle mb-3">
                           {dealroom.language === 'de' ? 'In Zahlen' : 'In numbers'}
                         </p>
@@ -1010,7 +1006,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-border border-y border-border">
                       {content.concrete_benefits.map((benefit, i) => (
                         <ScrollReveal key={i} delay={i * 0.08}>
-                          <div className="py-10 sm:py-12 sm:px-8 lg:px-10">
+                          <div className="py-10 sm:py-12 sm:px-8 lg:px-10 text-center sm:text-left">
                             <BenefitValue value={benefit.value} brandColor={brandColor} />
                             <p className="text-h3 font-semibold text-fg mt-4 mb-1 text-balance">{benefit.label}</p>
                             {benefit.detail && (
@@ -1024,12 +1020,92 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                 </section>
               )}
 
+              {/* ===== ABOUT — fixed content, left text + right image on desktop ===== */}
+              <section className="bg-bg">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-28">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
+                    <div className="lg:col-span-7 text-center lg:text-left">
+                      <ScrollReveal>
+                        <p className="text-micro uppercase text-fg-subtle mb-3">
+                          {dealroom.language === 'de' ? 'Über uns' : 'About us'}
+                        </p>
+                        <h2 className="text-h1 font-bold text-fg text-balance mb-4 leading-[1.15]">
+                          {dealroom.language === 'de'
+                            ? 'Solarheld — Ihr Partner für saubere Energie.'
+                            : 'Solarheld — your partner for clean energy.'}
+                        </h2>
+                        <p className="text-body-lg text-fg-muted text-pretty max-w-[55ch] mx-auto lg:mx-0 mb-8">
+                          {dealroom.language === 'de'
+                            ? 'Seit 25 Jahren installieren wir Solaranlagen in ganz Deutschland — von der ersten Beratung bis zur Inbetriebnahme aus einer Hand.'
+                            : 'For 25 years we have installed solar systems all over Germany — from first consultation to commissioning, all from one source.'}
+                        </p>
+                        <ul className="space-y-4 text-left max-w-xl mx-auto lg:mx-0">
+                          <li className="flex items-start gap-3">
+                            <CheckCircle2 className="h-5 w-5 shrink-0 mt-0.5" style={{ color: brandColor }} aria-hidden="true" />
+                            <div>
+                              <p className="text-body font-semibold text-fg">
+                                {dealroom.language === 'de' ? '4.000+ zufriedene Kunden' : '4,000+ satisfied customers'}
+                              </p>
+                              <p className="text-body-sm text-fg-muted">
+                                {dealroom.language === 'de'
+                                  ? 'Familien und Unternehmen vertrauen auf unsere Erfahrung.'
+                                  : 'Families and businesses trust our experience.'}
+                              </p>
+                            </div>
+                          </li>
+                          <li className="flex items-start gap-3">
+                            <CheckCircle2 className="h-5 w-5 shrink-0 mt-0.5" style={{ color: brandColor }} aria-hidden="true" />
+                            <div>
+                              <p className="text-body font-semibold text-fg">
+                                {dealroom.language === 'de' ? 'Alles aus einer Hand' : 'All from one source'}
+                              </p>
+                              <p className="text-body-sm text-fg-muted">
+                                {dealroom.language === 'de'
+                                  ? 'Planung, Installation, Wartung — keine Subunternehmer, keine Schnittstellen.'
+                                  : 'Planning, installation, maintenance — no subcontractors, no handoffs.'}
+                              </p>
+                            </div>
+                          </li>
+                          <li className="flex items-start gap-3">
+                            <CheckCircle2 className="h-5 w-5 shrink-0 mt-0.5" style={{ color: brandColor }} aria-hidden="true" />
+                            <div>
+                              <p className="text-body font-semibold text-fg">
+                                {dealroom.language === 'de' ? '25 Jahre Garantie' : '25-year warranty'}
+                              </p>
+                              <p className="text-body-sm text-fg-muted">
+                                {dealroom.language === 'de'
+                                  ? 'Premium-Komponenten, geprüfte Qualität, langfristige Sicherheit.'
+                                  : 'Premium components, certified quality, long-term security.'}
+                              </p>
+                            </div>
+                          </li>
+                        </ul>
+                      </ScrollReveal>
+                    </div>
+
+                    <div className="lg:col-span-5">
+                      <ScrollReveal delay={0.15}>
+                        <div className="relative aspect-[4/5] rounded-xl overflow-hidden bg-surface-sub shadow-floating">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src="/images/team/team-lg.jpeg"
+                            alt={dealroom.language === 'de' ? 'Das Solarheld-Team' : 'The Solarheld team'}
+                            className="absolute inset-0 w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                        </div>
+                      </ScrollReveal>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
               {/* ===== 5. FAQ — 2-col editorial on desktop, accordion robust to N items ===== */}
               {content.faq && content.faq.length > 0 && (
                 <section className="bg-surface-sub border-y border-border">
                   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-32">
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16">
-                      <div className="lg:col-span-4 lg:sticky lg:top-24 lg:self-start">
+                      <div className="lg:col-span-4 lg:sticky lg:top-24 lg:self-start text-center lg:text-left">
                         <ScrollReveal>
                           <p className="text-micro uppercase text-fg-subtle mb-3">
                             {dealroom.language === 'de' ? 'Häufige Fragen' : 'Common questions'}
@@ -1037,7 +1113,7 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                           <h2 className="text-h1 font-bold text-fg text-balance">
                             {tr.sections.faqTitle}
                           </h2>
-                          <p className="text-body text-fg-muted mt-4 max-w-[40ch]">
+                          <p className="text-body text-fg-muted mt-4 max-w-[40ch] mx-auto lg:mx-0">
                             {dealroom.language === 'de'
                               ? 'Noch Fragen? Wir haben die häufigsten direkt beantwortet.'
                               : 'Still have questions? We answered the most common ones here.'}
@@ -1085,40 +1161,19 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                 </section>
               )}
 
-              {/* ===== 7. KPI — editorial rule with display numbers ===== */}
-              <section className="bg-bg">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-                  <div className="grid grid-cols-2 md:grid-cols-4 divide-y-0 sm:divide-x divide-border border-y border-border">
-                    {[
-                      { value: 4000, suffix: '+', label: tr.about.statCustomers },
-                      { value: 50, suffix: '+', label: tr.about.statAwards },
-                      { value: 25, suffix: '', label: tr.about.statYears },
-                      { value: 8, suffix: '', label: tr.about.statLanguages },
-                    ].map((kpi, i) => (
-                      <ScrollReveal key={i} delay={i * 0.06}>
-                        <div className="py-8 sm:py-10 px-4 sm:px-6">
-                          <KpiValue value={kpi.value} suffix={kpi.suffix} />
-                          <p className="text-body-sm text-fg-muted mt-2 text-balance">{kpi.label}</p>
-                        </div>
-                      </ScrollReveal>
-                    ))}
-                  </div>
-                </div>
-              </section>
-
-              {/* ===== 10. FINAL CTA — trust-deep bg with brand-accented button ===== */}
-              <section className="relative bg-trust-deep text-white overflow-hidden">
+              {/* ===== 10. FINAL CTA — centered, light surface, inviting ===== */}
+              <section className="relative bg-surface-sub border-t border-border overflow-hidden">
                 <div
                   aria-hidden="true"
                   className="pointer-events-none absolute inset-0 brand-glow-radial opacity-60"
                 />
                 <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-32">
                   <ScrollReveal>
-                    <div className="max-w-3xl">
-                      <h2 className="text-h1 sm:text-display font-bold text-white text-balance leading-[1.05] mb-6">
+                    <div className="max-w-3xl mx-auto text-center">
+                      <h2 className="text-h1 sm:text-display font-bold text-fg text-balance leading-[1.05] mb-6">
                         {tr.sections.finalCtaTitle}
                       </h2>
-                      <p className="text-body-lg text-white/65 text-pretty max-w-[55ch] mb-10">
+                      <p className="text-body-lg text-fg-muted text-pretty max-w-[55ch] mx-auto mb-10">
                         {tr.sections.finalCtaSubtitle}
                       </p>
                       <button
@@ -1129,19 +1184,19 @@ export function DealroomClient({ dealroom, content, admin, assignedMember, docum
                         <span>{dealroom.language === 'de' ? 'Jetzt Angebot ansehen' : 'View Proposal'}</span>
                         <ArrowRight className="h-5 w-5 transition-transform duration-fast group-hover:translate-x-1" />
                       </button>
-                      <p className="text-body-sm text-white/55 mt-4">
+                      <p className="text-body-sm text-fg-subtle mt-4">
                         {content.cta_derisking || tr.sections.ctaDerisking}
                       </p>
                       {contact && (
-                        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mt-8 text-body-sm text-white/70 pt-6 border-t border-white/10">
+                        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-8 text-body-sm text-fg-muted pt-6 border-t border-border max-w-xl mx-auto">
                           {contact.phone && (
-                            <a href={`tel:${contact.phone}`} className="inline-flex items-center gap-2 hover:text-white transition-colors duration-fast min-h-[44px]">
-                              <Phone className="h-4 w-4 text-white/50" aria-hidden="true" /> {contact.phone}
+                            <a href={`tel:${contact.phone}`} className="inline-flex items-center gap-2 hover:text-fg transition-colors duration-fast min-h-[44px]">
+                              <Phone className="h-4 w-4 text-fg-subtle" aria-hidden="true" /> {contact.phone}
                             </a>
                           )}
                           {contact.email && (
-                            <a href={`mailto:${contact.email}`} className="inline-flex items-center gap-2 hover:text-white transition-colors duration-fast min-h-[44px]">
-                              <Mail className="h-4 w-4 text-white/50" aria-hidden="true" /> {contact.email}
+                            <a href={`mailto:${contact.email}`} className="inline-flex items-center gap-2 hover:text-fg transition-colors duration-fast min-h-[44px]">
+                              <Mail className="h-4 w-4 text-fg-subtle" aria-hidden="true" /> {contact.email}
                             </a>
                           )}
                         </div>
