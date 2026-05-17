@@ -171,15 +171,15 @@ export default function TemplatesPage() {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-[#6b7280]" /></div>;
+    return <div className="flex items-center justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-fg-muted" /></div>;
   }
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-[#1a1a1a]">Vorlagen</h1>
-          <p className="text-sm text-[#6b7280] mt-1">Vorgefertigte Angebote für wiederkehrende Produkte.</p>
+          <h1 className="text-2xl font-semibold text-fg">Vorlagen</h1>
+          <p className="text-sm text-fg-muted mt-1">Vorgefertigte Angebote für wiederkehrende Produkte.</p>
         </div>
         <Button size="sm" onClick={openCreateDialog}>
           <Plus className="h-3.5 w-3.5 mr-1.5" />
@@ -189,9 +189,9 @@ export default function TemplatesPage() {
 
       {templates.length === 0 ? (
         <div className="text-center py-16">
-          <FileStack className="h-12 w-12 text-[#d1d5db] mx-auto mb-4" />
-          <p className="text-sm font-medium text-[#1a1a1a]">Noch keine Templates</p>
-          <p className="text-xs text-[#9ca3af] mt-1 max-w-sm mx-auto mb-4">
+          <FileStack className="h-12 w-12 text-fg-subtle mx-auto mb-4" />
+          <p className="text-sm font-medium text-fg">Noch keine Templates</p>
+          <p className="text-xs text-fg-subtle mt-1 max-w-sm mx-auto mb-4">
             Erstellen Sie ein Template als Ausgangspunkt für wiederkehrende Angebote, oder speichern Sie einen bestehenden Dealroom als Template.
           </p>
           <Button size="sm" onClick={openCreateDialog}>
@@ -207,25 +207,25 @@ export default function TemplatesPage() {
                 <div className="flex items-center justify-between">
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-[#1a1a1a] truncate">{t.name}</p>
+                      <p className="text-sm font-medium text-fg truncate">{t.name}</p>
                       {t.is_active ? (
                         <span className="inline-flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full font-medium shrink-0">
                           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                           Aktiv
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 text-xs text-[#6b7280] bg-[#f3f4f6] px-2 py-0.5 rounded-full font-medium shrink-0">
+                        <span className="inline-flex items-center gap-1 text-xs text-fg-muted bg-surface-sub px-2 py-0.5 rounded-full font-medium shrink-0">
                           <span className="h-1.5 w-1.5 rounded-full bg-[#9ca3af]" />
                           Inaktiv
                         </span>
                       )}
                     </div>
                     {t.description && (
-                      <p className="text-xs text-[#6b7280] mt-1 truncate">{t.description}</p>
+                      <p className="text-xs text-fg-muted mt-1 truncate">{t.description}</p>
                     )}
-                    <div className="flex items-center gap-3 mt-2 text-xs text-[#9ca3af]">
+                    <div className="flex items-center gap-3 mt-2 text-xs text-fg-subtle">
                       {t.product_type && (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded bg-[#E97E1C]/10 text-[#E97E1C] font-medium">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded bg-brand-500/10 text-brand-500 font-medium">
                           {t.product_type}
                         </span>
                       )}

@@ -66,7 +66,7 @@ const steps: { key: Step; label: string; description: string }[] = [
 
 function HelpText({ children }: { children: React.ReactNode }) {
   return (
-    <p className="flex items-start gap-1.5 text-[12px] text-[#6b7280] mt-1">
+    <p className="flex items-start gap-1.5 text-[12px] text-fg-muted mt-1">
       <Lightbulb className="h-3.5 w-3.5 shrink-0 mt-0.5 text-amber-500" />
       <span>{children}</span>
     </p>
@@ -353,25 +353,25 @@ export default function NewDealroomPage() {
           <div className="h-20 w-20 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-4">
             <PartyPopper className="h-10 w-10 text-emerald-600" />
           </div>
-          <h1 className="text-2xl font-semibold text-[#1a1a1a] mb-2">
+          <h1 className="text-2xl font-semibold text-fg mb-2">
             Angebotsraum veröffentlicht!
           </h1>
-          <p className="text-[#6b7280] max-w-md">
-            Der Angebotsraum für <span className="font-medium text-[#1a1a1a]">{clientName}</span>{clientCompany && clientCompany !== clientName ? ` (${clientCompany})` : ''} ist jetzt live.
+          <p className="text-fg-muted max-w-md">
+            Der Angebotsraum für <span className="font-medium text-fg">{clientName}</span>{clientCompany && clientCompany !== clientName ? ` (${clientCompany})` : ''} ist jetzt live.
           </p>
         </div>
 
         <div className="bg-[#FFF8F0] rounded-xl p-4 mb-6 max-w-lg w-full">
-          <p className="text-xs text-[#6b7280] mb-2">Link zum Angebotsraum:</p>
+          <p className="text-xs text-fg-muted mb-2">Link zum Angebotsraum:</p>
           <div className="flex items-center gap-2">
-            <code className="flex-1 text-sm text-[#E97E1C] bg-white rounded-lg px-3 py-2 border border-[#e5e7eb] truncate">
+            <code className="flex-1 text-sm text-brand-500 bg-surface rounded-lg px-3 py-2 border border-border truncate">
               {publishedUrl}
             </code>
             <Button size="sm" variant="outline" onClick={copyLink}>
               {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
             </Button>
           </div>
-          <p className="text-xs text-[#9ca3af] mt-2">Link wurde automatisch in die Zwischenablage kopiert</p>
+          <p className="text-xs text-fg-subtle mt-2">Link wurde automatisch in die Zwischenablage kopiert</p>
         </div>
 
         <div className="flex gap-3">
@@ -390,16 +390,16 @@ export default function NewDealroomPage() {
     <div className="max-w-2xl">
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-1 text-sm text-[#6b7280] hover:text-[#1a1a1a] mb-6 transition-colors"
+        className="flex items-center gap-1 text-sm text-fg-muted hover:text-fg mb-6 transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
         Zurück
       </button>
 
-      <h1 className="text-2xl font-semibold text-[#1a1a1a] mb-1">
+      <h1 className="text-2xl font-semibold text-fg mb-1">
         Neuer Angebotsraum
       </h1>
-      <p className="text-sm text-[#6b7280] mb-6">
+      <p className="text-sm text-fg-muted mb-6">
         In 3 Schritten zum fertigen Angebotsraum
       </p>
 
@@ -413,14 +413,14 @@ export default function NewDealroomPage() {
                   i < currentStepIndex
                     ? 'bg-emerald-500 text-white'
                     : i === currentStepIndex
-                    ? 'bg-[#E97E1C] text-white'
-                    : 'bg-[#FEF3E2] text-[#6b7280]'
+                    ? 'bg-brand-500 text-white'
+                    : 'bg-brand-50 text-fg-muted'
                 }`}
               >
                 {i < currentStepIndex ? <Check className="h-4 w-4" /> : i + 1}
               </div>
               <div className="hidden sm:block">
-                <p className={`text-sm font-medium ${i === currentStepIndex ? 'text-[#1a1a1a]' : 'text-[#6b7280]'}`}>
+                <p className={`text-sm font-medium ${i === currentStepIndex ? 'text-fg' : 'text-fg-muted'}`}>
                   {step.label}
                 </p>
               </div>
@@ -428,32 +428,32 @@ export default function NewDealroomPage() {
             </div>
           ))}
         </div>
-        <div className="w-full bg-[#FEF3E2] rounded-full h-1.5">
+        <div className="w-full bg-brand-50 rounded-full h-1.5">
           <div
-            className="bg-[#E97E1C] h-1.5 rounded-full transition-all duration-300"
+            className="bg-brand-500 h-1.5 rounded-full transition-all duration-300"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
-        <p className="text-[11px] text-[#9ca3af] mt-1 text-right">{progressPercent}%</p>
+        <p className="text-[11px] text-fg-subtle mt-1 text-right">{progressPercent}%</p>
       </div>
 
       {/* Generating overlay */}
       {generating && (
-        <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-surface/80 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="text-center">
-            <Loader2 className="h-10 w-10 text-[#E97E1C] animate-spin mx-auto mb-4" />
-            <h2 className="text-lg font-semibold text-[#1a1a1a] mb-1">Angebot wird erstellt...</h2>
-            <p className="text-sm text-[#6b7280]">Die KI erstellt den Inhalt für Ihren Angebotsraum. Das dauert ca. 15 Sekunden.</p>
+            <Loader2 className="h-10 w-10 text-brand-500 animate-spin mx-auto mb-4" />
+            <h2 className="text-lg font-semibold text-fg mb-1">Angebot wird erstellt...</h2>
+            <p className="text-sm text-fg-muted">Die KI erstellt den Inhalt für Ihren Angebotsraum. Das dauert ca. 15 Sekunden.</p>
           </div>
         </div>
       )}
 
       {/* Step 1: Für wen? */}
       {currentStep === 'client' && (
-        <Card className="border-[#e5e7eb] shadow-sm">
+        <Card className="border-border shadow-sm">
           <CardContent className="p-6 space-y-5">
             <div>
-              <h2 className="text-lg font-semibold text-[#1a1a1a] mb-1">Für wen ist der Angebotsraum?</h2>
+              <h2 className="text-lg font-semibold text-fg mb-1">Für wen ist der Angebotsraum?</h2>
               <HelpText>Geben Sie die Daten Ihres Kunden ein. Diese werden im Angebotsraum angezeigt.</HelpText>
             </div>
 
@@ -471,16 +471,16 @@ export default function NewDealroomPage() {
                     onClick={() => setCustomerType(opt.value)}
                     className={`flex-1 flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
                       customerType === opt.value
-                        ? 'border-[#E97E1C] bg-[#E97E1C]/5'
-                        : 'border-[#e5e7eb] hover:border-[#E97E1C]/30'
+                        ? 'border-brand-500 bg-brand-500/5'
+                        : 'border-border hover:border-brand-500/30'
                     }`}
                   >
                     <span className="text-2xl">{opt.icon}</span>
                     <div className="text-left">
-                      <p className={`text-sm font-semibold ${customerType === opt.value ? 'text-[#E97E1C]' : 'text-[#1a1a1a]'}`}>
+                      <p className={`text-sm font-semibold ${customerType === opt.value ? 'text-brand-500' : 'text-fg'}`}>
                         {opt.label}
                       </p>
-                      <p className="text-xs text-[#6b7280]">{opt.desc}</p>
+                      <p className="text-xs text-fg-muted">{opt.desc}</p>
                     </div>
                   </button>
                 ))}
@@ -506,8 +506,8 @@ export default function NewDealroomPage() {
                       }}
                       className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
                         customerSource === val
-                          ? 'border-[#E97E1C] bg-[#E97E1C]/5 text-[#E97E1C]'
-                          : 'border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]'
+                          ? 'border-brand-500 bg-brand-500/5 text-brand-500'
+                          : 'border-border text-fg-muted hover:bg-surface-sub'
                       }`}
                     >
                       {label}
@@ -813,21 +813,21 @@ export default function NewDealroomPage() {
 
       {/* Step 2: Was erzählen? */}
       {currentStep === 'input' && (
-        <Card className="border-[#e5e7eb] shadow-sm">
+        <Card className="border-border shadow-sm">
           <CardContent className="p-6 space-y-5">
             <div>
-              <h2 className="text-lg font-semibold text-[#1a1a1a] mb-1">Was möchten Sie dem Kunden erzählen?</h2>
+              <h2 className="text-lg font-semibold text-fg mb-1">Was möchten Sie dem Kunden erzählen?</h2>
               <HelpText>Beschreiben Sie die Situation des Kunden. Die KI erstellt daraus einen professionellen Angebotsraum.</HelpText>
             </div>
 
             {/* Inline language toggle */}
             <div className="flex items-center gap-3">
-              <Label className="text-sm text-[#6b7280] shrink-0">Sprache:</Label>
+              <Label className="text-sm text-fg-muted shrink-0">Sprache:</Label>
               <div className="flex gap-1">
                 <button
                   onClick={() => setLanguage('de')}
                   className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                    language === 'de' ? 'bg-[#E97E1C] text-white' : 'bg-[#FFF8F0] text-[#6b7280] hover:text-[#1a1a1a]'
+                    language === 'de' ? 'bg-brand-500 text-white' : 'bg-[#FFF8F0] text-fg-muted hover:text-fg'
                   }`}
                 >
                   Deutsch
@@ -835,7 +835,7 @@ export default function NewDealroomPage() {
                 <button
                   onClick={() => setLanguage('en')}
                   className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-                    language === 'en' ? 'bg-[#E97E1C] text-white' : 'bg-[#FFF8F0] text-[#6b7280] hover:text-[#1a1a1a]'
+                    language === 'en' ? 'bg-brand-500 text-white' : 'bg-[#FFF8F0] text-fg-muted hover:text-fg'
                   }`}
                 >
                   English
@@ -845,7 +845,7 @@ export default function NewDealroomPage() {
 
             {/* Template Selection */}
             {templates.length > 0 && (
-              <div className="space-y-2 pb-4 border-b border-[#e5e7eb]">
+              <div className="space-y-2 pb-4 border-b border-border">
                 <Label className="flex items-center gap-1.5 text-sm font-medium">
                   <FileStack className="h-4 w-4" />
                   Vorlage verwenden
@@ -858,21 +858,21 @@ export default function NewDealroomPage() {
                         applyTemplate(tmpl.id);
                         setCurrentStep('finish');
                       }}
-                      className={`text-left p-3 rounded-lg border transition-colors hover:border-[#E97E1C] hover:bg-[#E97E1C]/5 ${
+                      className={`text-left p-3 rounded-lg border transition-colors hover:border-brand-500 hover:bg-brand-500/5 ${
                         selectedTemplateId === tmpl.id
-                          ? 'border-[#E97E1C] bg-[#E97E1C]/5'
-                          : 'border-[#e5e7eb]'
+                          ? 'border-brand-500 bg-brand-500/5'
+                          : 'border-border'
                       }`}
                     >
-                      <p className="text-sm font-medium text-[#1a1a1a]">{tmpl.name}</p>
+                      <p className="text-sm font-medium text-fg">{tmpl.name}</p>
                       {tmpl.description && (
-                        <p className="text-xs text-[#6b7280] mt-0.5 line-clamp-1">{tmpl.description}</p>
+                        <p className="text-xs text-fg-muted mt-0.5 line-clamp-1">{tmpl.description}</p>
                       )}
                       <div className="flex items-center gap-2 mt-1.5">
                         {tmpl.product_type && (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#E97E1C]/10 text-[#E97E1C] font-medium">{tmpl.product_type}</span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded bg-brand-500/10 text-brand-500 font-medium">{tmpl.product_type}</span>
                         )}
-                        <span className="text-[10px] text-[#9ca3af]">{tmpl.usage_count}x verwendet</span>
+                        <span className="text-[10px] text-fg-subtle">{tmpl.usage_count}x verwendet</span>
                       </div>
                     </button>
                   ))}
@@ -933,8 +933,8 @@ export default function NewDealroomPage() {
                         </Button>
                       </div>
                       {audioRecorder.transcript && (
-                        <div className="bg-[#FFF8F0] rounded-lg p-3 text-sm text-[#374151] border border-[#FEF3E2]">
-                          <p className="text-xs text-[#6b7280] mb-1 font-medium">Live-Transkription:</p>
+                        <div className="bg-[#FFF8F0] rounded-lg p-3 text-sm text-fg border border-[#FEF3E2]">
+                          <p className="text-xs text-fg-muted mb-1 font-medium">Live-Transkription:</p>
                           {audioRecorder.transcript}
                         </div>
                       )}
@@ -962,23 +962,23 @@ export default function NewDealroomPage() {
             )}
 
             {/* Help questions - always visible */}
-            <div className="bg-[#f9fafb] rounded-lg p-4 border border-[#e5e7eb]">
-              <p className="text-xs font-medium text-[#6b7280] mb-2">Diese Fragen helfen Ihnen:</p>
-              <ul className="space-y-1.5 text-xs text-[#6b7280]">
+            <div className="bg-surface-sub rounded-lg p-4 border border-border">
+              <p className="text-xs font-medium text-fg-muted mb-2">Diese Fragen helfen Ihnen:</p>
+              <ul className="space-y-1.5 text-xs text-fg-muted">
                 <li className="flex items-start gap-1.5">
-                  <span className="text-[#E97E1C] mt-0.5">•</span>
+                  <span className="text-brand-500 mt-0.5">•</span>
                   Was ist die aktuelle Situation des Kunden? (Ist-Zustand)
                 </li>
                 <li className="flex items-start gap-1.5">
-                  <span className="text-[#E97E1C] mt-0.5">•</span>
+                  <span className="text-brand-500 mt-0.5">•</span>
                   Welche Probleme oder Risiken hat der Kunde? (Schmerzpunkte)
                 </li>
                 <li className="flex items-start gap-1.5">
-                  <span className="text-[#E97E1C] mt-0.5">•</span>
+                  <span className="text-brand-500 mt-0.5">•</span>
                   Was möchte der Kunde erreichen? (Ziele)
                 </li>
                 <li className="flex items-start gap-1.5">
-                  <span className="text-[#E97E1C] mt-0.5">•</span>
+                  <span className="text-brand-500 mt-0.5">•</span>
                   Welche Lösung bieten Sie an? (Ihr Ansatz)
                 </li>
               </ul>
@@ -1000,34 +1000,34 @@ export default function NewDealroomPage() {
 
       {/* Step 3: Fertigstellen */}
       {currentStep === 'finish' && (
-        <Card className="border-[#e5e7eb] shadow-sm">
+        <Card className="border-border shadow-sm">
           <CardContent className="p-6 space-y-5">
             <div>
-              <h2 className="text-lg font-semibold text-[#1a1a1a] mb-1">Angebotsraum fertigstellen</h2>
+              <h2 className="text-lg font-semibold text-fg mb-1">Angebotsraum fertigstellen</h2>
               <HelpText>Prüfen Sie den generierten Inhalt und fügen Sie optional ein Video oder Dokument hinzu.</HelpText>
             </div>
 
             {/* Summary */}
-            <div className="bg-[#f9fafb] rounded-xl p-4 space-y-2">
-              <h3 className="text-sm font-medium text-[#1a1a1a]">Zusammenfassung</h3>
+            <div className="bg-surface-sub rounded-xl p-4 space-y-2">
+              <h3 className="text-sm font-medium text-fg">Zusammenfassung</h3>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
-                  <span className="text-[#6b7280]">Kunde:</span>{' '}
+                  <span className="text-fg-muted">Kunde:</span>{' '}
                   <span className="font-medium">{clientName}</span>
                 </div>
                 {customerType === 'commercial' && clientCompany && (
                   <div>
-                    <span className="text-[#6b7280]">Firma:</span>{' '}
+                    <span className="text-fg-muted">Firma:</span>{' '}
                     <span className="font-medium">{clientCompany}</span>
                   </div>
                 )}
                 <div>
-                  <span className="text-[#6b7280]">Sprache:</span>{' '}
+                  <span className="text-fg-muted">Sprache:</span>{' '}
                   <span className="font-medium">{language === 'de' ? 'Deutsch' : 'English'}</span>
                 </div>
                 {assignedMemberId && assignedMemberId !== 'none' && (
                   <div>
-                    <span className="text-[#6b7280]">Ansprechpartner:</span>{' '}
+                    <span className="text-fg-muted">Ansprechpartner:</span>{' '}
                     <span className="font-medium">
                       {teamMembers.find(m => m.id === assignedMemberId)?.name || '—'}
                     </span>
@@ -1038,16 +1038,16 @@ export default function NewDealroomPage() {
 
             {/* Content review (tabbed) */}
             {generatedContent && (
-              <div className="border border-[#e5e7eb] rounded-xl overflow-hidden">
+              <div className="border border-border rounded-xl overflow-hidden">
                 <button
                   onClick={() => setShowContentReview(!showContentReview)}
-                  className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-[#1a1a1a] hover:bg-[#f9fafb] transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-fg hover:bg-surface-sub transition-colors"
                 >
                   <span>Generierter Inhalt bearbeiten</span>
                   {showContentReview ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </button>
                 {showContentReview && (
-                  <div className="border-t border-[#e5e7eb]">
+                  <div className="border-t border-border">
                     {/* Mini-tabs */}
                     <div className="flex gap-1 px-4 pt-3 pb-0 overflow-x-auto">
                       {([
@@ -1062,8 +1062,8 @@ export default function NewDealroomPage() {
                           onClick={() => setContentTab(tab.key)}
                           className={`px-3 py-1.5 rounded-md text-[12px] font-semibold transition-colors whitespace-nowrap ${
                             contentTab === tab.key
-                              ? 'bg-[#E97E1C] text-white'
-                              : 'text-[#6b7280] hover:bg-[#fafafa] hover:text-[#1a1a1a]'
+                              ? 'bg-brand-500 text-white'
+                              : 'text-fg-muted hover:bg-surface-sub hover:text-fg'
                           }`}
                         >
                           {tab.label}
@@ -1097,8 +1097,8 @@ export default function NewDealroomPage() {
                           <Label>Ausgangslage (Schmerzpunkte)</Label>
                           {generatedContent.situation_points.map((point, i) => (
                             <div key={i} className="flex items-center gap-2">
-                              <div className="shrink-0 h-8 w-8 rounded-lg bg-[#E97E1C]/10 flex items-center justify-center">
-                                <DynamicIcon name={point.icon} className="h-4 w-4 text-[#E97E1C]" />
+                              <div className="shrink-0 h-8 w-8 rounded-lg bg-brand-500/10 flex items-center justify-center">
+                                <DynamicIcon name={point.icon} className="h-4 w-4 text-brand-500" />
                               </div>
                               <Input
                                 value={point.text}
@@ -1166,8 +1166,8 @@ export default function NewDealroomPage() {
             )}
 
             {/* Video & PandaDoc (optional extras) */}
-            <div className="space-y-4 border-t border-[#e5e7eb] pt-5">
-              <h3 className="text-sm font-medium text-[#1a1a1a]">Optionale Extras</h3>
+            <div className="space-y-4 border-t border-border pt-5">
+              <h3 className="text-sm font-medium text-fg">Optionale Extras</h3>
 
               <div className="space-y-2">
                 <Label>Video-URL (Loom oder YouTube)</Label>
@@ -1196,14 +1196,14 @@ export default function NewDealroomPage() {
                   Dokumente (optional)
                 </Label>
                 {uploadingDoc ? (
-                  <div className="flex items-center justify-center gap-2 border-2 border-dashed border-[#E97E1C] rounded-lg py-6 bg-[#E97E1C]/5">
-                    <Loader2 className="h-5 w-5 text-[#E97E1C] animate-spin" />
-                    <span className="text-sm text-[#E97E1C]">Wird hochgeladen...</span>
+                  <div className="flex items-center justify-center gap-2 border-2 border-dashed border-brand-500 rounded-lg py-6 bg-brand-500/5">
+                    <Loader2 className="h-5 w-5 text-brand-500 animate-spin" />
+                    <span className="text-sm text-brand-500">Wird hochgeladen...</span>
                   </div>
                 ) : (
-                  <label className="flex items-center justify-center gap-2 border-2 border-dashed border-[#e5e7eb] rounded-lg py-6 cursor-pointer hover:border-[#E97E1C] hover:bg-[#E97E1C]/5 transition-colors">
-                    <Upload className="h-5 w-5 text-[#6b7280]" />
-                    <span className="text-sm text-[#6b7280]">{pendingDocuments.length > 0 ? 'Weitere Dateien hinzufügen' : 'Dateien auswählen'}</span>
+                  <label className="flex items-center justify-center gap-2 border-2 border-dashed border-border rounded-lg py-6 cursor-pointer hover:border-brand-500 hover:bg-brand-500/5 transition-colors">
+                    <Upload className="h-5 w-5 text-fg-muted" />
+                    <span className="text-sm text-fg-muted">{pendingDocuments.length > 0 ? 'Weitere Dateien hinzufügen' : 'Dateien auswählen'}</span>
                     <input
                       type="file"
                       multiple
@@ -1236,14 +1236,14 @@ export default function NewDealroomPage() {
                 {pendingDocuments.length > 0 && (
                   <div className="space-y-1.5 mt-2">
                     {pendingDocuments.map((doc, i) => (
-                      <div key={i} className="flex items-center gap-2 bg-[#fafafa] rounded-lg px-3 py-2">
-                        <File className="h-4 w-4 text-[#6b7280] shrink-0" />
-                        <span className="text-sm text-[#1a1a1a] truncate flex-1">{doc.name}</span>
-                        <span className="text-xs text-[#9ca3af] shrink-0">{(doc.file_size / 1024).toFixed(0)} KB</span>
+                      <div key={i} className="flex items-center gap-2 bg-surface-sub rounded-lg px-3 py-2">
+                        <File className="h-4 w-4 text-fg-muted shrink-0" />
+                        <span className="text-sm text-fg truncate flex-1">{doc.name}</span>
+                        <span className="text-xs text-fg-subtle shrink-0">{(doc.file_size / 1024).toFixed(0)} KB</span>
                         <button
                           type="button"
                           onClick={() => setPendingDocuments(prev => prev.filter((_, j) => j !== i))}
-                          className="text-[#6b7280] hover:text-red-500 shrink-0"
+                          className="text-fg-muted hover:text-red-500 shrink-0"
                         >
                           <X className="h-3.5 w-3.5" />
                         </button>

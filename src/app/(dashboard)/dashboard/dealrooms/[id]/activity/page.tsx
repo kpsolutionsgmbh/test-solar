@@ -174,14 +174,14 @@ export default function ActivityPage() {
     <div>
       <button
         onClick={() => router.push(`/dashboard/dealrooms/${params.id}`)}
-        className="flex items-center gap-1 text-sm text-[#6b7280] hover:text-[#1a1a1a] mb-6 transition-colors"
+        className="flex items-center gap-1 text-sm text-fg-muted hover:text-fg mb-6 transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
         Zurück
       </button>
 
-      <h1 className="text-2xl font-semibold text-[#1a1a1a] mb-1">Aktivitäten</h1>
-      <p className="text-sm text-[#6b7280] mb-6">{dealroomName}</p>
+      <h1 className="text-2xl font-semibold text-fg mb-1">Aktivitäten</h1>
+      <p className="text-sm text-fg-muted mb-6">{dealroomName}</p>
 
       {loading ? (
         <div className="space-y-4">
@@ -198,44 +198,44 @@ export default function ActivityPage() {
               <CardContent className="pt-4 pb-3 text-center">
                 <Eye className="h-4 w-4 text-blue-600 mx-auto mb-1" />
                 <p className="text-xl font-bold">{totalViews}</p>
-                <p className="text-[10px] text-[#6b7280] uppercase">Aufrufe</p>
+                <p className="text-[10px] text-fg-muted uppercase">Aufrufe</p>
               </CardContent>
             </Card>
             <Card className="border-none shadow-sm">
               <CardContent className="pt-4 pb-3 text-center">
                 <Globe className="h-4 w-4 text-indigo-600 mx-auto mb-1" />
                 <p className="text-xl font-bold">{sessions.size}</p>
-                <p className="text-[10px] text-[#6b7280] uppercase">Sessions</p>
+                <p className="text-[10px] text-fg-muted uppercase">Sessions</p>
               </CardContent>
             </Card>
             <Card className="border-none shadow-sm">
               <CardContent className="pt-4 pb-3 text-center">
                 <Play className="h-4 w-4 text-purple-600 mx-auto mb-1" />
                 <p className="text-xl font-bold">{totalVideoPlays}</p>
-                <p className="text-[10px] text-[#6b7280] uppercase">Video-Plays</p>
+                <p className="text-[10px] text-fg-muted uppercase">Video-Plays</p>
               </CardContent>
             </Card>
             <Card className="border-none shadow-sm">
               <CardContent className="pt-4 pb-3 text-center">
                 <MousePointerClick className="h-4 w-4 text-rose-600 mx-auto mb-1" />
                 <p className="text-xl font-bold">{ctaClicks}</p>
-                <p className="text-[10px] text-[#6b7280] uppercase">CTA-Klicks</p>
+                <p className="text-[10px] text-fg-muted uppercase">CTA-Klicks</p>
               </CardContent>
             </Card>
             <Card className="border-none shadow-sm">
               <CardContent className="pt-4 pb-3 text-center">
                 <FileSignature className="h-4 w-4 text-emerald-600 mx-auto mb-1" />
                 <p className="text-xl font-bold">
-                  {hasSigned ? <span className="text-emerald-600">Ja</span> : <span className="text-[#d1d5db]">Nein</span>}
+                  {hasSigned ? <span className="text-emerald-600">Ja</span> : <span className="text-fg-subtle">Nein</span>}
                 </p>
-                <p className="text-[10px] text-[#6b7280] uppercase">Signiert</p>
+                <p className="text-[10px] text-fg-muted uppercase">Signiert</p>
               </CardContent>
             </Card>
             <Card className="border-none shadow-sm bg-gradient-to-br from-[#E97E1C]/5 to-[#E97E1C]/10">
               <CardContent className="pt-4 pb-3 text-center">
-                <Timer className="h-4 w-4 text-[#E97E1C] mx-auto mb-1" />
+                <Timer className="h-4 w-4 text-brand-500 mx-auto mb-1" />
                 <p className={`text-xl font-bold ${engagementColor}`}>{engagementScore}%</p>
-                <p className="text-[10px] text-[#6b7280] uppercase">Engagement</p>
+                <p className="text-[10px] text-fg-muted uppercase">Engagement</p>
               </CardContent>
             </Card>
           </div>
@@ -244,9 +244,9 @@ export default function ActivityPage() {
           {events.length === 0 ? (
             <Card className="border-dashed border-2">
               <CardContent className="py-16 text-center">
-                <Eye className="h-10 w-10 text-[#d1d5db] mx-auto mb-3" />
-                <p className="text-[#6b7280] font-medium">Noch keine Aktivitäten</p>
-                <p className="text-sm text-[#9ca3af] mt-1">Aktivitäten erscheinen hier sobald der Dealroom besucht wird</p>
+                <Eye className="h-10 w-10 text-fg-subtle mx-auto mb-3" />
+                <p className="text-fg-muted font-medium">Noch keine Aktivitäten</p>
+                <p className="text-sm text-fg-subtle mt-1">Aktivitäten erscheinen hier sobald der Dealroom besucht wird</p>
               </CardContent>
             </Card>
           ) : (
@@ -275,18 +275,18 @@ export default function ActivityPage() {
                     {/* Session header */}
                     <div className="px-5 py-3 bg-[#f8fafb] border-b flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-1.5 text-xs text-[#6b7280]">
+                        <div className="flex items-center gap-1.5 text-xs text-fg-muted">
                           <DeviceIcon className="h-3.5 w-3.5" />
                           <span>{device}</span>
-                          {browser && <span className="text-[#d1d5db]">/</span>}
+                          {browser && <span className="text-fg-subtle">/</span>}
                           {browser && <span>{browser}</span>}
                         </div>
                         <span className="text-[#e5e7eb]">|</span>
-                        <span className="text-xs text-[#6b7280]">
+                        <span className="text-xs text-fg-muted">
                           {formatDateTime(firstEvent.created_at)}
                         </span>
                         <span className="text-[#e5e7eb]">|</span>
-                        <span className="text-xs text-[#6b7280]">
+                        <span className="text-xs text-fg-muted">
                           {durationMin > 0 ? `${durationMin}:${String(durationSecRem).padStart(2, '0')} Min.` : `${durationSec}s`}
                         </span>
                       </div>
@@ -323,10 +323,10 @@ export default function ActivityPage() {
                                   <Icon className="h-3 w-3" />
                                 </div>
                                 <div className="flex-1 flex items-center justify-between min-w-0">
-                                  <span className={`text-sm ${isHighlight ? 'text-[#1a1a1a]' : 'text-[#374151]'}`}>
+                                  <span className={`text-sm ${isHighlight ? 'text-fg' : 'text-fg'}`}>
                                     {cfg.describe(event.event_data as Record<string, unknown> | null)}
                                   </span>
-                                  <span className="text-[11px] text-[#9ca3af] shrink-0 ml-3 tabular-nums">
+                                  <span className="text-[11px] text-fg-subtle shrink-0 ml-3 tabular-nums">
                                     {new Date(event.created_at).toLocaleTimeString('de-DE', {
                                       hour: '2-digit',
                                       minute: '2-digit',

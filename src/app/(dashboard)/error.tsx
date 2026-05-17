@@ -18,10 +18,10 @@ export default function DashboardError({
   return (
     <div className="flex min-h-[50vh] flex-col items-center justify-center px-4 text-center">
       <AlertTriangle className="h-10 w-10 text-amber-500 mb-3" />
-      <h2 className="text-lg font-semibold text-[#1a1a1a] mb-2">
+      <h2 className="text-lg font-semibold text-fg mb-2">
         Fehler beim Laden
       </h2>
-      <p className="text-sm text-[#6b7280] mb-5 max-w-sm">
+      <p className="text-sm text-fg-muted mb-5 max-w-sm">
         Die Seite konnte nicht geladen werden. Bitte versuchen Sie es erneut oder kehren Sie zur Übersicht zurück.
       </p>
       <div className="flex gap-3">

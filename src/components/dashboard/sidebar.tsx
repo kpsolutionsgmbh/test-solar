@@ -6,7 +6,6 @@ import { createClient } from '@/lib/supabase/client';
 import {
   LayoutDashboard,
   Plus,
-  Award,
   Settings,
   LogOut,
   BarChart3,
@@ -16,22 +15,16 @@ import {
   Menu,
   X,
   Activity,
-  Sun,
-  Moon,
   PanelLeftClose,
   PanelLeftOpen,
-  Layers,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useTheme } from 'next-themes';
 
 const mainNavItems = [
   { href: '/dashboard', label: 'Übersicht', icon: LayoutDashboard },
   { href: '/dashboard/new', label: 'Neues Angebot', icon: Plus },
   { href: '/dashboard/activity', label: 'Aktivität', icon: Activity },
   { href: '/dashboard/customers', label: 'Kunden', icon: Users },
-  { href: '/dashboard/references', label: 'Kundenstimmen', icon: Award },
-  { href: '/dashboard/global-content', label: 'Standard-Inhalte', icon: Layers },
   { href: '/dashboard/templates', label: 'Vorlagen', icon: FileStack },
   { href: '/dashboard/analytics', label: 'Auswertung', icon: BarChart3 },
   { href: '/dashboard/email-flows', label: 'E-Mails', icon: Mail },
@@ -47,30 +40,6 @@ const mobileNavItems = [
 interface SidebarProps {
   userName: string;
   companyName: string;
-}
-
-function ThemeToggle({ collapsed }: { collapsed: boolean }) {
-  const { theme, setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  if (!mounted) return null;
-  const isDark = (theme === 'system' ? resolvedTheme : theme) === 'dark';
-  return (
-    <button
-      onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      title={isDark ? 'Light Mode' : 'Dark Mode'}
-      className={`flex items-center gap-3 ${
-        collapsed ? 'justify-center' : ''
-      } w-full px-3 py-[7px] rounded-md text-[13px] font-semibold text-fg-muted hover:bg-surface-sub hover:text-fg transition-colors duration-fast`}
-    >
-      {isDark ? (
-        <Sun size={16} strokeWidth={1.75} />
-      ) : (
-        <Moon size={16} strokeWidth={1.75} />
-      )}
-      {!collapsed && (isDark ? 'Light Mode' : 'Dark Mode')}
-    </button>
-  );
 }
 
 export function DashboardSidebar({ userName, companyName }: SidebarProps) {
@@ -206,8 +175,6 @@ export function DashboardSidebar({ userName, companyName }: SidebarProps) {
             />
             {!collapsed && 'Einstellungen'}
           </Link>
-
-          <ThemeToggle collapsed={collapsed} />
         </nav>
 
         {/* User section */}
@@ -283,9 +250,6 @@ export function DashboardSidebar({ userName, companyName }: SidebarProps) {
                 <Settings size={18} strokeWidth={1.75} />
                 Einstellungen
               </Link>
-              <div className="px-3">
-                <ThemeToggle collapsed={false} />
-              </div>
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-[14px] font-semibold text-fg-muted hover:bg-surface-sub transition-colors"

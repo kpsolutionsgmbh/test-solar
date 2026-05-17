@@ -20,11 +20,11 @@ import {
 import { EngagementScore } from '@/components/dashboard/engagement-score';
 
 const statusConfig: Record<string, { label: string; color: string; dotColor: string }> = {
-  draft: { label: 'Entwurf', color: 'bg-[#fafafa] text-[#6b7280] border-[#e5e7eb]', dotColor: 'bg-[#6b7280]' },
+  draft: { label: 'Entwurf', color: 'bg-surface-sub text-fg-muted border-border', dotColor: 'bg-[#6b7280]' },
   published: { label: 'Live', color: 'bg-emerald-50 text-emerald-700 border-emerald-200', dotColor: 'bg-emerald-500' },
-  signed: { label: 'Signiert', color: 'bg-[#FEF3E2] text-[#E97E1C] border-[#FDE5C8]', dotColor: 'bg-[#E97E1C]' },
+  signed: { label: 'Signiert', color: 'bg-brand-50 text-brand-500 border-[#FDE5C8]', dotColor: 'bg-brand-500' },
   inactive: { label: 'Inaktiv', color: 'bg-amber-50 text-amber-700 border-amber-200', dotColor: 'bg-amber-500' },
-  archived: { label: 'Archiviert', color: 'bg-[#fafafa] text-[#6b7280] border-[#e5e7eb]', dotColor: 'bg-[#6b7280]' },
+  archived: { label: 'Archiviert', color: 'bg-surface-sub text-fg-muted border-border', dotColor: 'bg-[#6b7280]' },
 };
 
 const statusFilterOptions = [
@@ -99,14 +99,14 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
 
   if (dealrooms.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-[#e5e7eb] rounded-xl">
-        <div className="h-12 w-12 rounded-xl bg-[#fafafa] flex items-center justify-center mb-4">
-          <FileX size={20} className="text-[#6b7280]" />
+      <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-border rounded-xl">
+        <div className="h-12 w-12 rounded-xl bg-surface-sub flex items-center justify-center mb-4">
+          <FileX size={20} className="text-fg-muted" />
         </div>
-        <h3 className="text-[15px] font-semibold text-[#1a1a1a] mb-1">
+        <h3 className="text-[15px] font-semibold text-fg mb-1">
           Noch keine Dealrooms
         </h3>
-        <p className="text-[13px] text-[#6b7280] max-w-[300px] mb-5">
+        <p className="text-[13px] text-fg-muted max-w-[300px] mb-5">
           Erstellen Sie Ihren ersten personalisierten Dealroom
         </p>
         <Button asChild size="sm">
@@ -124,7 +124,7 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
       {/* Search + Filter Row */}
       <div className="flex items-center gap-3 mb-4">
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9ca3af]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-fg-subtle" />
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -139,8 +139,8 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
               onClick={() => setStatusFilter(opt.value)}
               className={`px-3 py-1.5 rounded-md text-[11px] font-semibold transition-colors duration-75 ${
                 statusFilter === opt.value
-                  ? 'bg-[#E97E1C] text-white'
-                  : 'text-[#6b7280] hover:bg-[#fafafa] hover:text-[#1a1a1a]'
+                  ? 'bg-brand-500 text-white'
+                  : 'text-fg-muted hover:bg-surface-sub hover:text-fg'
               }`}
             >
               {opt.label}
@@ -148,34 +148,34 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
           ))}
         </div>
         <div className="flex items-center gap-2 ml-auto shrink-0">
-          <div className="flex items-center gap-0.5 border border-[#e5e7eb] rounded-lg p-0.5">
+          <div className="flex items-center gap-0.5 border border-border rounded-lg p-0.5">
             <button
               onClick={() => { setViewMode('cards'); localStorage.setItem('dealroom-view-mode', 'cards'); }}
-              className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-[#FEF3E2] text-[#E97E1C]' : 'text-[#9ca3af] hover:text-[#6b7280]'}`}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'cards' ? 'bg-brand-50 text-brand-500' : 'text-fg-subtle hover:text-fg-muted'}`}
               title="Karten-Ansicht"
             >
               <LayoutGrid size={14} />
             </button>
             <button
               onClick={() => { setViewMode('list'); localStorage.setItem('dealroom-view-mode', 'list'); }}
-              className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-[#FEF3E2] text-[#E97E1C]' : 'text-[#9ca3af] hover:text-[#6b7280]'}`}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === 'list' ? 'bg-brand-50 text-brand-500' : 'text-fg-subtle hover:text-fg-muted'}`}
               title="Listen-Ansicht"
             >
               <List size={14} />
             </button>
           </div>
           <div className="w-px h-4 bg-[#e5e7eb]" />
-          <ArrowDownUp size={13} className="text-[#9ca3af]" />
+          <ArrowDownUp size={13} className="text-fg-subtle" />
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as SortOption)}
-            className="text-[11px] font-semibold text-[#6b7280] bg-transparent border-none outline-none cursor-pointer"
+            className="text-[11px] font-semibold text-fg-muted bg-transparent border-none outline-none cursor-pointer"
           >
             {sortOptions.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
             ))}
           </select>
-          <span className="text-[11px] text-[#9ca3af]">
+          <span className="text-[11px] text-fg-subtle">
             {filtered.length} von {dealrooms.length}
           </span>
         </div>
@@ -183,14 +183,14 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
 
       {/* Dealroom Cards */}
       {sorted.length === 0 ? (
-        <div className="text-center py-16 text-[#6b7280]">
+        <div className="text-center py-16 text-fg-muted">
           {dealrooms.length === 0 ? (
             <>
-              <div className="h-12 w-12 rounded-xl bg-[#f0f5f7] flex items-center justify-center mx-auto mb-4">
-                <PlusCircle className="h-6 w-6 text-[#E97E1C]" />
+              <div className="h-12 w-12 rounded-xl bg-surface-sub flex items-center justify-center mx-auto mb-4">
+                <PlusCircle className="h-6 w-6 text-brand-500" />
               </div>
-              <p className="text-[15px] font-semibold text-[#1a1a1a]">Noch keine Angebotsräume</p>
-              <p className="text-[13px] text-[#6b7280] mt-1 max-w-[320px] mx-auto">
+              <p className="text-[15px] font-semibold text-fg">Noch keine Angebotsräume</p>
+              <p className="text-[13px] text-fg-muted mt-1 max-w-[320px] mx-auto">
                 Erstellen Sie Ihren ersten Angebotsraum, um Ihrem Kunden ein professionelles Angebot zu präsentieren.
               </p>
               <Link href="/dashboard/new">
@@ -202,9 +202,9 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
             </>
           ) : (
             <>
-              <Search className="h-8 w-8 mx-auto mb-3 text-[#d1d5db]" />
-              <p className="text-[15px] font-semibold text-[#1a1a1a]">Keine Angebotsräume gefunden</p>
-              <p className="text-[13px] text-[#6b7280] mt-1">Passen Sie Ihre Suche oder Filter an</p>
+              <Search className="h-8 w-8 mx-auto mb-3 text-fg-subtle" />
+              <p className="text-[15px] font-semibold text-fg">Keine Angebotsräume gefunden</p>
+              <p className="text-[13px] text-fg-muted mt-1">Passen Sie Ihre Suche oder Filter an</p>
             </>
           )}
         </div>
@@ -222,15 +222,15 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
                 className="block"
                 style={{ animationDelay: i < 10 ? `${i * 50}ms` : '0ms', animationFillMode: 'both' }}
               >
-                <div className="group border border-[#e5e7eb] rounded-xl bg-white p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-150 hover:border-[#FDE5C8] hover:shadow-md">
+                <div className="group border border-border rounded-xl bg-surface p-5 shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-150 hover:border-[#FDE5C8] hover:shadow-md">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <div className="h-9 w-9 rounded-lg bg-[#fafafa] flex items-center justify-center shrink-0">
-                        <Building2 size={16} className="text-[#6b7280]" />
+                      <div className="h-9 w-9 rounded-lg bg-surface-sub flex items-center justify-center shrink-0">
+                        <Building2 size={16} className="text-fg-muted" />
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-2.5">
-                          <h3 className="text-[14px] font-semibold text-[#1a1a1a] truncate group-hover:text-[#E97E1C] transition-colors duration-75">
+                          <h3 className="text-[14px] font-semibold text-fg truncate group-hover:text-brand-500 transition-colors duration-75">
                             {dealroom.client_company}
                           </h3>
                           <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold border shrink-0 ${config.color}`}>
@@ -238,13 +238,13 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
                             {config.label}
                           </span>
                         </div>
-                        <p className="text-[12px] text-[#6b7280] mt-0.5 truncate">
+                        <p className="text-[12px] text-fg-muted mt-0.5 truncate">
                           {dealroom.client_name}
                           {dealroom.client_position && ` – ${dealroom.client_position}`}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-5 text-[13px] text-[#6b7280] shrink-0 ml-4">
+                    <div className="flex items-center gap-5 text-[13px] text-fg-muted shrink-0 ml-4">
                       <div className="w-24" title="Engagement Score">
                         <EngagementScore score={score} compact />
                       </div>
@@ -256,7 +256,7 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
                         <Clock size={14} strokeWidth={1.75} />
                         <span className="text-[11px]">{formatRelativeTime(dealroom.updated_at)}</span>
                       </div>
-                      <ArrowUpRight size={16} strokeWidth={1.75} className="text-[#d1d5db] group-hover:text-[#E97E1C] transition-colors duration-75" />
+                      <ArrowUpRight size={16} strokeWidth={1.75} className="text-fg-subtle group-hover:text-brand-500 transition-colors duration-75" />
                     </div>
                   </div>
                 </div>
@@ -266,8 +266,8 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
         </div>
         ) : (
         /* List View */
-        <div className="border border-[#e5e7eb] rounded-xl overflow-hidden bg-white">
-          <div className="grid grid-cols-[1fr_1fr_80px_90px_40px] gap-3 px-4 py-2.5 bg-[#fafafa] border-b border-[#e5e7eb] text-[11px] font-semibold text-[#6b7280] uppercase tracking-wide">
+        <div className="border border-border rounded-xl overflow-hidden bg-surface">
+          <div className="grid grid-cols-[1fr_1fr_80px_90px_40px] gap-3 px-4 py-2.5 bg-surface-sub border-b border-border text-[11px] font-semibold text-fg-muted uppercase tracking-wide">
             <span>Firma</span>
             <span>Kunde</span>
             <span>Score</span>
@@ -283,11 +283,11 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
                 href={`/dashboard/dealrooms/${dealroom.id}`}
                 className="block"
               >
-                <div className="group grid grid-cols-[1fr_1fr_80px_90px_40px] gap-3 px-4 py-3 border-b border-[#f0f0f0] last:border-b-0 hover:bg-[#fafafa] transition-colors items-center">
-                  <span className="text-[13px] font-semibold text-[#1a1a1a] truncate group-hover:text-[#E97E1C] transition-colors">
+                <div className="group grid grid-cols-[1fr_1fr_80px_90px_40px] gap-3 px-4 py-3 border-b border-border last:border-b-0 hover:bg-surface-sub transition-colors items-center">
+                  <span className="text-[13px] font-semibold text-fg truncate group-hover:text-brand-500 transition-colors">
                     {dealroom.client_company}
                   </span>
-                  <span className="text-[13px] text-[#6b7280] truncate">
+                  <span className="text-[13px] text-fg-muted truncate">
                     {dealroom.client_name}
                   </span>
                   <div className="w-16">
@@ -297,7 +297,7 @@ export function DealroomList({ dealrooms, viewCounts, engagementScores = {} }: P
                     <span className={`w-1.5 h-1.5 rounded-full ${config.dotColor}`} />
                     {config.label}
                   </span>
-                  <ArrowUpRight size={14} className="text-[#d1d5db] group-hover:text-[#E97E1C] transition-colors justify-self-end" />
+                  <ArrowUpRight size={14} className="text-fg-subtle group-hover:text-brand-500 transition-colors justify-self-end" />
                 </div>
               </Link>
             );

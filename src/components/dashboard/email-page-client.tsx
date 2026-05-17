@@ -333,8 +333,8 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-[#1a1a1a]">E-Mails</h1>
-        <p className="text-sm text-[#6b7280] mt-1">
+        <h1 className="text-2xl font-semibold text-fg">E-Mails</h1>
+        <p className="text-sm text-fg-muted mt-1">
           Automatische und manuelle E-Mails an Ihre Kunden.
         </p>
       </div>
@@ -347,8 +347,8 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
             onClick={() => setActiveTab(tab.key)}
             className={`flex-1 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
               activeTab === tab.key
-                ? 'bg-white text-[#E97E1C] shadow-sm'
-                : 'text-[#6b7280] hover:text-[#1a1a1a]'
+                ? 'bg-surface text-brand-500 shadow-sm'
+                : 'text-fg-muted hover:text-fg'
             }`}
           >
             {tab.label}
@@ -363,9 +363,9 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
             <EmailFlowSeedButton />
           ) : (
             <>
-              <div className="flex items-start gap-2 mb-4 p-3 bg-[#f9fafb] rounded-lg border border-[#e5e7eb]">
+              <div className="flex items-start gap-2 mb-4 p-3 bg-surface-sub rounded-lg border border-border">
                 <Lightbulb className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-                <p className="text-xs text-[#6b7280]">
+                <p className="text-xs text-fg-muted">
                   Diese E-Mails werden automatisch versendet wenn die Bedingung eintritt. Sie können jede E-Mail anpassen oder deaktivieren.
                 </p>
               </div>
@@ -377,33 +377,33 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
                     href={`/dashboard/email-flows/${flow.id}`}
                     className="block"
                   >
-                    <Card className="group border border-[#e5e7eb] shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-150 hover:border-[#cfdde3] hover:shadow-md">
+                    <Card className="group border border-border shadow-[0_1px_3px_rgba(0,0,0,0.08)] transition-all duration-150 hover:border-[#cfdde3] hover:shadow-md">
                       <CardContent className="p-5">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3 min-w-0 flex-1">
-                            <div className="h-9 w-9 rounded-lg bg-[#FEF3E2] flex items-center justify-center shrink-0">
-                              <Mail size={16} className="text-[#E97E1C]" />
+                            <div className="h-9 w-9 rounded-lg bg-brand-50 flex items-center justify-center shrink-0">
+                              <Mail size={16} className="text-brand-500" />
                             </div>
                             <div className="min-w-0">
                               <div className="flex items-center gap-2.5">
-                                <h3 className="text-[14px] font-semibold text-[#1a1a1a] truncate group-hover:text-[#E97E1C] transition-colors duration-75">
+                                <h3 className="text-[14px] font-semibold text-fg truncate group-hover:text-brand-500 transition-colors duration-75">
                                   {flow.name}
                                 </h3>
                                 <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-semibold border shrink-0 ${
                                   flow.is_active
                                     ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                    : 'bg-[#fafafa] text-[#6b7280] border-[#e5e7eb]'
+                                    : 'bg-surface-sub text-fg-muted border-border'
                                 }`}>
                                   <span className={`w-1.5 h-1.5 rounded-full ${flow.is_active ? 'bg-emerald-500' : 'bg-[#6b7280]'}`} />
                                   {flow.is_active ? 'Aktiv' : 'Inaktiv'}
                                 </span>
                               </div>
-                              <p className="text-[12px] text-[#6b7280] mt-0.5 truncate">
+                              <p className="text-[12px] text-fg-muted mt-0.5 truncate">
                                 {flow.trigger_days} Tage &ndash; {triggerLabels[flow.trigger_type] || flow.trigger_type}
                               </p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-1.5 text-[11px] text-[#9ca3af] shrink-0 ml-4">
+                          <div className="flex items-center gap-1.5 text-[11px] text-fg-subtle shrink-0 ml-4">
                             <Clock size={13} strokeWidth={1.75} />
                             <span>{formatRelativeTime(lastExecutions[flow.id] || null)}</span>
                           </div>
@@ -415,12 +415,12 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
               </div>
 
               <Link href="/dashboard/email-flows/new" className="block mt-4">
-                <button className="w-full flex items-center justify-center gap-2 py-3 rounded-lg border-2 border-dashed border-[#e5e7eb] text-sm text-[#6b7280] hover:border-[#E97E1C] hover:text-[#E97E1C] hover:bg-[#E97E1C]/5 transition-colors">
+                <button className="w-full flex items-center justify-center gap-2 py-3 rounded-lg border-2 border-dashed border-border text-sm text-fg-muted hover:border-brand-500 hover:text-brand-500 hover:bg-brand-500/5 transition-colors">
                   <Plus className="h-4 w-4" />
                   Neue automatische E-Mail erstellen
                 </button>
               </Link>
-              <p className="text-xs text-[#9ca3af] mt-2 flex items-center gap-1">
+              <p className="text-xs text-fg-subtle mt-2 flex items-center gap-1">
                 <Lightbulb className="h-3 w-3 text-amber-500" />
                 Erstellen Sie eigene Regeln, z.B. &quot;5 Tage nach Veröffentlichung, wenn Video nicht angesehen&quot;
               </p>
@@ -438,7 +438,7 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
             {!selectedDealroomId ? (
               <div className="space-y-2">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9ca3af]" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-fg-subtle" />
                   <Input
                     value={dealroomSearch}
                     onChange={(e) => setDealroomSearch(e.target.value)}
@@ -446,22 +446,22 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
                     className="pl-10"
                   />
                 </div>
-                <div className="max-h-48 overflow-y-auto border border-[#e5e7eb] rounded-lg divide-y divide-[#e5e7eb]">
+                <div className="max-h-48 overflow-y-auto border border-border rounded-lg divide-y divide-border">
                   {filteredDealrooms.length === 0 ? (
-                    <p className="text-sm text-[#6b7280] py-4 text-center">Keine Angebotsräume gefunden</p>
+                    <p className="text-sm text-fg-muted py-4 text-center">Keine Angebotsräume gefunden</p>
                   ) : (
                     filteredDealrooms.map(d => (
                       <button
                         key={d.id}
                         onClick={() => { setSelectedDealroomId(d.id); setDealroomSearch(''); }}
-                        className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-[#f9fafb] transition-colors text-left"
+                        className="w-full flex items-center justify-between px-3 py-2.5 hover:bg-surface-sub transition-colors text-left"
                       >
                         <div>
-                          <p className="text-sm font-medium text-[#1a1a1a]">{d.client_name}</p>
-                          <p className="text-xs text-[#6b7280]">{d.client_company}</p>
+                          <p className="text-sm font-medium text-fg">{d.client_name}</p>
+                          <p className="text-xs text-fg-muted">{d.client_company}</p>
                         </div>
                         {d.client_email ? (
-                          <span className="text-xs text-[#9ca3af]">{d.client_email}</span>
+                          <span className="text-xs text-fg-subtle">{d.client_email}</span>
                         ) : (
                           <span className="text-xs text-red-400">Keine E-Mail</span>
                         )}
@@ -473,8 +473,8 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
             ) : (
               <div className="flex items-center justify-between bg-[#FFF8F0] rounded-lg px-4 py-3">
                 <div>
-                  <p className="text-sm font-medium text-[#1a1a1a]">{selectedDealroom?.client_name}</p>
-                  <p className="text-xs text-[#6b7280]">{selectedDealroom?.client_email || 'Keine E-Mail hinterlegt'}</p>
+                  <p className="text-sm font-medium text-fg">{selectedDealroom?.client_name}</p>
+                  <p className="text-xs text-fg-muted">{selectedDealroom?.client_email || 'Keine E-Mail hinterlegt'}</p>
                 </div>
                 <Button variant="ghost" size="sm" onClick={() => setSelectedDealroomId('')} className="text-xs">
                   Ändern
@@ -501,7 +501,7 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
                 <button
                   key={p.label}
                   onClick={() => insertLabel(p.label)}
-                  className="text-[11px] px-2 py-1 rounded border border-[#e5e7eb] text-[#E97E1C] hover:bg-[#E97E1C]/5 transition-colors"
+                  className="text-[11px] px-2 py-1 rounded border border-border text-brand-500 hover:bg-brand-500/5 transition-colors"
                   title={p.desc}
                 >
                   {p.label}
@@ -531,8 +531,8 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
                   onClick={() => applyTemplate(tmpl)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
                     emailSubject === tmpl.subject && emailBody === tmpl.body
-                      ? 'border-[#E97E1C] bg-[#E97E1C]/5 text-[#E97E1C]'
-                      : 'border-[#e5e7eb] text-[#6b7280] hover:border-[#E97E1C] hover:text-[#E97E1C]'
+                      ? 'border-brand-500 bg-brand-500/5 text-brand-500'
+                      : 'border-border text-fg-muted hover:border-brand-500 hover:text-brand-500'
                   }`}
                 >
                   {tmpl.name}
@@ -545,7 +545,7 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
           {selectedDealroom && emailBody.trim() && (
             <button
               onClick={() => setShowPreview(!showPreview)}
-              className="flex items-center gap-2 text-sm text-[#E97E1C] hover:text-[#C45A08] transition-colors font-medium"
+              className="flex items-center gap-2 text-sm text-brand-500 hover:text-[#C45A08] transition-colors font-medium"
             >
               <Eye className="h-4 w-4" />
               {showPreview ? 'Vorschau ausblenden' : 'Vorschau anzeigen'}
@@ -555,30 +555,30 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
           {/* Preview Section */}
           {showPreview && selectedDealroom && emailBody.trim() && (
             <div className="space-y-3">
-              <div className="border border-[#e5e7eb] rounded-xl overflow-hidden">
-                <div className="bg-[#f9fafb] px-4 py-2.5 border-b border-[#e5e7eb]">
-                  <p className="text-[11px] font-medium text-[#6b7280] uppercase tracking-wider">
+              <div className="border border-border rounded-xl overflow-hidden">
+                <div className="bg-surface-sub px-4 py-2.5 border-b border-border">
+                  <p className="text-[11px] font-medium text-fg-muted uppercase tracking-wider">
                     Vorschau
                   </p>
                 </div>
-                <div className="p-5 bg-white">
+                <div className="p-5 bg-surface">
                   {/* Preview Subject */}
-                  <div className="mb-4 pb-4 border-b border-[#f0f0f0]">
-                    <p className="text-[11px] text-[#9ca3af] mb-0.5">Betreff:</p>
-                    <p className="text-sm font-semibold text-[#1a1a1a]">
+                  <div className="mb-4 pb-4 border-b border-border">
+                    <p className="text-[11px] text-fg-subtle mb-0.5">Betreff:</p>
+                    <p className="text-sm font-semibold text-fg">
                       {previewSubject || '(Kein Betreff)'}
                     </p>
                   </div>
 
                   {/* Preview Body */}
-                  <div className="text-sm text-[#374151] leading-relaxed whitespace-pre-line">
+                  <div className="text-sm text-fg leading-relaxed whitespace-pre-line">
                     {previewBody}
                   </div>
 
                   {/* CTA Button Preview */}
                   {previewBody.includes(`/d/${selectedDealroom.slug}`) && (
                     <div className="mt-5 text-center">
-                      <span className="inline-block px-6 py-3 bg-[#E97E1C] text-white rounded-xl text-sm font-semibold">
+                      <span className="inline-block px-6 py-3 bg-brand-500 text-white rounded-xl text-sm font-semibold">
                         Jetzt Angebot ansehen
                       </span>
                     </div>
@@ -640,7 +640,7 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
           {/* Filters */}
           <div className="flex items-center gap-3">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9ca3af]" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-fg-subtle" />
               <Input
                 value={historySearch}
                 onChange={(e) => setHistorySearch(e.target.value)}
@@ -655,8 +655,8 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
                   onClick={() => setHistoryFilter(val)}
                   className={`px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                     historyFilter === val
-                      ? 'bg-[#E97E1C] text-white'
-                      : 'bg-[#FFF8F0] text-[#6b7280] hover:text-[#1a1a1a]'
+                      ? 'bg-brand-500 text-white'
+                      : 'bg-[#FFF8F0] text-fg-muted hover:text-fg'
                   }`}
                 >
                   {label}
@@ -668,9 +668,9 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
           {/* Log entries */}
           {filteredLogs.length === 0 ? (
             <div className="text-center py-16">
-              <Mail className="h-10 w-10 text-[#d1d5db] mx-auto mb-3" />
-              <p className="text-sm font-medium text-[#1a1a1a]">Noch keine E-Mails gesendet</p>
-              <p className="text-xs text-[#9ca3af] mt-1">Hier erscheinen alle gesendeten E-Mails.</p>
+              <Mail className="h-10 w-10 text-fg-subtle mx-auto mb-3" />
+              <p className="text-sm font-medium text-fg">Noch keine E-Mails gesendet</p>
+              <p className="text-xs text-fg-subtle mt-1">Hier erscheinen alle gesendeten E-Mails.</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -679,17 +679,17 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
                 const isManual = log.source === 'manual';
 
                 return (
-                  <Card key={log.id} className="border border-[#e5e7eb]">
+                  <Card key={log.id} className="border border-border">
                     <CardContent className="p-4">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <Mail className="h-3.5 w-3.5 text-[#6b7280] shrink-0" />
-                            <span className="text-sm font-medium text-[#1a1a1a] truncate">
+                            <Mail className="h-3.5 w-3.5 text-fg-muted shrink-0" />
+                            <span className="text-sm font-medium text-fg truncate">
                               {log.recipient_email}
                             </span>
                           </div>
-                          <p className="text-xs text-[#6b7280] truncate mb-1.5">
+                          <p className="text-xs text-fg-muted truncate mb-1.5">
                             &quot;{log.subject}&quot;
                           </p>
                           <div className="flex items-center gap-2 text-[11px]">
@@ -699,12 +699,12 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
                               {isManual ? 'Manuell' : 'Automatisch'}
                             </span>
                             {flow && (
-                              <span className="text-[#9ca3af]">Flow: {flow.name}</span>
+                              <span className="text-fg-subtle">Flow: {flow.name}</span>
                             )}
                           </div>
                         </div>
                         <div className="text-right shrink-0">
-                          <p className="text-[11px] text-[#9ca3af] mb-1">
+                          <p className="text-[11px] text-fg-subtle mb-1">
                             {formatDateTime(log.sent_at)}
                           </p>
                           <div className="flex items-center gap-1.5 justify-end">
@@ -729,13 +729,13 @@ export function EmailPageClient({ flows, lastExecutions, logs, dealrooms, adminP
                               </span>
                             )}
                             {log.clicked_at && (
-                              <span className="flex items-center gap-1 text-[11px] text-[#E97E1C]">
+                              <span className="flex items-center gap-1 text-[11px] text-brand-500">
                                 <MousePointerClick className="h-3 w-3" /> Geklickt
                               </span>
                             )}
                           </div>
                           {log.skip_reason && (
-                            <p className="text-[10px] text-[#9ca3af] mt-0.5">({log.skip_reason})</p>
+                            <p className="text-[10px] text-fg-subtle mt-0.5">({log.skip_reason})</p>
                           )}
                         </div>
                       </div>

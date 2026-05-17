@@ -95,7 +95,7 @@ export function SaveTemplateModal({ open, onClose, content, videoUrl, language }
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-5">
-          <p className="text-sm text-[#6b7280]">
+          <p className="text-sm text-fg-muted">
             Der aktuelle Content wird als wiederverwendbares Template gespeichert. Kundendaten werden nicht übernommen.
           </p>
           <div className="space-y-1.5">

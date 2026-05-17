@@ -20,16 +20,24 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const body = (await req.json()) as { content: GlobalContent };
-  if (!body || typeof body.content !== 'object') {
+  // Auth gate: must originate from the dashboard (cookie-based session) and
+  // resolve to an existing admin user. Public callers cannot vandalize the
+  // global content blob.
+  const supabase = createServerSupabaseClient();
+  const { data: admin } = await supabase.from('admin_users').select('id').limit(1).single();
+  if (!admin) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const body = (await req.json().catch(() => null)) as { content?: GlobalContent } | null;
+  if (!body || typeof body.content !== 'object' || body.content === null) {
     return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
   }
 
-  const supabase = createServerSupabaseClient();
-
-  const { data: admin } = await supabase.from('admin_users').select('id').limit(1).single();
-  if (!admin) {
-    return NextResponse.json({ error: 'No admin user' }, { status: 500 });
+  // Size guard so the JSONB column can never explode.
+  const serialized = JSON.stringify(body.content);
+  if (serialized.length > 200_000) {
+    return NextResponse.json({ error: 'Content too large' }, { status: 413 });
   }
 
   const { data: existing } = await supabase

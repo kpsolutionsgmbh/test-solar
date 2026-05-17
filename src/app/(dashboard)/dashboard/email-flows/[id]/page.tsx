@@ -182,8 +182,8 @@ export default function FlowEditorPage() {
   if (!flow) {
     return (
       <div className="text-center py-16">
-        <AlertCircle className="h-10 w-10 text-[#d1d5db] mx-auto mb-3" />
-        <p className="text-[#6b7280] font-medium">Flow nicht gefunden</p>
+        <AlertCircle className="h-10 w-10 text-fg-subtle mx-auto mb-3" />
+        <p className="text-fg-muted font-medium">Flow nicht gefunden</p>
       </div>
     );
   }
@@ -192,7 +192,7 @@ export default function FlowEditorPage() {
     <div>
       <button
         onClick={() => router.push('/dashboard/email-flows')}
-        className="flex items-center gap-1 text-sm text-[#6b7280] hover:text-[#1a1a1a] mb-6 transition-colors"
+        className="flex items-center gap-1 text-sm text-fg-muted hover:text-fg mb-6 transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
         Zurück zu E-Mail Flows
@@ -200,8 +200,8 @@ export default function FlowEditorPage() {
 
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold text-[#1a1a1a]">{flow.name}</h1>
-          <p className="text-sm text-[#6b7280] mt-1">{flow.description}</p>
+          <h1 className="text-2xl font-semibold text-fg">{flow.name}</h1>
+          <p className="text-sm text-fg-muted mt-1">{flow.description}</p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -209,7 +209,7 @@ export default function FlowEditorPage() {
             className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-colors ${
               isActive
                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                : 'bg-[#fafafa] text-[#6b7280] border-[#e5e7eb]'
+                : 'bg-surface-sub text-fg-muted border-border'
             }`}
           >
             <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-[#6b7280]'}`} />
@@ -219,13 +219,13 @@ export default function FlowEditorPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 border-b border-[#e5e7eb]">
+      <div className="flex gap-1 mb-6 border-b border-border">
         <button
           onClick={() => setActiveTab('editor')}
           className={`px-4 py-2 text-[13px] font-semibold border-b-2 transition-colors ${
             activeTab === 'editor'
-              ? 'border-[#E97E1C] text-[#E97E1C]'
-              : 'border-transparent text-[#6b7280] hover:text-[#1a1a1a]'
+              ? 'border-brand-500 text-brand-500'
+              : 'border-transparent text-fg-muted hover:text-fg'
           }`}
         >
           Editor
@@ -234,8 +234,8 @@ export default function FlowEditorPage() {
           onClick={() => setActiveTab('logs')}
           className={`px-4 py-2 text-[13px] font-semibold border-b-2 transition-colors ${
             activeTab === 'logs'
-              ? 'border-[#E97E1C] text-[#E97E1C]'
-              : 'border-transparent text-[#6b7280] hover:text-[#1a1a1a]'
+              ? 'border-brand-500 text-brand-500'
+              : 'border-transparent text-fg-muted hover:text-fg'
           }`}
         >
           Verlauf ({logs.length})
@@ -247,18 +247,18 @@ export default function FlowEditorPage() {
           {/* 1. TRIGGER */}
           <Card>
             <CardContent className="p-6">
-              <h2 className="text-sm font-semibold text-[#1a1a1a] uppercase tracking-wide mb-4">
+              <h2 className="text-sm font-semibold text-fg uppercase tracking-wide mb-4">
                 1. Wann (Trigger)
               </h2>
-              <p className="text-sm text-[#6b7280] mb-3">Diese E-Mail wird gesendet wenn:</p>
+              <p className="text-sm text-fg-muted mb-3">Diese E-Mail wird gesendet wenn:</p>
 
               <div className="space-y-3">
                 <div>
-                  <Label className="text-xs text-[#6b7280]">Ein Kunde den Dealroom</Label>
+                  <Label className="text-xs text-fg-muted">Ein Kunde den Dealroom</Label>
                   <select
                     value={triggerType}
                     onChange={(e) => setTriggerType(e.target.value)}
-                    className="mt-1 w-full rounded-md border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#E97E1C]/20 focus:border-[#E97E1C]"
+                    className="mt-1 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-[#E97E1C]/20 focus:border-brand-500"
                   >
                     {triggerOptions.map((opt) => (
                       <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -268,7 +268,7 @@ export default function FlowEditorPage() {
 
                 {triggerType !== 'manual' && (
                   <div className="flex items-center gap-2">
-                    <Label className="text-sm text-[#6b7280]">nach</Label>
+                    <Label className="text-sm text-fg-muted">nach</Label>
                     <Input
                       type="number"
                       min={1}
@@ -277,7 +277,7 @@ export default function FlowEditorPage() {
                       onChange={(e) => setTriggerDays(parseInt(e.target.value) || 3)}
                       className="w-20 h-9"
                     />
-                    <span className="text-sm text-[#6b7280]">Tagen</span>
+                    <span className="text-sm text-fg-muted">Tagen</span>
                   </div>
                 )}
               </div>
@@ -287,7 +287,7 @@ export default function FlowEditorPage() {
           {/* 2. AUDIENCE */}
           <Card>
             <CardContent className="p-6">
-              <h2 className="text-sm font-semibold text-[#1a1a1a] uppercase tracking-wide mb-4">
+              <h2 className="text-sm font-semibold text-fg uppercase tracking-wide mb-4">
                 2. An wen (Empfänger)
               </h2>
 
@@ -298,9 +298,9 @@ export default function FlowEditorPage() {
                     name="appliesTo"
                     checked={appliesTo === 'all'}
                     onChange={() => setAppliesTo('all')}
-                    className="text-[#E97E1C] focus:ring-[#E97E1C]"
+                    className="text-brand-500 focus:ring-[#E97E1C]"
                   />
-                  <span className="text-sm text-[#374151]">An alle Kunden mit dieser Bedingung</span>
+                  <span className="text-sm text-fg">An alle Kunden mit dieser Bedingung</span>
                 </label>
 
                 <label className="flex items-center gap-3 cursor-pointer">
@@ -309,15 +309,15 @@ export default function FlowEditorPage() {
                     name="appliesTo"
                     checked={appliesTo === 'selected'}
                     onChange={() => setAppliesTo('selected')}
-                    className="text-[#E97E1C] focus:ring-[#E97E1C]"
+                    className="text-brand-500 focus:ring-[#E97E1C]"
                   />
-                  <span className="text-sm text-[#374151]">Nur an bestimmte Angebotsräume</span>
+                  <span className="text-sm text-fg">Nur an bestimmte Angebotsräume</span>
                 </label>
 
                 {appliesTo === 'selected' && (
                   <div className="ml-6 mt-2 space-y-2">
                     <div className="relative">
-                      <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-[#9ca3af]" />
+                      <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-fg-subtle" />
                       <Input
                         value={dealroomSearch}
                         onChange={(e) => setDealroomSearch(e.target.value)}
@@ -325,7 +325,7 @@ export default function FlowEditorPage() {
                         className="pl-8 h-9 text-sm"
                       />
                     </div>
-                    <div className="max-h-48 overflow-y-auto border border-[#e5e7eb] rounded-md divide-y divide-[#f3f4f6]">
+                    <div className="max-h-48 overflow-y-auto border border-border rounded-md divide-y divide-[#f3f4f6]">
                       {dealrooms
                         .filter(dr => {
                           if (!dealroomSearch) return true;
@@ -333,7 +333,7 @@ export default function FlowEditorPage() {
                           return dr.client_company?.toLowerCase().includes(q) || dr.client_name?.toLowerCase().includes(q);
                         })
                         .map(dr => (
-                          <label key={dr.id} className="flex items-center gap-3 px-3 py-2 hover:bg-[#fafafa] cursor-pointer">
+                          <label key={dr.id} className="flex items-center gap-3 px-3 py-2 hover:bg-surface-sub cursor-pointer">
                             <input
                               type="checkbox"
                               checked={selectedDealroomIds.includes(dr.id)}
@@ -344,20 +344,20 @@ export default function FlowEditorPage() {
                                   setSelectedDealroomIds(prev => prev.filter(id => id !== dr.id));
                                 }
                               }}
-                              className="rounded border-[#d1d5db] text-[#E97E1C] focus:ring-[#E97E1C]"
+                              className="rounded border-[#d1d5db] text-brand-500 focus:ring-[#E97E1C]"
                             />
                             <div className="min-w-0">
-                              <p className="text-sm text-[#1a1a1a] truncate">{dr.client_company}</p>
-                              <p className="text-xs text-[#9ca3af] truncate">{dr.client_name}</p>
+                              <p className="text-sm text-fg truncate">{dr.client_company}</p>
+                              <p className="text-xs text-fg-subtle truncate">{dr.client_name}</p>
                             </div>
                           </label>
                         ))}
                       {dealrooms.length === 0 && (
-                        <p className="text-xs text-[#9ca3af] py-4 text-center">Keine Angebotsräume vorhanden</p>
+                        <p className="text-xs text-fg-subtle py-4 text-center">Keine Angebotsräume vorhanden</p>
                       )}
                     </div>
                     {selectedDealroomIds.length > 0 && (
-                      <p className="text-xs text-[#6b7280]">{selectedDealroomIds.length} ausgewählt</p>
+                      <p className="text-xs text-fg-muted">{selectedDealroomIds.length} ausgewählt</p>
                     )}
                   </div>
                 )}
@@ -368,13 +368,13 @@ export default function FlowEditorPage() {
           {/* 3. CONTENT */}
           <Card>
             <CardContent className="p-6">
-              <h2 className="text-sm font-semibold text-[#1a1a1a] uppercase tracking-wide mb-4">
+              <h2 className="text-sm font-semibold text-fg uppercase tracking-wide mb-4">
                 3. Was (E-Mail-Inhalt)
               </h2>
 
               <div className="space-y-4">
                 <div>
-                  <Label className="text-xs text-[#6b7280]">Betreff</Label>
+                  <Label className="text-xs text-fg-muted">Betreff</Label>
                   <Input
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
@@ -384,27 +384,27 @@ export default function FlowEditorPage() {
                 </div>
 
                 <div>
-                  <Label className="text-xs text-[#6b7280]">Nachricht</Label>
+                  <Label className="text-xs text-fg-muted">Nachricht</Label>
                   <textarea
                     ref={bodyRef}
                     value={body}
                     onChange={(e) => setBody(e.target.value)}
                     rows={12}
-                    className="mt-1 w-full rounded-md border border-[#e5e7eb] bg-white px-3 py-2 text-sm text-[#1a1a1a] focus:outline-none focus:ring-2 focus:ring-[#E97E1C]/20 focus:border-[#E97E1C] resize-y"
+                    className="mt-1 w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-[#E97E1C]/20 focus:border-brand-500 resize-y"
                     placeholder="Sehr geehrte{{r}} {{anrede}} {{nachname}},&#10;&#10;wir haben Ihnen kürzlich ein persönliches Angebot zusammengestellt..."
                   />
                 </div>
 
                 {/* Personalization labels */}
                 <div>
-                  <p className="text-xs text-[#6b7280] mb-2">Klicke um einzufügen:</p>
+                  <p className="text-xs text-fg-muted mb-2">Klicke um einzufügen:</p>
                   <div className="flex flex-wrap gap-1.5">
                     {personalizationLabels.map((p) => (
                       <button
                         key={p.label}
                         type="button"
                         onClick={() => insertPersonalization(p.label)}
-                        className="px-2.5 py-1 rounded-md bg-[#FEF3E2] text-[#E97E1C] text-[11px] font-semibold hover:bg-[#FDE5C8] transition-colors"
+                        className="px-2.5 py-1 rounded-md bg-brand-50 text-brand-500 text-[11px] font-semibold hover:bg-[#FDE5C8] transition-colors"
                         title={p.desc}
                       >
                         {p.label}
@@ -419,7 +419,7 @@ export default function FlowEditorPage() {
           {/* 3. RULES */}
           <Card>
             <CardContent className="p-6">
-              <h2 className="text-sm font-semibold text-[#1a1a1a] uppercase tracking-wide mb-4">
+              <h2 className="text-sm font-semibold text-fg uppercase tracking-wide mb-4">
                 4. Regeln
               </h2>
 
@@ -429,9 +429,9 @@ export default function FlowEditorPage() {
                     type="checkbox"
                     checked={maxSends === 1}
                     onChange={(e) => setMaxSends(e.target.checked ? 1 : 99)}
-                    className="rounded border-[#d1d5db] text-[#E97E1C] focus:ring-[#E97E1C]"
+                    className="rounded border-[#d1d5db] text-brand-500 focus:ring-[#E97E1C]"
                   />
-                  <span className="text-sm text-[#374151]">Maximal 1x pro Kunde senden (nicht wiederholen)</span>
+                  <span className="text-sm text-fg">Maximal 1x pro Kunde senden (nicht wiederholen)</span>
                 </label>
 
                 <label className="flex items-center gap-3 cursor-pointer">
@@ -439,9 +439,9 @@ export default function FlowEditorPage() {
                     type="checkbox"
                     checked={skipIfSigned}
                     onChange={(e) => setSkipIfSigned(e.target.checked)}
-                    className="rounded border-[#d1d5db] text-[#E97E1C] focus:ring-[#E97E1C]"
+                    className="rounded border-[#d1d5db] text-brand-500 focus:ring-[#E97E1C]"
                   />
-                  <span className="text-sm text-[#374151]">Nicht senden wenn Kunde bereits unterschrieben hat</span>
+                  <span className="text-sm text-fg">Nicht senden wenn Kunde bereits unterschrieben hat</span>
                 </label>
 
                 <label className="flex items-center gap-3 cursor-pointer">
@@ -449,9 +449,9 @@ export default function FlowEditorPage() {
                     type="checkbox"
                     checked={skipIfInactive}
                     onChange={(e) => setSkipIfInactive(e.target.checked)}
-                    className="rounded border-[#d1d5db] text-[#E97E1C] focus:ring-[#E97E1C]"
+                    className="rounded border-[#d1d5db] text-brand-500 focus:ring-[#E97E1C]"
                   />
-                  <span className="text-sm text-[#374151]">Nicht senden wenn Dealroom inaktiv/archiviert ist</span>
+                  <span className="text-sm text-fg">Nicht senden wenn Dealroom inaktiv/archiviert ist</span>
                 </label>
 
                 <label className="flex items-center gap-3 cursor-pointer">
@@ -459,9 +459,9 @@ export default function FlowEditorPage() {
                     type="checkbox"
                     checked={!skipWeekends}
                     onChange={(e) => setSkipWeekends(!e.target.checked)}
-                    className="rounded border-[#d1d5db] text-[#E97E1C] focus:ring-[#E97E1C]"
+                    className="rounded border-[#d1d5db] text-brand-500 focus:ring-[#E97E1C]"
                   />
-                  <span className="text-sm text-[#374151]">Auch am Wochenende senden</span>
+                  <span className="text-sm text-fg">Auch am Wochenende senden</span>
                 </label>
               </div>
             </CardContent>
@@ -483,7 +483,7 @@ export default function FlowEditorPage() {
         <Card>
           <CardContent className="p-6">
             {logs.length === 0 ? (
-              <p className="text-sm text-[#6b7280] py-8 text-center">Noch keine E-Mails gesendet</p>
+              <p className="text-sm text-fg-muted py-8 text-center">Noch keine E-Mails gesendet</p>
             ) : (
               <div className="space-y-2">
                 {logs.map((log) => {
@@ -496,14 +496,14 @@ export default function FlowEditorPage() {
                       className="flex items-center gap-3 py-2 border-b border-[#f3f4f6] last:border-0"
                     >
                       <Icon className={`h-4 w-4 shrink-0 ${cfg.color}`} />
-                      <span className="text-xs text-[#6b7280] shrink-0 tabular-nums">
+                      <span className="text-xs text-fg-muted shrink-0 tabular-nums">
                         {date.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit' })}.{' '}
                         {date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
                       </span>
-                      <span className="text-sm text-[#374151] truncate flex-1">{log.recipient_email}</span>
+                      <span className="text-sm text-fg truncate flex-1">{log.recipient_email}</span>
                       <span className={`text-[11px] font-semibold ${cfg.color}`}>{cfg.label}</span>
                       {log.skip_reason && (
-                        <span className="text-[10px] text-[#9ca3af]">({log.skip_reason})</span>
+                        <span className="text-[10px] text-fg-subtle">({log.skip_reason})</span>
                       )}
                     </div>
                   );

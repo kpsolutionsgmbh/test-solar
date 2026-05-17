@@ -1,5 +1,6 @@
 import { getGlobalContent } from '@/lib/global-content';
 import { GlobalContentEditor } from '@/components/dashboard/global-content-editor';
+import { SettingsNav } from '@/components/dashboard/settings-nav';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = { title: 'Standard-Inhalte' };
@@ -9,6 +10,7 @@ export default async function GlobalContentPage() {
   const content = await getGlobalContent();
   return (
     <div>
+      <SettingsNav />
       <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl font-bold text-fg">Standard-Inhalte</h1>
         <p className="text-sm text-fg-muted mt-1 max-w-2xl">

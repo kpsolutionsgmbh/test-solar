@@ -145,8 +145,8 @@ export default function CustomersPage() {
     <div className="max-w-5xl mx-auto p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-[#1a1a1a]">Kunden</h1>
-          <p className="text-sm text-[#6b7280] mt-1">Ihre Kundendatenbank &ndash; alle Kontakte an einem Ort.</p>
+          <h1 className="text-xl font-bold text-fg">Kunden</h1>
+          <p className="text-sm text-fg-muted mt-1">Ihre Kundendatenbank &ndash; alle Kontakte an einem Ort.</p>
         </div>
         <Button onClick={() => setDialogOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
@@ -156,7 +156,7 @@ export default function CustomersPage() {
 
       {/* Search */}
       <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#9ca3af]" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-fg-subtle" />
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -169,9 +169,9 @@ export default function CustomersPage() {
       {filtered.length === 0 ? (
         <Card className="border-dashed border-2">
           <CardContent className="py-16 text-center">
-            <Building2 className="h-10 w-10 text-[#d1d5db] mx-auto mb-3" />
-            <p className="text-[#6b7280] font-medium">Noch keine Kunden</p>
-            <p className="text-sm text-[#9ca3af] mt-1">Erstelle deinen ersten Kunden um loszulegen</p>
+            <Building2 className="h-10 w-10 text-fg-subtle mx-auto mb-3" />
+            <p className="text-fg-muted font-medium">Noch keine Kunden</p>
+            <p className="text-sm text-fg-subtle mt-1">Erstelle deinen ersten Kunden um loszulegen</p>
           </CardContent>
         </Card>
       ) : (
@@ -180,31 +180,31 @@ export default function CustomersPage() {
             const counts = dealroomCounts[customer.id] || { total: 0, signed: 0 };
             return (
               <Link key={customer.id} href={`/dashboard/customers/${customer.id}`} className="block">
-                <Card className="hover:border-[#E97E1C]/30 hover:shadow-sm transition-all cursor-pointer">
+                <Card className="hover:border-brand-500/30 hover:shadow-sm transition-all cursor-pointer">
                   <CardContent className="py-4 px-5 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       {customer.logo_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={customer.logo_url} alt={customer.company} className="h-10 w-10 rounded-lg object-contain" />
                       ) : (
-                        <div className="h-10 w-10 rounded-lg bg-[#FEF3E2] flex items-center justify-center text-[#E97E1C] text-sm font-bold">
+                        <div className="h-10 w-10 rounded-lg bg-brand-50 flex items-center justify-center text-brand-500 text-sm font-bold">
                           {customer.company.charAt(0)}
                         </div>
                       )}
                       <div>
-                        <p className="font-semibold text-[#1a1a1a] text-sm">{customer.company}</p>
-                        <p className="text-xs text-[#6b7280]">
+                        <p className="font-semibold text-fg text-sm">{customer.company}</p>
+                        <p className="text-xs text-fg-muted">
                           {customer.salutation} {customer.first_name} {customer.last_name}
                           {customer.position && ` · ${customer.position}`}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
-                      <div className="text-right text-xs text-[#6b7280]">
+                      <div className="text-right text-xs text-fg-muted">
                         <p>{counts.total} Angebot{counts.total !== 1 ? 'e' : ''}</p>
                         {counts.signed > 0 && <p className="text-emerald-600">{counts.signed} Signiert</p>}
                       </div>
-                      <ArrowRight className="h-4 w-4 text-[#d1d5db]" />
+                      <ArrowRight className="h-4 w-4 text-fg-subtle" />
                     </div>
                   </CardContent>
                 </Card>

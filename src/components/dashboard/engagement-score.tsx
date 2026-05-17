@@ -25,7 +25,7 @@ export function EngagementScore({ score, compact }: EngagementScoreProps) {
             style={{ width: `${score}%` }}
           />
         </div>
-        <span className="text-[11px] font-semibold text-[#1a1a1a] tabular-nums whitespace-nowrap">
+        <span className="text-[11px] font-semibold text-fg tabular-nums whitespace-nowrap">
           {score}
         </span>
       </div>
@@ -40,7 +40,7 @@ export function EngagementScore({ score, compact }: EngagementScoreProps) {
           style={{ width: `${score}%` }}
         />
       </div>
-      <span className="text-xs font-semibold text-[#1a1a1a] whitespace-nowrap">
+      <span className="text-xs font-semibold text-fg whitespace-nowrap">
         {label} {score}/100
       </span>
     </div>

@@ -151,7 +151,7 @@ export default function CustomerDetailPage() {
   if (!customer) {
     return (
       <div className="max-w-5xl mx-auto p-6 text-center py-20">
-        <p className="text-[#6b7280]">Kunde nicht gefunden.</p>
+        <p className="text-fg-muted">Kunde nicht gefunden.</p>
         <Link href="/dashboard/customers">
           <Button variant="outline" className="mt-4">Zurück zur Übersicht</Button>
         </Link>
@@ -162,7 +162,7 @@ export default function CustomerDetailPage() {
   return (
     <div className="max-w-5xl mx-auto p-6">
       {/* Back */}
-      <Link href="/dashboard/customers" className="inline-flex items-center gap-1 text-sm text-[#6b7280] hover:text-[#1a1a1a] mb-6">
+      <Link href="/dashboard/customers" className="inline-flex items-center gap-1 text-sm text-fg-muted hover:text-fg mb-6">
         <ArrowLeft className="h-4 w-4" /> Zurück
       </Link>
 
@@ -296,24 +296,24 @@ export default function CustomerDetailPage() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={customer.logo_url} alt={customer.company} className="h-14 w-14 rounded-lg object-contain" />
                 ) : (
-                  <div className="h-14 w-14 rounded-lg bg-[#FEF3E2] flex items-center justify-center text-[#E97E1C] text-xl font-bold">
+                  <div className="h-14 w-14 rounded-lg bg-brand-50 flex items-center justify-center text-brand-500 text-xl font-bold">
                     {customer.company.charAt(0)}
                   </div>
                 )}
                 <div>
-                  <h2 className="text-lg font-bold text-[#1a1a1a]">{customer.company}</h2>
-                  <p className="text-sm text-[#6b7280]">
+                  <h2 className="text-lg font-bold text-fg">{customer.company}</h2>
+                  <p className="text-sm text-fg-muted">
                     {customer.salutation} {customer.first_name} {customer.last_name}
                     {customer.position && ` · ${customer.position}`}
                   </p>
-                  <div className="flex flex-wrap gap-4 mt-2 text-sm text-[#6b7280]">
+                  <div className="flex flex-wrap gap-4 mt-2 text-sm text-fg-muted">
                     {customer.phone && (
-                      <a href={`tel:${customer.phone}`} className="flex items-center gap-1 hover:text-[#E97E1C]">
+                      <a href={`tel:${customer.phone}`} className="flex items-center gap-1 hover:text-brand-500">
                         <Phone className="h-3.5 w-3.5" /> {customer.phone}
                       </a>
                     )}
                     {customer.email && (
-                      <a href={`mailto:${customer.email}`} className="flex items-center gap-1 hover:text-[#E97E1C]">
+                      <a href={`mailto:${customer.email}`} className="flex items-center gap-1 hover:text-brand-500">
                         <Mail className="h-3.5 w-3.5" /> {customer.email}
                       </a>
                     )}
@@ -352,8 +352,8 @@ export default function CustomerDetailPage() {
         ].map((stat, i) => (
           <Card key={i}>
             <CardContent className="py-4 text-center">
-              <p className="text-2xl font-bold text-[#E97E1C]">{stat.value}</p>
-              <p className="text-xs text-[#6b7280]">{stat.label}</p>
+              <p className="text-2xl font-bold text-brand-500">{stat.value}</p>
+              <p className="text-xs text-fg-muted">{stat.label}</p>
             </CardContent>
           </Card>
         ))}
@@ -374,22 +374,22 @@ export default function CustomerDetailPage() {
         </CardHeader>
         <CardContent>
           {dealrooms.length === 0 ? (
-            <p className="text-sm text-[#9ca3af] text-center py-6">Noch keine Dealrooms für diesen Kunden.</p>
+            <p className="text-sm text-fg-subtle text-center py-6">Noch keine Dealrooms für diesen Kunden.</p>
           ) : (
             <div className="space-y-2">
               {dealrooms.map((d) => (
                 <Link key={d.id} href={`/dashboard/dealrooms/${d.id}`}>
-                  <div className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-[#fafafa] transition-colors cursor-pointer">
+                  <div className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-surface-sub transition-colors cursor-pointer">
                     <div className="flex items-center gap-3">
                       <div>
-                        <p className="text-sm font-medium text-[#1a1a1a]">{d.generated_content?.hero_title || d.client_company}</p>
+                        <p className="text-sm font-medium text-fg">{d.generated_content?.hero_title || d.client_company}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge className={`text-[10px] ${statusLabels[d.status]?.color || ''}`}>
                         {statusLabels[d.status]?.label || d.status}
                       </Badge>
-                      <Eye className="h-3.5 w-3.5 text-[#d1d5db]" />
+                      <Eye className="h-3.5 w-3.5 text-fg-subtle" />
                     </div>
                   </div>
                 </Link>
@@ -411,7 +411,7 @@ export default function CustomerDetailPage() {
             placeholder="Interne Notizen zu diesem Kunden..."
             rows={4}
           />
-          <p className="text-[10px] text-[#9ca3af] mt-1">Notizen werden automatisch gespeichert</p>
+          <p className="text-[10px] text-fg-subtle mt-1">Notizen werden automatisch gespeichert</p>
         </CardContent>
       </Card>
 

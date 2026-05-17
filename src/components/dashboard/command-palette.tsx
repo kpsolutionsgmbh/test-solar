@@ -118,20 +118,20 @@ export function CommandPalette() {
       >
         <span className="sr-only">Befehlspalette</span>
 
-        <div className="flex items-center border-b border-[#e5e7eb] px-3">
-          <Search className="mr-2 h-4 w-4 shrink-0 text-[#6b7280]" />
+        <div className="flex items-center border-b border-border px-3">
+          <Search className="mr-2 h-4 w-4 shrink-0 text-fg-muted" />
           <Input
             ref={inputRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Suchen oder Befehl eingeben..."
-            className="h-11 border-0 bg-transparent text-sm text-[#1a1a1a] placeholder:text-[#6b7280] focus-visible:ring-0"
+            className="h-11 border-0 bg-transparent text-sm text-fg placeholder:text-fg-muted focus-visible:ring-0"
           />
         </div>
 
         <div ref={listRef} className="max-h-72 overflow-y-auto py-2">
           {filtered.length === 0 && (
-            <p className="px-4 py-6 text-center text-sm text-[#6b7280]">
+            <p className="px-4 py-6 text-center text-sm text-fg-muted">
               Keine Ergebnisse gefunden.
             </p>
           )}
@@ -142,7 +142,7 @@ export function CommandPalette() {
 
             return (
               <div key={groupName}>
-                <p className="px-4 pb-1 pt-3 text-xs font-medium text-[#6b7280]">
+                <p className="px-4 pb-1 pt-3 text-xs font-medium text-fg-muted">
                   {groupName}
                 </p>
                 {items.map((cmd) => {
@@ -157,11 +157,11 @@ export function CommandPalette() {
                       onMouseEnter={() => setSelectedIndex(currentIndex)}
                       className={`flex w-full items-center gap-3 px-4 py-2 text-sm transition-colors ${
                         isSelected
-                          ? 'bg-[#E97E1C]/10 text-[#E97E1C]'
-                          : 'text-[#1a1a1a] hover:bg-[#E97E1C]/5'
+                          ? 'bg-brand-500/10 text-brand-500'
+                          : 'text-fg hover:bg-brand-500/5'
                       }`}
                     >
-                      <span className={isSelected ? 'text-[#E97E1C]' : 'text-[#6b7280]'}>
+                      <span className={isSelected ? 'text-brand-500' : 'text-fg-muted'}>
                         {cmd.icon}
                       </span>
                       {cmd.label}
@@ -173,9 +173,9 @@ export function CommandPalette() {
           })}
         </div>
 
-        <div className="flex items-center justify-end border-t border-[#e5e7eb] px-4 py-2">
-          <span className="text-xs text-[#6b7280]">
-            <kbd className="rounded border border-[#e5e7eb] bg-gray-50 px-1.5 py-0.5 text-[10px] font-medium">Esc</kbd>
+        <div className="flex items-center justify-end border-t border-border px-4 py-2">
+          <span className="text-xs text-fg-muted">
+            <kbd className="rounded border border-border bg-gray-50 px-1.5 py-0.5 text-[10px] font-medium">Esc</kbd>
             {' '}zum Schließen
           </span>
         </div>

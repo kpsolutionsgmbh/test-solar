@@ -21,6 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Reference } from '@/types/database';
 import { Plus, Pencil, Trash2, Star, GripVertical, Upload, Image as ImageIcon, Video, Play } from 'lucide-react';
 import { uploadFile } from '@/lib/upload';
+import { SettingsNav } from '@/components/dashboard/settings-nav';
 import {
   DndContext,
   closestCenter,
@@ -83,7 +84,7 @@ function SortableReferenceItem({
             <button
               {...attributes}
               {...listeners}
-              className="cursor-grab active:cursor-grabbing text-[#d1d5db] hover:text-[#E97E1C] shrink-0 touch-none"
+              className="cursor-grab active:cursor-grabbing text-fg-subtle hover:text-brand-500 shrink-0 touch-none"
             >
               <GripVertical className="h-4 w-4" />
             </button>
@@ -91,21 +92,21 @@ function SortableReferenceItem({
               // eslint-disable-next-line @next/next/no-img-element
               <img src={reference.image_url} alt="" className="h-10 w-10 rounded object-cover shrink-0" />
             ) : (
-              <div className="h-10 w-10 rounded bg-[#E97E1C]/8 flex items-center justify-center text-[#E97E1C] font-semibold text-sm shrink-0">
+              <div className="h-10 w-10 rounded bg-brand-500/8 flex items-center justify-center text-brand-500 font-semibold text-sm shrink-0">
                 {reference.client_company.charAt(0)}
               </div>
             )}
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h3 className="font-medium text-[#1a1a1a]">{reference.client_company}</h3>
+                <h3 className="font-medium text-fg">{reference.client_company}</h3>
                 {reference.result_summary && (
                   <Badge variant="outline" className="text-[10px]">{reference.result_summary}</Badge>
                 )}
                 {reference.video_url && (
-                  <Video aria-label="Video" className="h-3.5 w-3.5 text-[#6b7280]" />
+                  <Video aria-label="Video" className="h-3.5 w-3.5 text-fg-muted" />
                 )}
               </div>
-              <p className="text-sm text-[#6b7280] truncate">
+              <p className="text-sm text-fg-muted truncate">
                 {reference.client_name}
                 {reference.quote && ` - "${reference.quote.substring(0, 60)}..."`}
               </p>
@@ -258,10 +259,11 @@ export default function ReferencesPage() {
 
   return (
     <div>
+      <SettingsNav />
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#1a1a1a]">Kundenstimmen</h1>
-          <p className="text-sm text-[#6b7280] mt-1">
+          <h1 className="text-2xl font-bold text-fg">Kundenstimmen</h1>
+          <p className="text-sm text-fg-muted mt-1">
             Referenzen die in Ihren Angebotsräumen angezeigt werden.
           </p>
         </div>
@@ -313,8 +315,8 @@ export default function ReferencesPage() {
                         onClick={() => setMediaType(val as MediaType)}
                         className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
                           mediaType === val
-                            ? 'border-[#E97E1C] bg-[#E97E1C]/5 text-[#E97E1C]'
-                            : 'border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]'
+                            ? 'border-brand-500 bg-brand-500/5 text-brand-500'
+                            : 'border-border text-fg-muted hover:bg-surface-sub'
                         }`}
                       >
                         {val === 'image' && <ImageIcon aria-hidden="true" className="h-3.5 w-3.5 inline mr-1.5" />}
@@ -362,22 +364,22 @@ export default function ReferencesPage() {
                       <Input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://youtube.com/watch?v=... oder https://loom.com/share/..." />
                     </div>
                     {videoUrl && getVideoThumbnail(videoUrl) && (
-                      <div className="relative rounded-lg overflow-hidden border border-[#e5e7eb]">
+                      <div className="relative rounded-lg overflow-hidden border border-border">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={getVideoThumbnail(videoUrl)!} alt="Thumbnail" className="w-full h-32 object-cover" />
                         <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                          <div className="h-10 w-10 rounded-full bg-white/90 flex items-center justify-center">
-                            <Play className="h-5 w-5 text-[#1a1a1a] ml-0.5" />
+                          <div className="h-10 w-10 rounded-full bg-surface/90 flex items-center justify-center">
+                            <Play className="h-5 w-5 text-fg ml-0.5" />
                           </div>
                         </div>
-                        <p className="text-[10px] text-[#9ca3af] px-2 py-1">Automatisches Thumbnail</p>
+                        <p className="text-[10px] text-fg-subtle px-2 py-1">Automatisches Thumbnail</p>
                       </div>
                     )}
                   </div>
                 )}
               </div>
             </div>
-            <div className="flex justify-end gap-2 pt-4 border-t border-[#e5e7eb] mt-4">
+            <div className="flex justify-end gap-2 pt-4 border-t border-border mt-4">
               <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }}>
                 Abbrechen
               </Button>
@@ -398,9 +400,9 @@ export default function ReferencesPage() {
       ) : references.length === 0 ? (
         <Card className="border-dashed border-2">
           <CardContent className="flex flex-col items-center justify-center py-16">
-            <Star className="h-12 w-12 text-[#d1d5db] mb-4" />
-            <p className="text-[#6b7280] mb-1 font-medium">Noch keine Referenzen vorhanden</p>
-            <p className="text-sm text-[#9ca3af] mb-4">Fügen Sie Kundenreferenzen hinzu</p>
+            <Star className="h-12 w-12 text-fg-subtle mb-4" />
+            <p className="text-fg-muted mb-1 font-medium">Noch keine Referenzen vorhanden</p>
+            <p className="text-sm text-fg-subtle mb-4">Fügen Sie Kundenreferenzen hinzu</p>
             <Button onClick={() => setDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Erste Referenz erstellen

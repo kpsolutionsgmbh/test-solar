@@ -29,14 +29,14 @@ export function EmailFlowSeedButton() {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-[#e5e7eb] rounded-xl">
-      <div className="h-12 w-12 rounded-xl bg-[#fafafa] flex items-center justify-center mb-4">
-        <Mail size={20} className="text-[#6b7280]" />
+    <div className="flex flex-col items-center justify-center py-16 text-center border-2 border-dashed border-border rounded-xl">
+      <div className="h-12 w-12 rounded-xl bg-surface-sub flex items-center justify-center mb-4">
+        <Mail size={20} className="text-fg-muted" />
       </div>
-      <h3 className="text-[15px] font-semibold text-[#1a1a1a] mb-1">
+      <h3 className="text-[15px] font-semibold text-fg mb-1">
         Keine E-Mail Flows vorhanden
       </h3>
-      <p className="text-[13px] text-[#6b7280] max-w-[340px] mb-5">
+      <p className="text-[13px] text-fg-muted max-w-[340px] mb-5">
         Erstellen Sie die 4 Standard-Flows mit einem Klick. Sie können diese anschließend anpassen und aktivieren.
       </p>
       <Button onClick={handleSeed} disabled={loading} size="sm">

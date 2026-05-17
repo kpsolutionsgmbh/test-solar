@@ -48,8 +48,8 @@ export default async function DashboardPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-semibold text-[#1a1a1a]">Übersicht</h1>
-          <p className="text-sm text-[#6b7280] mt-1">
+          <h1 className="text-2xl font-semibold text-fg">Übersicht</h1>
+          <p className="text-sm text-fg-muted mt-1">
             Alle Ihre Angebotsräume auf einen Blick.
           </p>
         </div>
@@ -70,7 +70,7 @@ export default async function DashboardPage() {
       />
 
       {/* Dealroom List */}
-      <h2 className="text-lg font-semibold text-[#1a1a1a] mb-4">Alle Angebotsräume</h2>
+      <h2 className="text-lg font-semibold text-fg mb-4">Alle Angebotsräume</h2>
       <DealroomList dealrooms={allDealrooms} viewCounts={viewCounts} engagementScores={engagementScores} />
     </div>
   );

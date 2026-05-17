@@ -141,7 +141,7 @@ export function NotificationBell() {
           setShowDropdown(!showDropdown);
           if (!showDropdown) setUnreadCount(0);
         }}
-        className="relative h-8 w-8 flex items-center justify-center rounded-lg text-[#6b7280] hover:bg-[#fafafa] hover:text-[#1a1a1a] transition-colors"
+        className="relative h-8 w-8 flex items-center justify-center rounded-lg text-fg-muted hover:bg-surface-sub hover:text-fg transition-colors"
       >
         <Bell size={16} strokeWidth={1.75} />
         {unreadCount > 0 && (
@@ -157,24 +157,24 @@ export function NotificationBell() {
           <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
 
           {/* Dropdown */}
-          <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-[#e5e7eb] rounded-xl shadow-xl z-50 max-h-[400px] overflow-y-auto">
-            <div className="px-4 py-3 border-b border-[#e5e7eb]">
-              <p className="text-sm font-semibold text-[#1a1a1a]">Benachrichtigungen</p>
+          <div className="absolute right-0 top-full mt-2 w-80 bg-surface border border-border rounded-xl shadow-xl z-50 max-h-[400px] overflow-y-auto">
+            <div className="px-4 py-3 border-b border-border">
+              <p className="text-sm font-semibold text-fg">Benachrichtigungen</p>
             </div>
             {notifications.length === 0 ? (
               <div className="px-4 py-8 text-center">
-                <Bell className="h-8 w-8 mx-auto mb-2 text-[#d1d5db]" />
-                <p className="text-sm text-[#6b7280]">Keine Aktivitäten</p>
+                <Bell className="h-8 w-8 mx-auto mb-2 text-fg-subtle" />
+                <p className="text-sm text-fg-muted">Keine Aktivitäten</p>
               </div>
             ) : (
               <div className="divide-y divide-[#f0f0f0]">
                 {notifications.map((n, i) => (
-                  <div key={`${n.id}-${i}`} className="px-4 py-3 hover:bg-[#fafafa] transition-colors">
-                    <p className="text-[13px] text-[#1a1a1a]">
+                  <div key={`${n.id}-${i}`} className="px-4 py-3 hover:bg-surface-sub transition-colors">
+                    <p className="text-[13px] text-fg">
                       <span className="font-semibold">{n.client_company || 'Unbekannt'}</span>{' '}
-                      <span className="text-[#6b7280]">{eventLabels[n.event_type] || n.event_type}</span>
+                      <span className="text-fg-muted">{eventLabels[n.event_type] || n.event_type}</span>
                     </p>
-                    <p className="text-[11px] text-[#9ca3af] mt-0.5">{formatTime(n.created_at)}</p>
+                    <p className="text-[11px] text-fg-subtle mt-0.5">{formatTime(n.created_at)}</p>
                   </div>
                 ))}
               </div>

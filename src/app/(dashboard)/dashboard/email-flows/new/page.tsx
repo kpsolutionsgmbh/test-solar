@@ -68,18 +68,18 @@ export default function NewEmailFlowPage() {
     <div className="max-w-2xl">
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-1 text-sm text-[#6b7280] hover:text-[#1a1a1a] mb-6 transition-colors"
+        className="flex items-center gap-1 text-sm text-fg-muted hover:text-fg mb-6 transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
         Zurück
       </button>
 
-      <h1 className="text-2xl font-semibold text-[#1a1a1a] mb-1">Neue automatische E-Mail</h1>
-      <p className="text-sm text-[#6b7280] mb-6">
+      <h1 className="text-2xl font-semibold text-fg mb-1">Neue automatische E-Mail</h1>
+      <p className="text-sm text-fg-muted mb-6">
         Erstellen Sie eine neue Regel für automatische E-Mails.
       </p>
 
-      <Card className="border-[#e5e7eb]">
+      <Card className="border-border">
         <CardContent className="p-6 space-y-5">
           <div className="space-y-2">
             <Label>Name *</Label>
@@ -104,14 +104,14 @@ export default function NewEmailFlowPage() {
             <select
               value={triggerType}
               onChange={(e) => setTriggerType(e.target.value)}
-              className="w-full rounded-md border border-[#e5e7eb] px-3 py-2 text-sm"
+              className="w-full rounded-md border border-border px-3 py-2 text-sm"
             >
               {triggerOptions.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
             <div className="flex items-center gap-2">
-              <span className="text-sm text-[#6b7280]">Nach</span>
+              <span className="text-sm text-fg-muted">Nach</span>
               <Input
                 type="number"
                 min={1}
@@ -120,15 +120,15 @@ export default function NewEmailFlowPage() {
                 onChange={(e) => setTriggerDays(Number(e.target.value))}
                 className="w-20"
               />
-              <span className="text-sm text-[#6b7280]">Tagen</span>
+              <span className="text-sm text-fg-muted">Tagen</span>
             </div>
-            <p className="flex items-center gap-1 text-xs text-[#6b7280]">
+            <p className="flex items-center gap-1 text-xs text-fg-muted">
               <Lightbulb className="h-3 w-3 text-amber-500" />
               Die E-Mail wird gesendet wenn die Bedingung nach der angegebenen Zeit eintritt.
             </p>
           </div>
 
-          <div className="space-y-2 border-t border-[#e5e7eb] pt-5">
+          <div className="space-y-2 border-t border-border pt-5">
             <Label>Betreff *</Label>
             <Input
               value={subject}

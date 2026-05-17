@@ -71,7 +71,7 @@ const statusConfig: Record<string, { label: string; color: string; dotColor: str
 function CollapsibleSection({
   title,
   icon: Icon,
-  iconColor = 'text-[#E97E1C]',
+  iconColor = 'text-brand-500',
   status,
   summary,
   defaultOpen = false,
@@ -88,36 +88,36 @@ function CollapsibleSection({
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="border border-[#e5e7eb] rounded-xl overflow-hidden bg-white">
+    <div className="border border-border rounded-xl overflow-hidden bg-surface">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-4 hover:bg-[#fafafa] transition-colors gap-4"
+        className="w-full flex items-center justify-between p-4 hover:bg-surface-sub transition-colors gap-4"
       >
         <div className="flex items-center gap-2 shrink-0">
           <ChevronRight
             size={16}
-            className={`text-[#6b7280] transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-90' : ''}`}
+            className={`text-fg-muted transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-90' : ''}`}
           />
           <Icon size={16} className={`${iconColor} shrink-0`} />
-          <span className="text-[14px] font-semibold text-[#1a1a1a] whitespace-nowrap">{title}</span>
+          <span className="text-[14px] font-semibold text-fg whitespace-nowrap">{title}</span>
           {status && (
             <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium shrink-0 whitespace-nowrap ${
               status === 'complete' ? 'bg-emerald-50 text-emerald-700' :
               status === 'warning' ? 'bg-amber-50 text-amber-700' :
-              'bg-gray-100 text-[#6b7280]'
+              'bg-gray-100 text-fg-muted'
             }`}>
               {status === 'complete' ? 'Vollständig' : 'Unvollständig'}
             </span>
           )}
         </div>
         {summary && (
-          <span className="text-[11px] text-[#6b7280] truncate hidden sm:block">{summary}</span>
+          <span className="text-[11px] text-fg-muted truncate hidden sm:block">{summary}</span>
         )}
       </button>
       <div className={`transition-all duration-200 ease-out ${
         isOpen ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'
       }`}>
-        <div className="px-5 pb-5 pt-2 border-t border-[#e5e7eb]">
+        <div className="px-5 pb-5 pt-2 border-t border-border">
           {children}
         </div>
       </div>
@@ -455,7 +455,7 @@ export default function EditDealroomPage() {
   }
 
   if (!dealroom) {
-    return <p className="text-[#6b7280]">Dealroom nicht gefunden.</p>;
+    return <p className="text-fg-muted">Dealroom nicht gefunden.</p>;
   }
 
   const config = statusConfig[status];
@@ -464,7 +464,7 @@ export default function EditDealroomPage() {
     <div>
       <button
         onClick={() => router.push('/dashboard')}
-        className="flex items-center gap-1 text-sm text-[#6b7280] hover:text-[#1a1a1a] mb-6 transition-colors"
+        className="flex items-center gap-1 text-sm text-fg-muted hover:text-fg mb-6 transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
         Zurück zum Dashboard
@@ -475,7 +475,7 @@ export default function EditDealroomPage() {
         <div className="flex items-center gap-4">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold text-[#1a1a1a]">
+              <h1 className="text-2xl font-semibold text-fg">
                 {clientCompany || dealroom.client_company}
               </h1>
               <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.color}`}>
@@ -483,7 +483,7 @@ export default function EditDealroomPage() {
                 {config.label}
               </span>
             </div>
-            <p className="text-sm text-[#6b7280] mt-0.5">{clientName || dealroom.client_name}</p>
+            <p className="text-sm text-fg-muted mt-0.5">{clientName || dealroom.client_name}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -670,13 +670,13 @@ export default function EditDealroomPage() {
               </div>
 
               {/* Documents */}
-              <div className="space-y-2 border-t border-[#e5e7eb] pt-3">
+              <div className="space-y-2 border-t border-border pt-3">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs flex items-center gap-1">
                     <FileUp className="h-3 w-3" />
                     Dokumente
                   </Label>
-                  <label className={`text-xs text-[#E97E1C] font-medium flex items-center gap-1 ${uploadingDoc ? 'opacity-50' : 'cursor-pointer hover:underline'}`}>
+                  <label className={`text-xs text-brand-500 font-medium flex items-center gap-1 ${uploadingDoc ? 'opacity-50' : 'cursor-pointer hover:underline'}`}>
                     {uploadingDoc ? <Loader2 className="h-3 w-3 animate-spin" /> : <Upload className="h-3 w-3" />}
                     {uploadingDoc ? 'Lädt...' : 'Hochladen'}
                     <input
@@ -716,16 +716,16 @@ export default function EditDealroomPage() {
                 {documents.length > 0 && (
                   <div className="space-y-1">
                     {documents.map((doc) => (
-                      <div key={doc.id} className="flex items-center gap-2 bg-[#fafafa] rounded-lg px-2.5 py-1.5 group">
-                        <File className="h-3.5 w-3.5 text-[#6b7280] shrink-0" />
-                        <span className="text-xs text-[#1a1a1a] truncate flex-1">{doc.name}</span>
-                        <span className="text-[10px] text-[#9ca3af] shrink-0">{(doc.file_size / 1024).toFixed(0)} KB</span>
+                      <div key={doc.id} className="flex items-center gap-2 bg-surface-sub rounded-lg px-2.5 py-1.5 group">
+                        <File className="h-3.5 w-3.5 text-fg-muted shrink-0" />
+                        <span className="text-xs text-fg truncate flex-1">{doc.name}</span>
+                        <span className="text-[10px] text-fg-subtle shrink-0">{(doc.file_size / 1024).toFixed(0)} KB</span>
                         <button
                           onClick={async () => {
                             await supabase.from('dealroom_documents').delete().eq('id', doc.id);
                             setDocuments(prev => prev.filter(d => d.id !== doc.id));
                           }}
-                          className="text-[#9ca3af] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                          className="text-fg-subtle hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
                         >
                           <X className="h-3 w-3" />
                         </button>
@@ -749,14 +749,14 @@ export default function EditDealroomPage() {
                 <Button size="sm" onClick={addNote} disabled={!newNote.trim()}>Hinzufügen</Button>
               </div>
               {internalNotes.map(note => (
-                <div key={note.id} className="bg-[#fafafa] rounded-lg p-3 text-sm">
+                <div key={note.id} className="bg-surface-sub rounded-lg p-3 text-sm">
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-[#374151]">{note.text}</p>
-                    <button onClick={() => deleteNote(note.id)} className="text-[#9ca3af] hover:text-red-500 shrink-0">
+                    <p className="text-fg">{note.text}</p>
+                    <button onClick={() => deleteNote(note.id)} className="text-fg-subtle hover:text-red-500 shrink-0">
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </div>
-                  <p className="text-[10px] text-[#9ca3af] mt-1">
+                  <p className="text-[10px] text-fg-subtle mt-1">
                     {new Date(note.created_at).toLocaleDateString('de-DE')} {new Date(note.created_at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })}
                     {note.author && ` – ${note.author}`}
                   </p>
@@ -806,8 +806,8 @@ export default function EditDealroomPage() {
                 <div className="space-y-2">
                   {content.situation_points.map((point, i) => (
                     <div key={i} className="flex items-center gap-2">
-                      <div className="shrink-0 h-8 w-8 rounded-lg bg-[#E97E1C]/10 flex items-center justify-center">
-                        <DynamicIcon name={point.icon} className="h-4 w-4 text-[#E97E1C]" />
+                      <div className="shrink-0 h-8 w-8 rounded-lg bg-brand-500/10 flex items-center justify-center">
+                        <DynamicIcon name={point.icon} className="h-4 w-4 text-brand-500" />
                       </div>
                       <Input
                         value={point.text}
@@ -921,7 +921,7 @@ export default function EditDealroomPage() {
                   {content.process_steps.map((step, i) => (
                     <div key={i} className="bg-[#f8fafb] border border-[#FEF3E2] p-3 rounded-lg space-y-2">
                       <div className="flex items-center gap-2">
-                        <span className="h-6 w-6 rounded-full bg-[#E97E1C] text-white text-xs flex items-center justify-center font-semibold shrink-0">
+                        <span className="h-6 w-6 rounded-full bg-brand-500 text-white text-xs flex items-center justify-center font-semibold shrink-0">
                           {step.step}
                         </span>
                         <Input
@@ -992,8 +992,8 @@ export default function EditDealroomPage() {
           ) : (
             <Card className="border-dashed border-2">
               <CardContent className="flex flex-col items-center justify-center py-16">
-                <MessageSquareQuote className="h-10 w-10 text-[#6b7280] mb-3" />
-                <p className="text-[#6b7280]">Kein Content generiert.</p>
+                <MessageSquareQuote className="h-10 w-10 text-fg-muted mb-3" />
+                <p className="text-fg-muted">Kein Content generiert.</p>
               </CardContent>
             </Card>
           )}
@@ -1001,7 +1001,7 @@ export default function EditDealroomPage() {
       </div>
 
       {/* Save bar */}
-      <div className="sticky bottom-0 bg-white/95 backdrop-blur-sm border-t border-[#e5e7eb] px-6 py-3 -mx-6 mt-8 flex items-center justify-between">
+      <div className="sticky bottom-0 bg-surface/95 backdrop-blur-sm border-t border-border px-6 py-3 -mx-6 mt-8 flex items-center justify-between">
         <Button
           variant="ghost"
           size="sm"
@@ -1013,7 +1013,7 @@ export default function EditDealroomPage() {
         </Button>
         <div className="flex items-center gap-3">
           {/* Auto-save status */}
-          <span className="text-xs text-[#6b7280] flex items-center gap-1">
+          <span className="text-xs text-fg-muted flex items-center gap-1">
             {autoSaveStatus === 'saving' && <><Loader2 className="h-3 w-3 animate-spin" /> Speichert...</>}
             {autoSaveStatus === 'saved' && <><Check className="h-3 w-3 text-emerald-500" /> Gespeichert</>}
             {autoSaveStatus === 'error' && <><AlertTriangle className="h-3 w-3 text-red-500" /> Fehler</>}
@@ -1024,7 +1024,7 @@ export default function EditDealroomPage() {
             <button
               onClick={undo}
               disabled={historyIndexRef.current <= 0}
-              className="h-8 w-8 flex items-center justify-center rounded-lg text-[#6b7280] hover:text-[#E97E1C] hover:bg-[#FEF3E2] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="h-8 w-8 flex items-center justify-center rounded-lg text-fg-muted hover:text-brand-500 hover:bg-brand-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               title="Rückgängig (Cmd+Z)"
             >
               <Undo2 size={16} />
@@ -1032,7 +1032,7 @@ export default function EditDealroomPage() {
             <button
               onClick={redo}
               disabled={historyIndexRef.current >= historyRef.current.length - 1}
-              className="h-8 w-8 flex items-center justify-center rounded-lg text-[#6b7280] hover:text-[#E97E1C] hover:bg-[#FEF3E2] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="h-8 w-8 flex items-center justify-center rounded-lg text-fg-muted hover:text-brand-500 hover:bg-brand-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               title="Wiederholen (Cmd+Shift+Z)"
             >
               <Redo2 size={16} />

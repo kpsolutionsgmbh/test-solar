@@ -20,6 +20,7 @@ import { AdminUser, TeamMember } from '@/types/database';
 import { Save, Loader2, Upload, Plus, Pencil, Trash2, Users, User2, Lock } from 'lucide-react';
 import { uploadFile } from '@/lib/upload';
 import { ImageCropper } from '@/components/ui/image-cropper';
+import { SettingsNav } from '@/components/dashboard/settings-nav';
 
 export default function SettingsPage() {
   const supabase = createClient();
@@ -208,7 +209,7 @@ export default function SettingsPage() {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-[#6b7280]" /></div>;
+    return <div className="flex items-center justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-fg-muted" /></div>;
   }
 
   const settingsTabs = [
@@ -219,19 +220,20 @@ export default function SettingsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-semibold text-[#1a1a1a] mb-2">Einstellungen</h1>
-      <p className="text-sm text-[#6b7280] mb-6">Verwalten Sie Ihr Profil, Branding und Team</p>
+      <SettingsNav />
+      <h1 className="text-2xl font-bold text-fg mb-2">Einstellungen</h1>
+      <p className="text-sm text-fg-muted mb-6">Verwalten Sie Ihr Profil, Branding und Team.</p>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 border-b border-[#e5e7eb]">
+      <div className="flex gap-1 mb-6 border-b border-border">
         {settingsTabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={`flex items-center gap-2 px-4 py-2.5 text-[13px] font-semibold transition-colors border-b-2 -mb-px ${
               activeTab === tab.key
-                ? 'border-[#E97E1C] text-[#E97E1C]'
-                : 'border-transparent text-[#6b7280] hover:text-[#1a1a1a]'
+                ? 'border-brand-500 text-brand-500'
+                : 'border-transparent text-fg-muted hover:text-fg'
             }`}
           >
             <tab.icon size={15} />
@@ -246,7 +248,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <User2 className="h-4 w-4 text-[#E97E1C]" />
+              <User2 className="h-4 w-4 text-brand-500" />
               Profil & Branding
             </CardTitle>
           </CardHeader>
@@ -317,7 +319,7 @@ export default function SettingsPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
-                <Users className="h-4 w-4 text-[#E97E1C]" />
+                <Users className="h-4 w-4 text-brand-500" />
                 Team / Ansprechpartner
               </CardTitle>
               <Dialog open={memberDialogOpen} onOpenChange={(open) => { setMemberDialogOpen(open); if (!open) resetMemberForm(); }}>
@@ -389,9 +391,9 @@ export default function SettingsPage() {
           <CardContent>
             {teamMembers.length === 0 ? (
               <div className="text-center py-8">
-                <Users className="h-10 w-10 text-[#d1d5db] mx-auto mb-3" />
-                <p className="text-sm text-[#6b7280]">Noch keine Teammitglieder</p>
-                <p className="text-xs text-[#9ca3af] mt-1">Fügen Sie Ansprechpartner hinzu, die in Dealrooms angezeigt werden</p>
+                <Users className="h-10 w-10 text-fg-subtle mx-auto mb-3" />
+                <p className="text-sm text-fg-muted">Noch keine Teammitglieder</p>
+                <p className="text-xs text-fg-subtle mt-1">Fügen Sie Ansprechpartner hinzu, die in Dealrooms angezeigt werden</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -399,7 +401,7 @@ export default function SettingsPage() {
                   <div
                     key={m.id}
                     className={`flex items-center justify-between p-3 rounded-lg border transition-opacity ${
-                      m.is_active ? 'border-[#e5e7eb]' : 'border-[#e5e7eb] opacity-50'
+                      m.is_active ? 'border-border' : 'border-border opacity-50'
                     }`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
@@ -407,13 +409,13 @@ export default function SettingsPage() {
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={m.avatar_url} alt="" className="h-9 w-9 rounded-full object-cover shrink-0" />
                       ) : (
-                        <div className="h-9 w-9 rounded-full bg-[#E97E1C]/10 flex items-center justify-center text-[#E97E1C] text-sm font-semibold shrink-0">
+                        <div className="h-9 w-9 rounded-full bg-brand-500/10 flex items-center justify-center text-brand-500 text-sm font-semibold shrink-0">
                           {m.name.charAt(0)}
                         </div>
                       )}
                       <div className="min-w-0">
-                        <p className="text-sm font-medium text-[#1a1a1a] truncate">{m.name}</p>
-                        <p className="text-xs text-[#6b7280] truncate">
+                        <p className="text-sm font-medium text-fg truncate">{m.name}</p>
+                        <p className="text-xs text-fg-muted truncate">
                           {m.position && `${m.position} - `}{m.email}
                         </p>
                       </div>

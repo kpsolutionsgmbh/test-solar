@@ -126,7 +126,7 @@ Solarheld`);
           <div className="space-y-1.5">
             <Label className="text-xs">Nachricht</Label>
             <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={10} className="text-sm" />
-            <p className="text-[10px] text-[#9ca3af]">[LINK] wird automatisch durch den Dealroom-Link ersetzt.</p>
+            <p className="text-[10px] text-fg-subtle">[LINK] wird automatisch durch den Dealroom-Link ersetzt.</p>
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" size="sm" onClick={onClose}>Abbrechen</Button>
