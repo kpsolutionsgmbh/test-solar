@@ -257,7 +257,10 @@ ${inputText}
 Generate the content in English. Adapt language and arguments to the customer type (${customerType === 'private' ? 'home, family, reduce electricity bill' : 'business, operating costs, tax benefits'}). Respond ONLY with the JSON object.`;
 
   const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
+    // Use ANTHROPIC_MODEL env var if set, else fall back to a known-valid
+    // dated Sonnet release. Avoids 'model_not_found' errors from short aliases
+    // that aren't always API-supported across SDK versions.
+    model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-5-20250929',
     // 6000 is the safety ceiling. Per-field length caps in the system prompt
     // enforce brevity, not max_tokens. 4000 was too tight for a full dealroom
     // JSON (5 FAQs + 3 outcomes + 3 pains + 3 benefits + meta) and triggered
@@ -322,7 +325,10 @@ function sanitizeContent(content: DealroomContent): DealroomContent {
 
 export async function transcribeAudio(audioBase64: string): Promise<string> {
   const message = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
+    // Use ANTHROPIC_MODEL env var if set, else fall back to a known-valid
+    // dated Sonnet release. Avoids 'model_not_found' errors from short aliases
+    // that aren't always API-supported across SDK versions.
+    model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-5-20250929',
     max_tokens: 4000,
     messages: [
       {
