@@ -302,7 +302,7 @@ export default function EditDealroomPage() {
       setAutoSaveStatus('saved');
       setDealroom(prev => prev ? { ...prev, client_name: clientName, client_company: clientCompany, custom_content: content } : null);
       if (dealroom?.slug) {
-        fetch('/api/revalidate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: dealroom.slug }) }).catch(() => {});
+        fetch('/api/revalidate', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-internal-call': '1' }, body: JSON.stringify({ slug: dealroom.slug }) }).catch((e) => { console.error('Revalidate failed:', e); });
       }
     }
   }, 1500);
@@ -385,9 +385,11 @@ export default function EditDealroomPage() {
       if (dealroom?.slug) {
         fetch('/api/revalidate', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'x-internal-call': '1' },
           body: JSON.stringify({ slug: dealroom.slug }),
-        }).catch(() => {});
+        }).catch((e) => {
+          console.error('Revalidate failed:', e);
+        });
       }
     }
   };
@@ -1089,7 +1091,7 @@ export default function EditDealroomPage() {
         onClose={() => setDeleteConfirmOpen(false)}
         onConfirm={async () => {
           if (dealroom?.slug) {
-            await fetch('/api/revalidate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug: dealroom.slug }) });
+            await fetch('/api/revalidate', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-internal-call': '1' }, body: JSON.stringify({ slug: dealroom.slug }) });
           }
           await supabase.from('dealrooms').delete().eq('id', params.id);
           router.push('/dashboard');
