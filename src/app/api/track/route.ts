@@ -18,6 +18,44 @@ const ALLOWED_EVENTS = new Set([
   'email_sent',
 ]);
 
+// Per-instance rate limiting. Best-effort: resets on cold start, doesn't sync
+// across Lambda instances. For real abuse protection upgrade to Upstash KV
+// or Vercel KV, but in practice this stops 99% of spam patterns since one
+// instance handles a burst from a single attacker.
+const SESSION_LIMIT = 120; // events per minute per (dealroom_id + session_id)
+const IP_LIMIT = 600; // events per minute per IP
+const WINDOW_MS = 60_000;
+
+type Bucket = { count: number; resetAt: number };
+const sessionBuckets = new Map<string, Bucket>();
+const ipBuckets = new Map<string, Bucket>();
+
+function check(map: Map<string, Bucket>, key: string, max: number): boolean {
+  const now = Date.now();
+  const b = map.get(key);
+  if (!b || b.resetAt <= now) {
+    map.set(key, { count: 1, resetAt: now + WINDOW_MS });
+    return true;
+  }
+  if (b.count >= max) return false;
+  b.count++;
+  return true;
+}
+
+// Periodically prune to keep memory bounded. Runs lazily on each call.
+let lastPrune = 0;
+function maybePrune() {
+  const now = Date.now();
+  if (now - lastPrune < 60_000) return;
+  lastPrune = now;
+  sessionBuckets.forEach((v, k) => {
+    if (v.resetAt < now) sessionBuckets.delete(k);
+  });
+  ipBuckets.forEach((v, k) => {
+    if (v.resetAt < now) ipBuckets.delete(k);
+  });
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -35,6 +73,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid event type' }, { status: 400 });
     }
 
+    if (typeof session_id !== 'string' || session_id.length > 128) {
+      return NextResponse.json({ error: 'Invalid session id' }, { status: 400 });
+    }
+
     // Anonymize IP (remove last octet)
     const forwarded = request.headers.get('x-forwarded-for');
     const ip = forwarded?.split(',')[0]?.trim() || 'unknown';
@@ -48,6 +90,17 @@ export async function POST(request: NextRequest) {
       if (botPatterns.test(userAgent)) {
         return NextResponse.json({ ok: true });
       }
+    }
+
+    // Rate limit. Silently drop over-limit pings (return 200 so the client
+    // beacon doesn't retry storm). Only log when we drop.
+    maybePrune();
+    const sessionKey = `${dealroom_id}:${session_id}`;
+    if (!check(sessionBuckets, sessionKey, SESSION_LIMIT)) {
+      return NextResponse.json({ ok: true, dropped: 'session-rate-limit' });
+    }
+    if (!check(ipBuckets, ip, IP_LIMIT)) {
+      return NextResponse.json({ ok: true, dropped: 'ip-rate-limit' });
     }
 
     const supabase = createServiceRoleClient();

@@ -290,9 +290,28 @@ export default async function AnalyticsPage() {
             ))}
           </div>
           <HelpText>
-            Engagement-Score = wie intensiv ein Kunde sich Ihr Angebot anschaut. Je höher, desto näher
-            am Abschluss. Werte ab 60 sind ein guter Zeitpunkt für einen Anruf.
+            Engagement-Score (0–100) misst, wie intensiv ein Kunde sich Ihr Angebot anschaut.
+            Je höher, desto näher am Abschluss. Werte ab 60 sind ein guter Zeitpunkt für einen Anruf.
           </HelpText>
+          <details className="mt-3 group">
+            <summary className="text-xs text-fg-muted cursor-pointer hover:text-fg select-none inline-flex items-center gap-1.5">
+              <Info className="h-3 w-3" />
+              <span className="underline-offset-2 group-open:underline">Wie wird der Score berechnet?</span>
+            </summary>
+            <div className="mt-2 ml-5 text-xs text-fg-muted space-y-1 tabular-nums">
+              <p>+15 — Angebotsraum geöffnet</p>
+              <p>+10 — Video gestartet · +20 wenn vollständig angeschaut</p>
+              <p>+20 — Tab &quot;Angebot&quot; geöffnet</p>
+              <p>+15 — PandaDoc-Angebot geöffnet</p>
+              <p>+25 — PandaDoc-Angebot unterschrieben</p>
+              <p>+10 — Tief gescrollt (über 75 %)</p>
+              <p>+10 pro Dokument-Download (max. 20)</p>
+              <p>+10 — Lange Session (über 5 Minuten)</p>
+              <p>+15 — Wiederholter Besuch</p>
+              <p>+5 — FAQ angeklickt</p>
+              <p className="text-fg-subtle">Maximal 100 Punkte.</p>
+            </div>
+          </details>
         </CardContent>
       </Card>
 

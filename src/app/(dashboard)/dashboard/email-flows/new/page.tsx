@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Save, Loader2, Lightbulb } from 'lucide-react';
+import { validateTemplate } from '@/lib/email-template-vars';
 
 const triggerOptions = [
   { value: 'not_opened', label: 'Angebotsraum nicht geöffnet' },
@@ -34,6 +35,12 @@ export default function NewEmailFlowPage() {
   const handleSave = async () => {
     if (!name.trim() || !subject.trim() || !body.trim()) {
       toast({ title: 'Fehler', description: 'Bitte füllen Sie alle Pflichtfelder aus.', variant: 'destructive' });
+      return;
+    }
+
+    const varError = validateTemplate(subject, body);
+    if (varError) {
+      toast({ title: 'Vorlage enthält unbekannte Variablen', description: varError, variant: 'destructive' });
       return;
     }
 

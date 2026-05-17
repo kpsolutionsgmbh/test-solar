@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmailFlow, EmailFlowLog } from '@/types/database';
 import { toast } from 'sonner';
+import { validateTemplate } from '@/lib/email-template-vars';
 import {
   ArrowLeft,
   Save,
@@ -139,6 +140,13 @@ export default function FlowEditorPage() {
 
   const handleSave = async () => {
     if (!flow) return;
+
+    const varError = validateTemplate(subject, body);
+    if (varError) {
+      toast.error('Unbekannte Variablen in der Vorlage', { description: varError });
+      return;
+    }
+
     setSaving(true);
 
     try {
