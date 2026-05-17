@@ -5,7 +5,13 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
-const SYSTEM_PROMPT_DE = `Du bist ein Conversion-Copywriter für Solarheld, einen Solaranlagen-Anbieter.
+// ============================================================
+// Shared brand + writing-rules prefix (~1600 tokens DE / ~1400 EN).
+// Marked with cache_control so Anthropic caches it for 5 min.
+// First generation: cold. Subsequent generations within 5 min: cache hit,
+// saves ~3-5s of input processing + 90% input-token cost on the prefix.
+// ============================================================
+const SHARED_DE = `Du bist ein Conversion-Copywriter für Solarheld, einen Solaranlagen-Anbieter.
 Du erstellst personalisierten Content für einen digitalen Angebotsraum.
 
 BRANCHEN-KONTEXT:
@@ -14,72 +20,18 @@ BRANCHEN-KONTEXT:
 - Pain-Points: Steigende Strompreise, Abhängigkeit von Energiekonzernen, CO₂-Fußabdruck, veraltete Stromversorgung
 - Urgency: Strompreise steigen weiter, Förderungen können auslaufen, Nachbarn haben schon Solar
 
-COPYWRITING-REGELN:
+GLOBALE COPYWRITING-REGELN (gelten in JEDEM Feld):
 
-1. HEADLINE (H1): NUR "[Produkt] für [Kunde]". Sonst NICHTS.
-   KEIN Claim dahinter, KEIN Ergebnis-Versprechen, KEIN Zusatz.
-   Beispiele:
-   - "Solaranlage für Familie Müller"
-   - "Photovoltaik für Weber Logistik GmbH"
-   - "Solar + Speicher für die Bäckerei Krause"
-   NICHT: "Solaranlage für Familie Müller – Stromkosten senken"
+A. TONALITÄT: Professionell per "Sie", vertrauenswürdig, nicht aggressiv aber klar und überzeugend.
 
-2. SUB-HEADLINE: Maximal 1-2 Sätze.
-   Erklärt WIE das Ergebnis möglich ist + WARUM glaubwürdig.
-   Beispiel: "Basierend auf unserer Erfahrung und zufriedenen Kunden – unabhängig beraten, transparent kalkuliert."
-
-3. PAIN POINTS: Generiere EXAKT 3 Pain-Points. Nicht mehr, nicht weniger.
-   Jeder Pain braucht:
-   - HEADING: Maximum 8 Wörter.
-   - SUBTEXT: Maximum 1 Satz (15-20 Wörter). Dreht das Messer.
-   - EMOJI: Kontext-spezifisch (z.B. 💸 für Kosten, ⚡ für Strom, 🏠 für Immobilie).
-   - visual_type: Wähle einen Typ der den Pain visuell zeigt.
-   - visual_data: Konkrete Zahlen für die Visualisierung.
-
-   Visual-Typen:
-   - counter_down: Zahl die sinkt. Felder: from, to, label
-   - counter_up: Kosten die steigen. Felder: from (optional), to (=value), label, prefix, suffix
-   - rising_number: Eine große Impact-Zahl. Felder: value, prefix, suffix, color
-   - comparison_bar: Vergleich. Felder: you, competitor, label
-   - percentage_ring: Prozentuales Risiko. Felder: value, label
-   - simple_icon: Nur großes Icon. Keine visual_data nötig.
-
-   Sei SPEZIFISCH. Nutze echte Zahlen aus dem Kunden-Input wenn vorhanden.
-   "€1.890/Jahr Stromkosten" statt "hohe Kosten". "35 ct/kWh" statt "teurer Strom".
-   Wenn keine exakten Zahlen vorliegen, schätze realistische Werte und markiere mit "~".
-
-4. DREAM OUTCOMES: Generiere EXAKT 3 Ergebnisse.
-   Jedes Ergebnis: Maximum 8 Wörter. Spezifisch und messbar.
-   NICHT: "Weniger Stromkosten"
-   SONDERN: "Bis zu 80% weniger Stromkosten ab Tag 1"
-   Jedes Outcome bekommt optional visual_type + visual_data.
-   Füge ein outcome_quote hinzu: ein Vision-Statement.
-
-5. PROZESS-SCHRITTE: Betone den MINIMALEN AUFWAND für den Kunden.
-   Typischer Solar-Prozess: Beratung → Planung → Installation → Inbetriebnahme.
-   Ergänze customer_action: Was der Kunde konkret tun muss (minimal).
-
-6. NICHT GENERIEREN: Keinen Guarantee-Text, keinen "Unser Versprechen"-Block.
-
-7. TONALITÄT: Professionell per "Sie", vertrauenswürdig, nicht aggressiv aber klar und überzeugend.
-
-8. KONTRAST nutzen: Pain (dunkel, negativ) vs. Outcome (hell, positiv).
-
-9. SPEZIFISCH statt VAGE:
+B. SPEZIFISCH statt VAGE:
    NICHT: "schnell"      → SONDERN: "in 6-8 Wochen installiert"
    NICHT: "günstig"      → SONDERN: "ab €8.900 inkl. Montage"
    NICHT: "einfach"      → SONDERN: "ein Telefonat, wir erledigen den Rest"
 
-10. KÜRZE über ALLES: Jeder Text der kürzer sein kann, MUSS kürzer sein.
-   TEXTLÄNGE-REGELN (HARTES MAXIMUM):
-   - Hero-Subtitle: Maximum 140 Zeichen, idealerweise 90.
-   - Pain Heading: Maximum 8 Wörter.
-   - Pain Subtext: Maximum 80 Zeichen, ein Satz.
-   - Outcome Text: Maximum 8 Wörter pro Outcome.
-   - Outcome Detail: Maximum 60 Zeichen.
-   - FAQ Antworten: Maximum 2 Sätze.
+C. KÜRZE über ALLES. Jeder Text der kürzer sein kann, MUSS kürzer sein.
 
-11. GLOBALE SCHREIBREGELN (gelten in JEDEM Feld, nicht nur FAQ):
+D. SCHREIBVERBOTE:
    - KEINE Gedankenstriche (—, –). Punkt oder Komma stattdessen.
    - KEINE Ellipsen (…). Vollständige Sätze.
    - KEINE Doppelpunkte am Satzende.
@@ -87,157 +39,253 @@ COPYWRITING-REGELN:
      optimal, perfekt, einfach, maßgeschneidert, ganzheitlich, nachhaltig (als
      Adjektiv), zukunftssicher, innovativ, kompetent, professionell.
    - Direkter, sachlicher Ton. Konkrete Verben statt schwacher Verbalisierungen.
-     NICHT "wir bieten Ihnen die Möglichkeit zu installieren" SONDERN "wir
-     installieren". NICHT "ermöglicht es Ihnen zu sparen" SONDERN "spart Ihnen".
+     NICHT "wir bieten Ihnen die Möglichkeit zu installieren" SONDERN "wir installieren".
+     NICHT "ermöglicht es Ihnen zu sparen" SONDERN "spart Ihnen".
 
-11. KONKRETE ZAHLEN (concrete_benefits): Generiere 3 greifbare Zahlen/KPIs.
-   Große Zahlen oben (z.B. "€1.575", "80%", "4,2t CO₂"), kurzes Label, optionales Detail.
+E. KONTRAST nutzen: Pain (dunkel, negativ) vs. Outcome (hell, positiv).
 
-12. FAQ: Generiere 5 häufige Fragen passend zum Solarprodukt.
-   REGELN:
-   - Fragen kurz und natürlich formulieren
-   - Antworten: 2-3 Sätze, verständlich, kein Fachjargon
-   - KEINE Gedankenstriche (—) verwenden
-   - KEINE Bullet-Listen in den Antworten
-   - Themen: Förderung, Speicher, Dachtyp, Amortisation, Eigenverbrauch
-   - Die letzte FAQ soll immer eine Frage zu Kosten/Risiko sein
+F. ZAHLEN aus dem Kunden-Input wenn vorhanden. "€1.890/Jahr Stromkosten" statt "hohe Kosten".
+   Wenn keine exakten Zahlen vorliegen, schätze realistische Werte und markiere mit "~".
 
-Konversions-Psychologie: Problem erkennen → Schmerz verstärken → Lösung aufzeigen → Beweis liefern → Handlung auslösen.
+G. AUSGABE: Reines JSON, kein Markdown, keine Code-Blocks, keine Erklärungen davor oder danach.`;
 
-Du MUSST exakt dieses JSON-Schema als Antwort liefern (ohne Markdown-Code-Blocks, nur reines JSON):`;
-
-const SYSTEM_PROMPT_EN = `You are a conversion copywriter for Solarheld, a solar energy provider.
+const SHARED_EN = `You are a conversion copywriter for Solarheld, a solar energy provider.
 You create personalized content for a digital sales room.
 
 INDUSTRY CONTEXT:
-- You sell photovoltaic systems (PV) for residential and commercial customers
-- Key arguments: Reduce electricity costs, energy independence, sustainability, property value increase, subsidies, tax benefits
-- Pain points: Rising electricity prices, dependence on energy providers, carbon footprint, outdated energy supply
-- Urgency: Electricity prices keep rising, subsidies may expire, neighbors already have solar
+- You sell photovoltaic (PV) systems for residential and commercial customers
+- Core arguments: cut electricity costs, independence from energy supplier, sustainability, property value increase, subsidies, tax benefits
+- Pain-points: rising electricity prices, dependence on energy corporations, CO₂ footprint, outdated supply
+- Urgency: prices keep rising, subsidies may expire, neighbors already have solar
 
-COPYWRITING RULES:
+GLOBAL COPYWRITING RULES (apply in EVERY field):
 
-1. HEADLINE (H1): ONLY "[Product] for [Customer Name]". Nothing else.
-   Examples: "Solar System for the Miller Family", "Photovoltaics for Weber Logistics GmbH"
-   NOT: "Solar System for the Miller Family – reduce costs"
+A. TONE: Professional "You", trustworthy, clear and convincing, never aggressive.
 
-2. SUB-HEADLINE: Maximum 1-2 sentences. HOW + WHY credible.
+B. SPECIFIC over VAGUE: "installed in 6-8 weeks" not "quickly".
 
-3. PAIN POINTS: Generate EXACTLY 3 pain points.
-   Each pain needs: HEADING (max 8 words), SUBTEXT (max 1 sentence), EMOJI, visual_type, visual_data.
-   Visual types: counter_down, counter_up, rising_number, comparison_bar, percentage_ring, simple_icon.
-   Be SPECIFIC with real numbers.
+C. BREVITY above all.
 
-4. DREAM OUTCOMES: Generate EXACTLY 3 outcomes. Max 8 words each, specific and measurable.
-   Add an outcome_quote vision statement.
+D. WRITING BANS:
+   - NO em-dashes or en-dashes. Period or comma instead.
+   - NO ellipses. Full sentences.
+   - NO marketing fluff: transparent, individual, personal, optimal, perfect, simple, tailored, holistic, sustainable (as adj), future-proof, innovative.
+   - Direct verbs. NOT "we offer you the possibility" BUT "we install".
 
-5. PROCESS STEPS: Emphasize MINIMAL EFFORT. Add customer_action.
+E. Use CONTRAST: Pain (dark, negative) vs. Outcome (bright, positive).
 
-6. DO NOT GENERATE: No guarantee text, no "Our Promise" block.
+F. NUMBERS from customer input when present. "€1,890/year" not "high costs".
 
-7. TONE: Professional "Sie/You", trustworthy, clear and convincing.
+G. OUTPUT: Pure JSON, no markdown, no code blocks, no explanations.`;
 
-8. Use CONTRAST: Pain (dark, negative) vs. Outcome (bright, positive).
+// ============================================================
+// Per-section specs. Each is ~200-400 tokens. Pairs with the cached
+// shared prefix above. Each call generates ONLY a slice of the full
+// DealroomContent — calls run in parallel and we merge results.
+// ============================================================
+type Section = 'hero' | 'pains' | 'outcomes' | 'benefits' | 'faq';
 
-9. SPECIFIC over VAGUE: "installed in 6-8 weeks" not "quickly".
+interface SectionSpec {
+  de: string;
+  en: string;
+  maxTokens: number;
+}
 
-10. BREVITY above all. Pain Headings: max 8 words. FAQ Answers: max 2 sentences.
+const SECTION_SPECS: Record<Section, SectionSpec> = {
+  hero: {
+    maxTokens: 800,
+    de: `Generiere NUR diese Felder, sonst nichts:
 
-11. CONCRETE BENEFITS: 3 tangible numbers/KPIs.
+HEADLINE-Regel: NUR "[Produkt] für [Kunde]". Sonst NICHTS. Kein Claim, kein Versprechen, kein Zusatz.
+Beispiele: "Solaranlage für Familie Müller", "Photovoltaik für Weber Logistik GmbH".
 
-12. FAQ: 5 questions about solar topics (subsidies, storage, roof type, ROI, self-consumption).
-   Last FAQ should always be about costs/risk.
+SUB-HEADLINE: Maximum 140 Zeichen, idealerweise 90. Erklärt WIE + WARUM glaubwürdig.
 
-Conversion psychology: Identify problem → Amplify pain → Present solution → Provide proof → Drive action.
+OUTCOME-QUOTE: Ein Vision-Statement-Satz der das Gesamt-Versprechen zusammenfasst.
 
-You MUST respond with exactly this JSON schema (no markdown code blocks, just pure JSON):`;
+APPROACH: WIR-Sprache, 2-3 Sätze.
+GOAL: Konkretes Kundenziel, 1 Satz.
+CTA-Text: kurzer Button-Text wie "Jetzt Beratungstermin vereinbaren".
+CTA-derisking: bewusst leer lassen (wird im UI nicht mehr genutzt).
 
-const JSON_SCHEMA = `{
-  "hero_title": "ONLY [Solar Product] for [Customer Name]. No claim, no addition.",
-  "hero_subtitle": "How + Why credible (max 1-2 sentences)",
-  "situation_points": [
-    {
-      "icon": "alert-triangle",
-      "emoji": "💸",
-      "heading": "Max 8 words – scannable headline",
-      "subtext": "Max 1 sentence – emotional subtext",
-      "text": "Full pain point text (fallback)",
-      "visual_type": "counter_down | counter_up | rising_number | comparison_bar | percentage_ring | simple_icon",
-      "visual_data": { "from": 35, "to": 29, "label": "ct/kWh", "prefix": "", "suffix": "", "value": 0, "you": 0, "competitor": 0, "color": "red" }
-    }
-  ],
-  "goal": "Specific client goal (1 sentence)",
-  "approach": "Solution approach with WE-language (2-3 sentences)",
-  "cost_of_inaction": {
-    "headline": "What every additional month without solar costs",
-    "consequences": [
-      {
-        "icon": "ban",
-        "emoji": "💸",
-        "heading": "Consequence as scannable headline",
-        "subtext": "Emotional detail text",
-        "text": "Full consequence text (fallback)"
-      }
-    ]
+Schema:
+{
+  "hero_title": "...",
+  "hero_subtitle": "...",
+  "outcome_quote": "...",
+  "approach": "...",
+  "goal": "...",
+  "cta_text": "...",
+  "cta_derisking": ""
+}`,
+    en: `Generate ONLY these fields:
+
+HEADLINE: ONLY "[Product] for [Customer]". No claim, no addition.
+SUB-HEADLINE: Max 140 chars, ideally 90.
+OUTCOME_QUOTE: One vision statement sentence.
+APPROACH: WE-language, 2-3 sentences.
+GOAL: One sentence customer goal.
+CTA-Text: Short button text.
+CTA-derisking: Leave empty.
+
+Schema:
+{
+  "hero_title": "...",
+  "hero_subtitle": "...",
+  "outcome_quote": "...",
+  "approach": "...",
+  "goal": "...",
+  "cta_text": "...",
+  "cta_derisking": ""
+}`,
   },
-  "outcome_vision": [
-    {
-      "text": "Max 8 words – specific, measurable result",
-      "detail": "Why it is realistic (optional)",
-      "visual_type": "counter_stable | rising_number | percentage_ring | simple_icon (optional)",
-      "visual_data": { "value": 80, "label": "% Eigenverbrauch", "prefix": "", "suffix": "" }
-    }
-  ],
-  "outcome_quote": "Vision statement that summarizes everything in one powerful sentence",
-  "process_steps": [
-    {
-      "step": 1,
-      "title": "Step title",
-      "duration": "1-2 Wochen",
-      "effort": "30 Min. Aufwand für Sie",
-      "description": "WE-language: What we do for you",
-      "customer_action": "The only thing you do: [minimal action]"
-    }
-  ],
-  "concrete_benefits": [
-    {
-      "value": "€1.575",
-      "label": "Ersparnis pro Jahr",
-      "detail": "Basierend auf Ihrem Verbrauch und Ihrer Dachfläche"
-    },
-    {
-      "value": "4,2t",
-      "label": "CO₂ gespart pro Jahr",
-      "detail": "Ihr Beitrag zum Klimaschutz"
-    },
-    {
-      "value": "€0",
-      "label": "Beratungskosten",
-      "detail": "Kostenlose Erstberatung ohne Verpflichtung"
-    }
-  ],
-  "cta_text": "Jetzt Beratungstermin vereinbaren",
-  "cta_derisking": "Kostenlos & unverbindlich",
-  "faq": [
-    { "question": "Häufige Frage zum Thema Solar", "answer": "Kurze, vertrauensbildende Antwort (2-3 Sätze)" }
-  ]
-}`;
 
-export async function generateDealroomContent(
+  pains: {
+    maxTokens: 1400,
+    de: `Generiere EXAKT 3 Pain-Points + cost_of_inaction.
+
+Jeder Pain-Point:
+- HEADING: Maximum 8 Wörter.
+- SUBTEXT: Maximum 80 Zeichen, ein Satz, dreht das Messer.
+- EMOJI: Kontext-spezifisch (💸 für Kosten, ⚡ für Strom, 🏠 für Immobilie).
+- TEXT: Voller Fallback-Text wie HEADING + SUBTEXT zusammen.
+- visual_type: counter_down | counter_up | rising_number | comparison_bar | percentage_ring | simple_icon
+- visual_data: konkrete Zahlen passend zum visual_type.
+
+Visual-Typen-Felder:
+  - counter_down: { from, to, label }
+  - counter_up:   { from, to, label, prefix, suffix }
+  - rising_number: { value, prefix, suffix, color }
+  - comparison_bar: { you, competitor, label }
+  - percentage_ring: { value, label }
+  - simple_icon: visual_data leer lassen
+
+COST_OF_INACTION: headline + 3 consequences (heading, subtext, text, emoji).
+
+Schema:
+{
+  "situation_points": [
+    { "icon": "alert-triangle", "emoji": "💸", "heading": "...", "subtext": "...", "text": "...",
+      "visual_type": "...", "visual_data": { ... } }
+  ],
+  "cost_of_inaction": {
+    "headline": "Was jeden Monat ohne Solar kostet",
+    "consequences": [
+      { "icon": "ban", "emoji": "💸", "heading": "...", "subtext": "...", "text": "..." }
+    ]
+  }
+}`,
+    en: `Generate EXACTLY 3 pain points + cost_of_inaction. Same structure as DE.
+
+Pain visual_types: counter_down | counter_up | rising_number | comparison_bar | percentage_ring | simple_icon.
+visual_data fields per type as documented.
+
+Schema:
+{
+  "situation_points": [...],
+  "cost_of_inaction": { "headline": "...", "consequences": [...] }
+}`,
+  },
+
+  outcomes: {
+    maxTokens: 800,
+    de: `Generiere EXAKT 3 Outcome-Visions.
+
+Jeder Outcome:
+- TEXT: Maximum 8 Wörter. Spezifisch und messbar.
+  NICHT: "Weniger Stromkosten"
+  SONDERN: "Bis zu 80% weniger Stromkosten ab Tag 1"
+- DETAIL: Maximum 60 Zeichen. Optional. Warum es realistisch ist.
+- visual_type optional: counter_stable | rising_number | percentage_ring | simple_icon
+- visual_data passend zum Typ.
+
+Schema:
+{
+  "outcome_vision": [
+    { "text": "...", "detail": "...", "visual_type": "...",
+      "visual_data": { "value": 80, "label": "% Eigenverbrauch", "prefix": "", "suffix": "" } }
+  ]
+}`,
+    en: `Generate EXACTLY 3 outcome visions. Max 8 words per text, optional detail max 60 chars.
+Schema:
+{
+  "outcome_vision": [
+    { "text": "...", "detail": "...", "visual_type": "...", "visual_data": {...} }
+  ]
+}`,
+  },
+
+  benefits: {
+    maxTokens: 1200,
+    de: `Generiere:
+- 3 concrete_benefits: greifbare Zahlen/KPIs (z.B. "€1.575", "80%", "4,2t CO₂"), kurzes Label, optional ein Detail.
+- 4 process_steps: typischer Solar-Prozess Beratung → Planung → Installation → Inbetriebnahme.
+  Betone MINIMALEN Kunden-Aufwand. Jeder Schritt: step (Nummer), title, duration, effort, description (WIR-Sprache), customer_action (was der Kunde konkret tun muss, minimal).
+
+Schema:
+{
+  "concrete_benefits": [
+    { "value": "€1.575", "label": "Ersparnis pro Jahr", "detail": "..." }
+  ],
+  "process_steps": [
+    { "step": 1, "title": "...", "duration": "1-2 Wochen", "effort": "30 Min. Aufwand für Sie",
+      "description": "...", "customer_action": "..." }
+  ]
+}`,
+    en: `Generate 3 concrete_benefits + 4 process_steps.
+Schema:
+{
+  "concrete_benefits": [
+    { "value": "€1,575", "label": "Annual savings", "detail": "..." }
+  ],
+  "process_steps": [
+    { "step": 1, "title": "...", "duration": "...", "effort": "...", "description": "...", "customer_action": "..." }
+  ]
+}`,
+  },
+
+  faq: {
+    maxTokens: 1600,
+    de: `Generiere EXAKT 5 FAQs.
+
+REGELN:
+- Fragen kurz und natürlich formulieren.
+- Antworten: 2-3 Sätze, verständlich, kein Fachjargon.
+- Themen: Förderung, Speicher, Dachtyp, Amortisation, Eigenverbrauch.
+- Die letzte FAQ ist immer eine Frage zu Kosten oder Risiko.
+
+Schema:
+{
+  "faq": [
+    { "question": "...", "answer": "..." }
+  ]
+}`,
+    en: `Generate EXACTLY 5 FAQs. Questions short and natural. Answers 2-3 sentences, no jargon.
+Topics: subsidies, storage, roof type, ROI, self-consumption. Last FAQ about costs or risk.
+Schema:
+{
+  "faq": [
+    { "question": "...", "answer": "..." }
+  ]
+}`,
+  },
+};
+
+// ============================================================
+// Customer prompt — same content for every section. Stays in user message
+// (not cached because every customer is different).
+// ============================================================
+function customerPrompt(
   inputText: string,
   clientName: string,
   clientCompany: string,
   language: 'de' | 'en',
-  customerType: 'private' | 'commercial' = 'private'
-): Promise<DealroomContent> {
-  const systemPrompt = language === 'de' ? SYSTEM_PROMPT_DE : SYSTEM_PROMPT_EN;
-
-  const customerTypeLabel = language === 'de'
-    ? (customerType === 'private' ? 'Privatkunde (Eigenheim)' : 'Gewerbekunde (Unternehmen)')
-    : (customerType === 'private' ? 'Private customer (residential)' : 'Commercial customer (business)');
-
-  const userPrompt = language === 'de'
-    ? `Kundendaten:
+  customerType: 'private' | 'commercial',
+): string {
+  if (language === 'de') {
+    const customerTypeLabel = customerType === 'private' ? 'Privatkunde (Eigenheim)' : 'Gewerbekunde (Unternehmen)';
+    const focus = customerType === 'private' ? 'Eigenheim, Familie, Stromrechnung senken' : 'Gewerbe, Betriebskosten, Steuervorteil §7g';
+    return `Kundendaten:
 - Name: ${clientName}
 - Firma/Haushalt: ${clientCompany}
 - Kundentyp: ${customerTypeLabel}
@@ -245,8 +293,11 @@ export async function generateDealroomContent(
 Beschreibung der Kundensituation (vom Berater):
 ${inputText}
 
-Generiere den Content auf Deutsch. Passe Sprache und Argumente an den Kundentyp an (${customerType === 'private' ? 'Eigenheim, Familie, Stromrechnung senken' : 'Gewerbe, Betriebskosten, Steuervorteil §7g'}). Antworte NUR mit dem JSON-Objekt.`
-    : `Client data:
+Generiere den Content auf Deutsch. Passe Sprache und Argumente an den Kundentyp an (${focus}). Antworte NUR mit dem JSON-Objekt.`;
+  }
+  const customerTypeLabel = customerType === 'private' ? 'Private customer (residential)' : 'Commercial customer (business)';
+  const focus = customerType === 'private' ? 'home, family, reduce electricity bill' : 'business, operating costs, tax benefits';
+  return `Client data:
 - Name: ${clientName}
 - Company/Household: ${clientCompany}
 - Customer type: ${customerTypeLabel}
@@ -254,30 +305,53 @@ Generiere den Content auf Deutsch. Passe Sprache und Argumente an den Kundentyp 
 Description of client situation (from the advisor):
 ${inputText}
 
-Generate the content in English. Adapt language and arguments to the customer type (${customerType === 'private' ? 'home, family, reduce electricity bill' : 'business, operating costs, tax benefits'}). Respond ONLY with the JSON object.`;
+Generate the content in English. Adapt language and arguments to the customer type (${focus}). Respond ONLY with the JSON object.`;
+}
+
+// ============================================================
+// Per-section generator. Returns parsed JSON (a slice of DealroomContent).
+// Uses cache_control on the SHARED prefix so subsequent calls within
+// 5 minutes hit the cache.
+// ============================================================
+async function generateSection(
+  section: Section,
+  inputText: string,
+  clientName: string,
+  clientCompany: string,
+  language: 'de' | 'en',
+  customerType: 'private' | 'commercial',
+): Promise<Record<string, unknown>> {
+  const spec = SECTION_SPECS[section];
+  const shared = language === 'de' ? SHARED_DE : SHARED_EN;
+  const sectionText = language === 'de' ? spec.de : spec.en;
 
   const message = await anthropic.messages.create({
-    // Live-tested 2026-05-17: both 'claude-sonnet-4-6' and the dated form
-    // 'claude-sonnet-4-5-20250929' are accepted by Anthropic API. Override
-    // via ANTHROPIC_MODEL env var if a future SDK requires a different ID.
     model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6',
-    // 6000 is the safety ceiling. Per-field length caps in the system prompt
-    // enforce brevity, not max_tokens. 4000 was too tight for a full dealroom
-    // JSON (5 FAQs + 3 outcomes + 3 pains + 3 benefits + meta) and triggered
-    // truncation on legitimate requests.
-    max_tokens: 6000,
-    system: `${systemPrompt}\n\n${JSON_SCHEMA}`,
-    messages: [{ role: 'user', content: userPrompt }],
+    max_tokens: spec.maxTokens,
+    // Anthropic prompt caching: shared brand prefix marked ephemeral.
+    // First call writes cache, subsequent calls within 5min read it.
+    // Min cacheable size for Sonnet is 1024 tokens; SHARED_DE/EN are above.
+    system: [
+      { type: 'text', text: shared, cache_control: { type: 'ephemeral' } },
+      { type: 'text', text: sectionText },
+    ],
+    messages: [
+      {
+        role: 'user',
+        content: customerPrompt(inputText, clientName, clientCompany, language, customerType),
+      },
+    ],
   });
 
   if (message.stop_reason === 'max_tokens') {
-    console.error('Claude response truncated (max_tokens reached)');
-    throw new Error('Response truncated – content too long');
+    throw new Error(
+      `Response truncated for section "${section}" (max_tokens=${spec.maxTokens}). Increase section budget.`,
+    );
   }
 
   const textBlock = message.content.find((b) => b.type === 'text');
   if (!textBlock || textBlock.type !== 'text') {
-    throw new Error('No text response from Claude');
+    throw new Error(`No text response from Claude for section "${section}"`);
   }
 
   let jsonText = textBlock.text.trim();
@@ -286,12 +360,78 @@ Generate the content in English. Adapt language and arguments to the customer ty
   }
 
   try {
-    const parsed = JSON.parse(jsonText) as DealroomContent;
-    return sanitizeContent(parsed);
+    return JSON.parse(jsonText) as Record<string, unknown>;
   } catch {
-    console.error('Failed to parse Claude response:', jsonText.substring(0, 500));
-    throw new Error('Invalid JSON from Claude');
+    console.error(`Section "${section}" JSON parse failed:`, jsonText.substring(0, 500));
+    throw new Error(`Invalid JSON from Claude for section "${section}"`);
   }
+}
+
+// ============================================================
+// Main entry point. Fires all 5 section calls in parallel.
+// Wall time = max(per-call latencies) ≈ 10-15s instead of sequential ~57s.
+// ============================================================
+export async function generateDealroomContent(
+  inputText: string,
+  clientName: string,
+  clientCompany: string,
+  language: 'de' | 'en',
+  customerType: 'private' | 'commercial' = 'private',
+): Promise<DealroomContent> {
+  const args = [inputText, clientName, clientCompany, language, customerType] as const;
+
+  // Promise.allSettled so a single section failure doesn't kill the whole
+  // generation — we surface which section(s) failed in the merged error.
+  const results = await Promise.allSettled([
+    generateSection('hero', ...args),
+    generateSection('pains', ...args),
+    generateSection('outcomes', ...args),
+    generateSection('benefits', ...args),
+    generateSection('faq', ...args),
+  ] as const);
+
+  const sections: Section[] = ['hero', 'pains', 'outcomes', 'benefits', 'faq'];
+  const failed: { section: Section; reason: string }[] = [];
+  const data: Partial<Record<Section, Record<string, unknown>>> = {};
+
+  results.forEach((r, i) => {
+    const sec = sections[i];
+    if (r.status === 'fulfilled') {
+      data[sec] = r.value;
+    } else {
+      failed.push({ section: sec, reason: r.reason instanceof Error ? r.reason.message : String(r.reason) });
+    }
+  });
+
+  if (failed.length > 0) {
+    const list = failed.map(f => `${f.section}: ${f.reason}`).join(' | ');
+    throw new Error(`Section(s) failed: ${list}`);
+  }
+
+  // Merge slices into full DealroomContent
+  const hero = data.hero!;
+  const pains = data.pains!;
+  const outcomes = data.outcomes!;
+  const benefits = data.benefits!;
+  const faq = data.faq!;
+
+  const merged = {
+    hero_title: hero.hero_title,
+    hero_subtitle: hero.hero_subtitle,
+    outcome_quote: hero.outcome_quote,
+    approach: hero.approach,
+    goal: hero.goal,
+    cta_text: hero.cta_text,
+    cta_derisking: hero.cta_derisking,
+    situation_points: pains.situation_points,
+    cost_of_inaction: pains.cost_of_inaction,
+    outcome_vision: outcomes.outcome_vision,
+    concrete_benefits: benefits.concrete_benefits,
+    process_steps: benefits.process_steps,
+    faq: faq.faq,
+  } as unknown as DealroomContent;
+
+  return sanitizeContent(merged);
 }
 
 // Strip em-dashes, en-dashes, ellipses globally from generated content.
@@ -323,11 +463,13 @@ function sanitizeContent(content: DealroomContent): DealroomContent {
   return walk(content) as DealroomContent;
 }
 
+// ============================================================
+// Audio transcription (kept for backwards compat — uses a separate flow
+// via /api/ai/transcribe → OpenAI Whisper). This Claude path is unused
+// in practice but stays for the existing import surface.
+// ============================================================
 export async function transcribeAudio(audioBase64: string): Promise<string> {
   const message = await anthropic.messages.create({
-    // Live-tested 2026-05-17: both 'claude-sonnet-4-6' and the dated form
-    // 'claude-sonnet-4-5-20250929' are accepted by Anthropic API. Override
-    // via ANTHROPIC_MODEL env var if a future SDK requires a different ID.
     model: process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6',
     max_tokens: 4000,
     messages: [
@@ -355,6 +497,5 @@ export async function transcribeAudio(audioBase64: string): Promise<string> {
   if (!textBlock || textBlock.type !== 'text') {
     throw new Error('No transcription response');
   }
-
   return textBlock.text;
 }
