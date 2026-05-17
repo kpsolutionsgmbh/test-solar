@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { validateForPublish, formatValidationErrors } from '@/lib/dealroom-validation';
 import {
   Select,
   SelectContent,
@@ -250,6 +251,20 @@ export default function NewDealroomPage() {
   };
 
   const publishDealroom = async (asDraft = false) => {
+    // Strict invariant: a published dealroom must have visuals on every pain
+    // + value on every benefit. Drafts skip the check so the admin can still
+    // save work-in-progress.
+    if (!asDraft && generatedContent) {
+      const v = validateForPublish(generatedContent);
+      if (!v.ok) {
+        toast({
+          title: 'Veröffentlichung blockiert',
+          description: formatValidationErrors(v.errors),
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
     setLoading(true);
     try {
       let customerId: string | null = null;

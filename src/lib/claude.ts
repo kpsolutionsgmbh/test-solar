@@ -144,13 +144,17 @@ Schema:
     maxTokens: 1400,
     de: `Generiere EXAKT 3 Pain-Points + cost_of_inaction.
 
+PFLICHT-REGEL: Jeder Pain-Point MUSS sowohl emoji als auch visual_type haben. Niemals weglassen.
+
 Jeder Pain-Point:
 - HEADING: Maximum 8 Wörter.
 - SUBTEXT: Maximum 80 Zeichen, ein Satz, dreht das Messer.
-- EMOJI: Kontext-spezifisch (💸 für Kosten, ⚡ für Strom, 🏠 für Immobilie).
+- EMOJI: PFLICHT. Kontext-spezifisch (💸 für Kosten, ⚡ für Strom, 🏠 für Immobilie, 📈 für steigende Werte, 🔥 für Dringlichkeit, 🌍 für Umwelt). Niemals leer.
 - TEXT: Voller Fallback-Text wie HEADING + SUBTEXT zusammen.
-- visual_type: counter_down | counter_up | rising_number | comparison_bar | percentage_ring | simple_icon
-- visual_data: konkrete Zahlen passend zum visual_type.
+- visual_type: PFLICHT. Wähle PRIORITÄR einen animierten Typ, simple_icon NUR als letzter Ausweg wenn quantitativ nicht darstellbar.
+  ANIMIERT (bevorzugt): counter_down | counter_up | rising_number | comparison_bar | percentage_ring
+  STATIC (Notfall): simple_icon
+- visual_data: konkrete Zahlen passend zum visual_type. Bei simple_icon optional leer.
 
 Visual-Typen-Felder:
   - counter_down: { from, to, label }
@@ -431,7 +435,46 @@ export async function generateDealroomContent(
     faq: faq.faq,
   } as unknown as DealroomContent;
 
-  return sanitizeContent(merged);
+  return ensureVisuals(sanitizeContent(merged));
+}
+
+// Safety-net: enforce that every pain has emoji + visual_type and every
+// concrete_benefit has a value. If Claude returns a malformed item we patch
+// it with a sensible static-icon fallback so the dealroom isn't blocked on
+// a single missing field. The strict publish-gate in dealroom-validation
+// still refuses publication on remaining anomalies.
+const DEFAULT_PAIN_EMOJIS = ['💸', '⚡', '🏠', '📈', '🌍', '⚠️'];
+
+function ensureVisuals(content: DealroomContent): DealroomContent {
+  const c = content as unknown as Record<string, unknown>;
+
+  if (Array.isArray(c.situation_points)) {
+    c.situation_points = (c.situation_points as Array<Record<string, unknown>>).map((point, i) => {
+      const fixed = { ...point };
+      if (!fixed.emoji || typeof fixed.emoji !== 'string') {
+        fixed.emoji = DEFAULT_PAIN_EMOJIS[i % DEFAULT_PAIN_EMOJIS.length];
+      }
+      if (!fixed.visual_type || typeof fixed.visual_type !== 'string') {
+        fixed.visual_type = 'simple_icon';
+      }
+      return fixed;
+    });
+  }
+
+  if (Array.isArray(c.concrete_benefits)) {
+    c.concrete_benefits = (c.concrete_benefits as Array<Record<string, unknown>>).map(b => {
+      const fixed = { ...b };
+      if (!fixed.value || typeof fixed.value !== 'string' || fixed.value.trim() === '') {
+        fixed.value = '—';
+      }
+      if (!fixed.label || typeof fixed.label !== 'string') {
+        fixed.label = '';
+      }
+      return fixed;
+    });
+  }
+
+  return c as unknown as DealroomContent;
 }
 
 // Strip em-dashes, en-dashes, ellipses globally from generated content.

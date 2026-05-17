@@ -26,6 +26,7 @@ import { DynamicIcon } from '@/lib/icon-resolver';
 import { uploadFile } from '@/lib/upload';
 import { SaveTemplateModal } from '@/components/dashboard/save-template-modal';
 import { EmailSendModal } from '@/components/dashboard/email-send-modal';
+import { validateForPublish, formatValidationErrors } from '@/lib/dealroom-validation';
 import {
   ArrowLeft,
   ExternalLink,
@@ -336,6 +337,22 @@ export default function EditDealroomPage() {
 
   const handleSave = async (statusOverride?: Dealroom['status']) => {
     const saveStatus = statusOverride || status;
+
+    // Publish-gate: every pain needs emoji+visual, every benefit needs value.
+    // Drafts and inactive/archived skip the check. Signed = post-published so
+    // also gated.
+    if (saveStatus === 'published' || saveStatus === 'signed') {
+      const v = validateForPublish(content);
+      if (!v.ok) {
+        toast({
+          title: 'Veröffentlichung blockiert',
+          description: formatValidationErrors(v.errors),
+          variant: 'destructive',
+        });
+        return;
+      }
+    }
+
     if (statusOverride) setStatus(statusOverride);
     const { error } = await supabase
       .from('dealrooms')
