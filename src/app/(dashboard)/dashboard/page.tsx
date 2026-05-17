@@ -19,10 +19,13 @@ export default async function DashboardPage() {
 
   const allDealrooms = (dealrooms || []) as Dealroom[];
   const dealroomIds = allDealrooms.map(d => d.id);
+  // Only fetch page_view rows for visible dealrooms — every event type loaded
+  // every row, which scaled with total traffic instead of dealroom count.
   const { data: trackingCounts } = dealroomIds.length > 0
     ? await supabase
         .from('tracking_events')
         .select('dealroom_id')
+        .eq('event_type', 'page_view')
         .in('dealroom_id', dealroomIds)
     : { data: [] };
 

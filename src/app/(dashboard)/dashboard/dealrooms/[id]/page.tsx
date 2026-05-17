@@ -563,6 +563,7 @@ export default function EditDealroomPage() {
                 </Label>
                 <div className="flex items-center gap-3">
                   {clientLogoUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={clientLogoUrl} alt="Kundenlogo" className="h-10 object-contain rounded" />
                   )}
                   <label className="cursor-pointer">

@@ -1,6 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Must stay in sync with TrackingEventType in src/types/database.ts
+const ALLOWED_EVENTS = new Set([
+  'page_view',
+  'tab_switch',
+  'video_play',
+  'video_complete',
+  'pandadoc_open',
+  'pandadoc_sign',
+  'scroll_depth',
+  'cta_click',
+  'session_end',
+  'document_download',
+  'email_sent',
+]);
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -10,13 +27,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
     }
 
-    // Whitelist allowed event types
-    const allowedEvents = [
-      'page_view', 'tab_switch', 'scroll', 'video_play', 'video_pause',
-      'document_click', 'link_click', 'faq_toggle', 'session_start', 'session_end',
-      'cta_click', 'reference_view', 'time_on_page',
-    ];
-    if (!allowedEvents.includes(event_type)) {
+    if (typeof dealroom_id !== 'string' || !UUID_REGEX.test(dealroom_id)) {
+      return NextResponse.json({ error: 'Invalid dealroom id' }, { status: 400 });
+    }
+
+    if (!ALLOWED_EVENTS.has(event_type)) {
       return NextResponse.json({ error: 'Invalid event type' }, { status: 400 });
     }
 

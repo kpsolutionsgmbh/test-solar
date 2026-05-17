@@ -2,9 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 function getResend() {
   if (!process.env.RESEND_API_KEY) return null;
   return new Resend(process.env.RESEND_API_KEY);
+}
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 export async function POST(request: NextRequest) {
@@ -12,6 +24,13 @@ export async function POST(request: NextRequest) {
     const { dealroomId, recipientEmail, subject, body } = await request.json();
     if (!dealroomId || !recipientEmail || !subject || !body) {
       return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+    }
+
+    if (typeof dealroomId !== 'string' || !UUID_REGEX.test(dealroomId)) {
+      return NextResponse.json({ error: 'Invalid dealroom id' }, { status: 400 });
+    }
+    if (typeof recipientEmail !== 'string' || !EMAIL_REGEX.test(recipientEmail)) {
+      return NextResponse.json({ error: 'Invalid recipient email' }, { status: 400 });
     }
 
     const serviceClient = createServiceRoleClient();
@@ -30,8 +49,9 @@ export async function POST(request: NextRequest) {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://dealroom-app.vercel.app';
     const dealroomUrl = `${baseUrl}/d/${dealroom.slug}?utm_source=email&utm_medium=dealroom&utm_campaign=${dealroomId}`;
 
-    // Replace placeholder in body
+    // Replace placeholder in body, then escape user content before inserting into HTML
     const finalBody = body.replace('[LINK]', dealroomUrl);
+    const escapedBody = escapeHtml(finalBody).replace(/\n/g, '<br/>');
 
     // Build HTML email
     const htmlBody = `
@@ -40,7 +60,7 @@ export async function POST(request: NextRequest) {
           <img src="${baseUrl}/images/logo-blue.svg" alt="Solarheld" style="height: 28px;" />
         </div>
         <div style="white-space: pre-line; font-size: 15px; line-height: 1.6; color: #374151;">
-          ${finalBody.replace(/\n/g, '<br/>')}
+          ${escapedBody}
         </div>
         <div style="margin-top: 32px; text-align: center;">
           <a href="${dealroomUrl}" style="display: inline-block; padding: 14px 32px; background-color: #E97E1C; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px;">

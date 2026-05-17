@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Reference } from '@/types/database';
-import { Plus, Pencil, Trash2, Star, GripVertical, Upload, Image, Video, Play } from 'lucide-react';
+import { Plus, Pencil, Trash2, Star, GripVertical, Upload, Image as ImageIcon, Video, Play } from 'lucide-react';
 import { uploadFile } from '@/lib/upload';
 import {
   DndContext,
@@ -102,7 +102,7 @@ function SortableReferenceItem({
                   <Badge variant="outline" className="text-[10px]">{reference.result_summary}</Badge>
                 )}
                 {reference.video_url && (
-                  <Video className="h-3.5 w-3.5 text-[#6b7280]" />
+                  <Video aria-label="Video" className="h-3.5 w-3.5 text-[#6b7280]" />
                 )}
               </div>
               <p className="text-sm text-[#6b7280] truncate">
@@ -317,8 +317,8 @@ export default function ReferencesPage() {
                             : 'border-[#e5e7eb] text-[#6b7280] hover:bg-[#f9fafb]'
                         }`}
                       >
-                        {val === 'image' && <Image className="h-3.5 w-3.5 inline mr-1.5" />}
-                        {val === 'video' && <Video className="h-3.5 w-3.5 inline mr-1.5" />}
+                        {val === 'image' && <ImageIcon aria-hidden="true" className="h-3.5 w-3.5 inline mr-1.5" />}
+                        {val === 'video' && <Video aria-hidden="true" className="h-3.5 w-3.5 inline mr-1.5" />}
                         {label}
                       </button>
                     ))}
@@ -327,7 +327,7 @@ export default function ReferencesPage() {
                 {mediaType === 'image' && (
                   <div className="space-y-1.5">
                     <Label className="flex items-center gap-1.5">
-                      <Image className="h-3.5 w-3.5" />
+                      <ImageIcon aria-hidden="true" className="h-3.5 w-3.5" />
                       Bild
                     </Label>
                     <div className="flex items-center gap-3">

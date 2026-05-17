@@ -8,6 +8,15 @@ function getResend() {
   return new Resend(process.env.RESEND_API_KEY);
 }
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 interface EligibleDealroom {
   id: string;
   client_email: string;
@@ -212,13 +221,14 @@ async function logFlowExecution(
 }
 
 function buildFlowEmailHtml(body: string, dealroomUrl: string, unsubscribeUrl: string, baseUrl: string): string {
+  const safeBody = escapeHtml(body).replace(/\n/g, '<br/>');
   return `
     <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 24px;">
       <div style="margin-bottom: 32px;">
         <img src="${baseUrl}/images/logo-blue.svg" alt="Solarheld" style="height: 28px;" />
       </div>
       <div style="white-space: pre-line; font-size: 15px; line-height: 1.6; color: #374151;">
-        ${body.replace(/\n/g, '<br/>')}
+        ${safeBody}
       </div>
       <div style="margin-top: 32px; text-align: center;">
         <a href="${dealroomUrl}" style="display: inline-block; padding: 14px 32px; background-color: #E97E1C; color: white; text-decoration: none; border-radius: 12px; font-weight: 600; font-size: 16px;">

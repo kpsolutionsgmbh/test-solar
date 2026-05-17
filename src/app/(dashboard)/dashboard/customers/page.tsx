@@ -75,7 +75,8 @@ export default function CustomersPage() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchCustomers(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchCustomers(); }, []);
 
   const resetForm = () => {
     setSalutation('Herr');

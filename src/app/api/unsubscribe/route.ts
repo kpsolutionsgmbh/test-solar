@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function GET(request: NextRequest) {
   const dealroomId = request.nextUrl.searchParams.get('id');
 
-  if (!dealroomId) {
+  if (!dealroomId || !UUID_REGEX.test(dealroomId)) {
     return new NextResponse(htmlPage('Ungültiger Link', 'Der Abmelde-Link ist ungültig.'), {
       status: 400,
       headers: { 'Content-Type': 'text/html; charset=utf-8' },

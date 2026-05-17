@@ -282,6 +282,7 @@ export default function SettingsPage() {
               <Label>Firmenlogo</Label>
               <div className="flex items-center gap-4">
                 {logoUrl && (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img src={logoUrl} alt="Logo" className="h-12 object-contain" />
                 )}
                 <label className="cursor-pointer">
@@ -353,6 +354,7 @@ export default function SettingsPage() {
                       <Label>Profilbild</Label>
                       <div className="flex items-center gap-3">
                         {memberAvatarUrl && (
+                          // eslint-disable-next-line @next/next/no-img-element
                           <img src={memberAvatarUrl} alt="" className="h-10 w-10 rounded-full object-cover" />
                         )}
                         <label className="cursor-pointer">
@@ -402,6 +404,7 @@ export default function SettingsPage() {
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       {m.avatar_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img src={m.avatar_url} alt="" className="h-9 w-9 rounded-full object-cover shrink-0" />
                       ) : (
                         <div className="h-9 w-9 rounded-full bg-[#E97E1C]/10 flex items-center justify-center text-[#E97E1C] text-sm font-semibold shrink-0">
