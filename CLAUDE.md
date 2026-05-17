@@ -25,10 +25,18 @@ The system was set by `/design-consultation` on 2026-05-17:
 
 ## Known State
 
-- **Auth + RLS:** placeholder login, RLS disabled, all API routes use service role. Flagged for upgrade phase.
-- **Tests:** none yet.
+- **Auth:** Real Supabase Auth wired up. Middleware enforces session on `/dashboard/*` and on `/api/*` (minus public allowlist: `/api/track`, `/api/unsubscribe`, `/api/cron/email-flows`, `/api/revalidate`). API routes use `supabase.auth.getUser()` for defense in depth.
+- **RLS:** Migration written at `supabase/migrations/20260517_enable_rls.sql` — **must be run manually in Supabase Dashboard → SQL Editor** before going live. Without it, the DB is wide-open at the row level even if the API is gated.
+- **Tests:** Playwright smoke suite at `e2e/smoke.spec.ts` (8 tests, covers auth gates, public allowlist, login render, manifest, no-console-errors). Run via `npm run test:e2e`.
 - **CI/CD:** Vercel auto-deploy from `main`.
 - **Cron:** `/api/cron/email-flows` daily 08:00 UTC, requires `CRON_SECRET`.
+
+## Setup checklist before going live
+
+1. **Create admin auth user**: Supabase Dashboard → Authentication → Users → Add user. Email: your admin email + password. The login page uses `signInWithPassword` so the user must exist in `auth.users`.
+2. **Run RLS migration**: paste `supabase/migrations/20260517_enable_rls.sql` into Supabase SQL Editor and run. Idempotent.
+3. **Run global-content migration** (if not already done): `supabase/migrations/20260517_global_content.sql`.
+4. **Env vars in Vercel**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`, `RESEND_API_KEY`, `CRON_SECRET`, `OPENAI_API_KEY` (optional, for Whisper transcription).
 
 ## Skill routing
 
