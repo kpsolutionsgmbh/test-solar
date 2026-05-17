@@ -5,8 +5,8 @@ export async function POST(request: NextRequest) {
   try {
     // Auth gate — prevents unauth callers from filling Supabase Storage buckets.
     const sb = createServerSupabaseClient();
-    const { data: admin } = await sb.from('admin_users').select('id').limit(1).single();
-    if (!admin) {
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

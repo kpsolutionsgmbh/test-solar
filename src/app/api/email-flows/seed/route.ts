@@ -104,8 +104,8 @@ export async function POST() {
     // Auth gate — admin-only setup action. The endpoint is idempotent (skips
     // on existing flows) but we still don't want random callers triggering it.
     const sb = createServerSupabaseClient();
-    const { data: admin } = await sb.from('admin_users').select('id').limit(1).single();
-    if (!admin) {
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

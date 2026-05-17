@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createServerSupabaseClient, createServiceRoleClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { mergeWithDefaults, type GlobalContent } from '@/lib/global-content-types';
 
@@ -20,12 +20,10 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  // Auth gate: must originate from the dashboard (cookie-based session) and
-  // resolve to an existing admin user. Public callers cannot vandalize the
-  // global content blob.
+  // Auth gate: must have an authenticated Supabase session.
   const supabase = createServerSupabaseClient();
-  const { data: admin } = await supabase.from('admin_users').select('id').limit(1).single();
-  if (!admin) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -40,22 +38,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Content too large' }, { status: 413 });
   }
 
-  const { data: existing } = await supabase
+  // Use service role for the write so it works whether or not admin_users
+  // exists for this auth user. Single-tenant app — there's one global_content
+  // row total.
+  const service = createServiceRoleClient();
+  const { data: existing } = await service
     .from('global_content')
     .select('id')
-    .eq('admin_id', admin.id)
+    .limit(1)
     .single();
 
   if (existing) {
-    const { error } = await supabase
+    const { error } = await service
       .from('global_content')
       .update({ content: body.content, updated_at: new Date().toISOString() })
       .eq('id', existing.id);
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   } else {
-    const { error } = await supabase
+    // Look up an admin_users row to satisfy the FK (if any exists).
+    const { data: admin } = await service.from('admin_users').select('id').limit(1).single();
+    const { error } = await service
       .from('global_content')
-      .insert({ admin_id: admin.id, content: body.content });
+      .insert({ admin_id: admin?.id || null, content: body.content });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

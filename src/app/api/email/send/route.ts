@@ -24,12 +24,8 @@ export async function POST(request: NextRequest) {
     // Auth gate — prevents unauth callers from sending mails through your
     // Resend sender domain (phishing-as-a-service risk).
     const supabase = createServerSupabaseClient();
-    const { data: admin } = await supabase
-      .from('admin_users')
-      .select('id')
-      .limit(1)
-      .single();
-    if (!admin) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
