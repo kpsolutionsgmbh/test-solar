@@ -16,14 +16,21 @@ export interface ValidationResult {
   errors: string[];
 }
 
-const ANIMATED_TYPES = new Set([
+const ANIMATED_TYPES = new Set<string>([
   'counter_down',
   'counter_up',
   'rising_number',
   'comparison_bar',
   'percentage_ring',
 ]);
-const ALL_VISUAL_TYPES = new Set([...ANIMATED_TYPES, 'simple_icon']);
+const ALL_VISUAL_TYPES = new Set<string>([
+  'counter_down',
+  'counter_up',
+  'rising_number',
+  'comparison_bar',
+  'percentage_ring',
+  'simple_icon',
+]);
 
 export function validateForPublish(content: DealroomContent | null): ValidationResult {
   const errors: string[] = [];
